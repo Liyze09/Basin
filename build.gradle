@@ -1,0 +1,28 @@
+//file:noinspection GroovyAssignabilityCheck
+plugins {
+    id 'java'
+}
+
+group = 'net.liyze'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.aliyun.com/repository/public"
+    }
+    maven {
+        url "https://maven.aliyun.com/repository/gradle-plugin"
+    }
+}
+
+dependencies {
+
+}
+
+test {
+
+}
+sourceSets{
+    java
+}
