@@ -1,9 +1,9 @@
-package net.liyze.liyzetools;
+package net.liyze.basin;
 
 import java.util.ArrayList;
 
-import static net.liyze.liyzetools.Main.commands;
-import static net.liyze.liyzetools.util.Out.error;
+import static net.liyze.basin.Main.commands;
+import static net.liyze.basin.util.Out.error;
 
 public abstract class runCommands {
     public static void runCommand(String cmd) {

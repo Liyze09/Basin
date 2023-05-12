@@ -1,12 +1,13 @@
-package net.liyze.liyzetools.commands;
+package net.liyze.basin.commands;
 
-import net.liyze.liyzetools.Command;
+import net.liyze.basin.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.liyze.liyzetools.util.Out.debug;
+import static net.liyze.basin.util.Out.debug;
 
 
 public class EquationCommand implements Command {
@@ -14,7 +15,7 @@ public class EquationCommand implements Command {
     static HashMap<String, Double> rightUnknowns = new HashMap<>();
 
     @Override
-    public void run(ArrayList<String> args) throws RuntimeException {
+    public void run(@NotNull ArrayList<String> args) throws RuntimeException {
         String es = args.get(0).toLowerCase().strip().replaceAll("[*]", "");
         char[] e = es.toCharArray();
         char[] x = es.replaceAll("[^a-z]", "").toCharArray();
@@ -156,7 +157,7 @@ public class EquationCommand implements Command {
             debug(String.valueOf(leftUnknowns.get(String.valueOf(x[0]))));
             solution.add(allNum / v);
         }
-        double s = 0;
+        double s;
         char xx;
         try {
             for (int i = 0; i < x.length; ++i) {

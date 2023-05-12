@@ -1,7 +1,7 @@
-package net.liyze.liyzetools.util;
+package net.liyze.basin.util;
 
-import static net.liyze.liyzetools.Main.debug;
-import static net.liyze.liyzetools.Main.stopAll;
+import static net.liyze.basin.Main.debug;
+import static net.liyze.basin.Main.stopAll;
 
 public abstract class Out {
     public static void fatal(String msg) {

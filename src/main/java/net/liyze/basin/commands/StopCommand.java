@@ -1,10 +1,10 @@
-package net.liyze.liyzetools.commands;
+package net.liyze.basin.commands;
 
-import net.liyze.liyzetools.Command;
+import net.liyze.basin.Command;
 
 import java.util.ArrayList;
 
-import static net.liyze.liyzetools.Main.stopAll;
+import static net.liyze.basin.Main.stopAll;
 
 public class StopCommand implements Command {
     @Override

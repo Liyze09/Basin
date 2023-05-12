@@ -1,11 +1,11 @@
-package net.liyze.liyzetools.commands;
+package net.liyze.basin.commands;
 
-import net.liyze.liyzetools.Command;
+import net.liyze.basin.Command;
 
 import java.util.ArrayList;
 
-import static net.liyze.liyzetools.Main.debug;
-import static net.liyze.liyzetools.util.Out.info;
+import static net.liyze.basin.Main.debug;
+import static net.liyze.basin.util.Out.info;
 
 public class DebugCommand implements Command {
     @Override
