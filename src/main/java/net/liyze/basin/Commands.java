@@ -2,7 +2,7 @@ package net.liyze.basin;
 
 import net.liyze.basin.commands.*;
 
-import static net.liyze.basin.util.RegCmd.register;
+import static net.liyze.basin.util.Register.register;
 
 public abstract class Commands {
     public static void regCommands() {
@@ -13,5 +13,6 @@ public abstract class Commands {
         register(new BenchCommand());
         register(new ExecuteCommand());
         register(new ServiceCommand());
+        register(new ScriptCommand());
     }
 }

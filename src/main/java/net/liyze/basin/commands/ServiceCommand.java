@@ -6,7 +6,7 @@ import net.liyze.basin.util.Out;
 import java.util.ArrayList;
 
 import static net.liyze.basin.Main.*;
-import static net.liyze.basin.runCommands.runCommand;
+import static net.liyze.basin.RunCommands.runCommand;
 
 public class ServiceCommand implements Command {
 

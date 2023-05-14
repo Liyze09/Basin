@@ -2,11 +2,12 @@ package net.liyze.basin;
 
 import java.util.ArrayList;
 
-import static net.liyze.basin.Main.commands;
+import static net.liyze.basin.Main.*;
 import static net.liyze.basin.util.Out.error;
 
-public abstract class runCommands {
+public abstract class RunCommands {
     public static void runCommand(String cmd) {
+        logger.info("Starting: "+cmd);
         cmd = cmd + " ";
         var sb = new StringBuilder(128);
         char[] rt1 = cmd.toCharArray();

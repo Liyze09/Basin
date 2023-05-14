@@ -1,5 +1,8 @@
 package net.liyze.basin;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -7,10 +10,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static net.liyze.basin.Commands.regCommands;
-import static net.liyze.basin.runCommands.runCommand;
+import static net.liyze.basin.RunCommands.runCommand;
 import static net.liyze.basin.util.Out.*;
 
 public class Main {
+    public static Logger logger = LoggerFactory.getLogger("Basin System");
     public static HashMap<String, Command> commands = new HashMap<>();
     public static boolean debug = false;
     static Thread scanCmd = new Thread(Main::scanConsole);
@@ -19,7 +23,7 @@ public class Main {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void main(String[] args) {
-        File data = new File("data");
+        File data = new File("data"+File.separator+"script");
         data.mkdirs();
         regCommands();
         scanCmd.start();
