@@ -21,7 +21,6 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'ch.qos.logback:logback-classic:1.4.7'
 }
-
 test {
 
 }
@@ -33,4 +32,9 @@ jar{
         attributes 'Manifest-Version': '1.0'
         attributes 'Main-Class': 'net.liyze.basin.Main'
     }
+}
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
