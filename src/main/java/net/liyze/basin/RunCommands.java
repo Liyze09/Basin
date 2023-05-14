@@ -44,7 +44,11 @@ public abstract class RunCommands {
         if (!(run == null)) {
             try {
                 run.run(args);
-            } catch (Exception e) {
+            } catch (IndexOutOfBoundsException e) {
+                logger.error("Bad arg input.");
+            } catch (RuntimeException e){
+                logger.error(String.valueOf(e));
+            } catch (Exception e){
                 e.printStackTrace();
             }
         } else error("Unknown command: " + cmdName);
