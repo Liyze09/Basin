@@ -7,7 +7,7 @@ import static net.liyze.basin.util.Out.error;
 
 public abstract class RunCommands {
     public static void runCommand(String cmd) {
-        logger.info("Starting: "+cmd);
+        LOGGER.info("Starting: " + cmd);
         cmd = cmd + " ";
         var sb = new StringBuilder(128);
         char[] rt1 = cmd.toCharArray();
@@ -45,10 +45,10 @@ public abstract class RunCommands {
             try {
                 run.run(args);
             } catch (IndexOutOfBoundsException e) {
-                logger.error("Bad arg input.");
-            } catch (RuntimeException e){
-                logger.error(String.valueOf(e));
-            } catch (Exception e){
+                LOGGER.error("Bad arg input.");
+            } catch (RuntimeException e) {
+                LOGGER.error(String.valueOf(e));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         } else error("Unknown command: " + cmdName);

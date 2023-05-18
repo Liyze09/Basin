@@ -17,7 +17,7 @@ public class DebugCommand implements Command {
             debug = false;
             info("debug_mode: false");
         } else {
-            info("debug_mode: "+debug);
+            info("debug_mode: " + debug);
         }
     }
 

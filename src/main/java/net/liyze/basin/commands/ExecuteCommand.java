@@ -9,10 +9,11 @@ import static net.liyze.basin.Main.taskPool;
 import static net.liyze.basin.RunCommands.runCommand;
 
 public class ExecuteCommand implements Command {
-    static String cmd= "";
+    static String cmd = "";
+
     @Override
     public void run(ArrayList<String> args) {
-        cmd=String.join(" ",args);
+        cmd = String.join(" ", args);
         taskPool.submit(new Task());
     }
 
@@ -21,10 +22,11 @@ public class ExecuteCommand implements Command {
         return "execute";
     }
 }
-class Task implements Runnable{
+
+class Task implements Runnable {
     @Override
     public void run() {
-        Out.info("execute: "+ExecuteCommand.cmd);
+        Out.info("execute: " + ExecuteCommand.cmd);
         runCommand(ExecuteCommand.cmd);
     }
 }

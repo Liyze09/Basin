@@ -5,15 +5,16 @@ import net.liyze.basin.util.Out;
 
 import java.util.ArrayList;
 
-import static net.liyze.basin.Main.*;
+import static net.liyze.basin.Main.servicePool;
 import static net.liyze.basin.RunCommands.runCommand;
 
 public class ServiceCommand implements Command {
 
-    static String cmd= "";
+    static String cmd = "";
+
     @Override
     public void run(ArrayList<String> args) {
-        cmd=String.join(" ",args);
+        cmd = String.join(" ", args);
         servicePool.submit(new Service());
     }
 
@@ -22,10 +23,11 @@ public class ServiceCommand implements Command {
         return "service";
     }
 }
-class Service implements Runnable{
+
+class Service implements Runnable {
     @Override
     public void run() {
-        Out.info("start: "+ExecuteCommand.cmd);
+        Out.info("start: " + ExecuteCommand.cmd);
         runCommand(ExecuteCommand.cmd);
     }
 }

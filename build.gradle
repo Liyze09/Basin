@@ -20,6 +20,9 @@ dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'ch.qos.logback:logback-classic:1.4.7'
+    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
 }
 test {
 
@@ -31,6 +34,10 @@ jar{
     manifest {
         attributes 'Manifest-Version': '1.0'
         attributes 'Main-Class': 'net.liyze.basin.Main'
+        attributes 'Class-Path': 'data/plugins data/config'
+        attributes 'Created-By': 'Gradle 8'
+        attributes 'Built-By': 'Liyze09'
+        attributes 'Build-Jdk': '17'
     }
 }
 java {
