@@ -1,0 +1,47 @@
+name: build
+on: [ pull_request, push ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check_env
+        run: env
+
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: setup_Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      - name: restore cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+      - name: clean cache
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
+      - name: restore wrapper cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+
+      - name: build
+        run: ./gradlew build
+
+      - name: artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: useful-additions-artifacts
+          path: build/libs
