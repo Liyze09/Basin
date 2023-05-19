@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import static net.liyze.basin.Main.servicePool;
 import static net.liyze.basin.RunCommands.runCommand;
 
+/**
+ * Put command into a CachedThreadPool
+ * /execute -command- -args...-
+ *
+ * @author Liyze09
+ */
 public class ExecuteCommand implements Command {
 
     static String cmd = "";

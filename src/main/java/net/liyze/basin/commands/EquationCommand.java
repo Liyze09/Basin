@@ -19,6 +19,7 @@ public class EquationCommand implements Command {
         String es = args.get(0).toLowerCase().strip().replaceAll("[*]", "");
         char[] e = es.toCharArray();
         char[] x = es.replaceAll("[^a-z]", "").toCharArray();
+        String h = "h";
         ArrayList<String> left = new ArrayList<>();
         ArrayList<String> right = new ArrayList<>();
         double leftNum = 0;
@@ -32,7 +33,8 @@ public class EquationCommand implements Command {
             if (ie.equals("/")) {
                 throw new RuntimeException("No \"/\"");
             }
-            if (ie.equals("=")) {
+            if (ie.equals("=") || ie.equals(">") || ie.equals("<")) {
+                h = ie;
                 or = false;
             } else {
                 if (or) left.add(ie);
@@ -154,6 +156,10 @@ public class EquationCommand implements Command {
         ArrayList<Double> solution = new ArrayList<>();
         if (leftUnknowns.size() == 1) {
             double v = leftUnknowns.get(String.valueOf(x[0]));
+            if (v < 0) {
+                if (h.equals(">")) h = "<";
+                if (h.equals("<")) h = ">";
+            } else if (v == 0) h = "=";
             debug(String.valueOf(leftUnknowns.get(String.valueOf(x[0]))));
             solution.add(allNum / v);
         }
@@ -163,7 +169,7 @@ public class EquationCommand implements Command {
             for (int i = 0; i < x.length; ++i) {
                 xx = x[i];
                 s = solution.get(i);
-                System.out.println(xx + " = " + s);
+                System.out.println(xx + h + s);
             }
         } catch (IndexOutOfBoundsException ignored) {
         }

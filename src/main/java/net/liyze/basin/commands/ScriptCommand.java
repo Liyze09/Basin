@@ -12,6 +12,18 @@ import java.util.stream.Stream;
 import static net.liyze.basin.Main.userHome;
 import static net.liyze.basin.RunCommands.runCommand;
 
+/**
+ * Load a script like
+ * <p>
+ * {@code
+ * execute bench
+ * equation 2x+1=3
+ * stop
+ * }
+ * </p>
+ *
+ * @author Liyze09
+ */
 public class ScriptCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
