@@ -12,7 +12,6 @@ public abstract class Commands {
         register(new ListCommand());
         register(new BenchCommand());
         register(new ExecuteCommand());
-        register(new ServiceCommand());
         register(new ScriptCommand());
     }
 }

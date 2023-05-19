@@ -3,24 +3,25 @@ package net.liyze.basin.commands;
 import net.liyze.basin.Command;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
+import static net.liyze.basin.Main.userHome;
 import static net.liyze.basin.RunCommands.runCommand;
 
 public class ScriptCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
         try (
-                BufferedReader script = new BufferedReader(new FileReader("data" + File.separator + "script" + File.separator + args.get(0), StandardCharsets.UTF_8))
+                BufferedReader script = new BufferedReader(new FileReader(userHome + args.get(0), StandardCharsets.UTF_8))
         ) {
-            Object[] lines = script.lines().toArray();
-            for (Object line : lines) {
-                if (!((String) line).isEmpty()) runCommand((String) line);
-            }
+            Stream<String> lines = script.lines();
+            lines.forEach(i -> {
+                if (!(i).isEmpty()) runCommand(i);
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

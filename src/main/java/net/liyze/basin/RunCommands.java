@@ -17,6 +17,7 @@ public abstract class RunCommands {
         String cmdName = "";
         int arg = 0;
         for (char a : rt1) {
+            if (a == '/') continue;
             if (!(a == ' ')) {
                 if (arg == 0) {
                     nameList.add(a);

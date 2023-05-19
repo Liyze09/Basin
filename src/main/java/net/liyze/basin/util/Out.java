@@ -1,12 +1,14 @@
 package net.liyze.basin.util;
 
+
+import static net.liyze.basin.Basin.shutdown;
 import static net.liyze.basin.Main.*;
 
 @SuppressWarnings("unused")
 public abstract class Out {
     public static void fatal(String msg) {
         LOGGER.error(msg);
-        stopAll();
+        shutdown();
     }
 
     public static void error(String msg) {

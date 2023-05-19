@@ -8,10 +8,9 @@ import static net.liyze.basin.util.Register.register;
 
 
 public abstract class Loader {
-
     public static void loadFilePlugins() throws Exception {
         File[] children = plugins.listFiles((file, s) -> s.matches(".*\\.jar"));
-        String c = "";
+        String c;
         if (children == null) {
             LOGGER.error("Plugin file isn't exists!");
         } else {
@@ -20,7 +19,8 @@ public abstract class Loader {
                     c = jarFile.getManifest().getMainAttributes().getValue("Export-Command");
                     if (!c.isBlank()) {
                         Class<?> cls = Class.forName(c);
-                        register((Command) cls.getDeclaredConstructor().newInstance());
+                        Object command = cls.getDeclaredConstructor().newInstance();
+                        if (command instanceof Command) register((Command) command);
                     }
                 }
             }

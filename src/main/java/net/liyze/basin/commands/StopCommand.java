@@ -4,12 +4,13 @@ import net.liyze.basin.Command;
 
 import java.util.ArrayList;
 
-import static net.liyze.basin.Main.stopAll;
+import static net.liyze.basin.Basin.shutdown;
+
 
 public class StopCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
-        stopAll();
+        shutdown();
     }
 
     @Override
