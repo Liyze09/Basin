@@ -16,7 +16,7 @@ public class Config {
             try (Writer writer = new FileWriter(config.getPath())) {
                 writer.write(gson);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Error when create config file: ", e);
             }
         }
         try (Reader reader = new FileReader(config.getPath())) {
