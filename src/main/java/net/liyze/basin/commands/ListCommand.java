@@ -6,6 +6,11 @@ import java.util.ArrayList;
 
 import static net.liyze.basin.Main.commands;
 
+/**
+ * Print all command loaded.
+ *
+ * @author Liyze09
+ */
 public class ListCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {

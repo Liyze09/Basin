@@ -3,7 +3,7 @@ package net.liyze.basin;
 import java.util.ArrayList;
 
 import static net.liyze.basin.Main.*;
-import static net.liyze.basin.util.Out.error;
+import static net.liyze.basin.Util.error;
 
 public abstract class RunCommands {
     public static void runCommand(String cmd) {

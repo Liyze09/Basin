@@ -5,10 +5,14 @@ import net.liyze.basin.Command;
 import java.time.Instant;
 import java.util.ArrayList;
 
-import static net.liyze.basin.util.Out.*;
+import static net.liyze.basin.Util.*;
 
+/**
+ * Test your JVM speed
+ *
+ * @author Liyze09
+ */
 public class BenchCommand implements Command {
-
     @Override
     public void run(ArrayList<String> args) {
         double rpi = 1, pi;

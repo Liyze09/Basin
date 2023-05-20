@@ -5,22 +5,24 @@ import net.liyze.basin.Command;
 import java.util.ArrayList;
 
 import static net.liyze.basin.Main.*;
-import static net.liyze.basin.util.Out.info;
 
+/**
+ * Is enabled ,print debug
+ */
 public class DebugCommand implements Command {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void run(ArrayList<String> args) {
         if (args.contains("true")) {
             debug = true;
-            info("debug_mode: true");
+            LOGGER.info("debug_mode: true");
             LOGGER.atTrace();
         } else if (args.contains("false")) {
             debug = false;
-            info("debug_mode: false");
-            LOGGER.atTrace();
+            LOGGER.info("debug_mode: false");
+            LOGGER.atInfo();
         } else {
-            info("debug_mode: " + debug);
+            LOGGER.info("debug_mode: {}", debug);
         }
     }
 

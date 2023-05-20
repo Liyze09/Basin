@@ -15,11 +15,11 @@ import static net.liyze.basin.RunCommands.runCommand;
 /**
  * Load a script like
  * <p>
- * {@code
  * execute bench
+ * </p><p>
  * equation 2x+1=3
+ * </p><p>
  * stop
- * }
  * </p>
  *
  * @author Liyze09

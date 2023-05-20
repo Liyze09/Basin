@@ -1,7 +1,7 @@
 package net.liyze.basin.commands;
 
 import net.liyze.basin.Command;
-import net.liyze.basin.util.Out;
+import net.liyze.basin.Util;
 
 import java.util.ArrayList;
 
@@ -10,7 +10,7 @@ import static net.liyze.basin.RunCommands.runCommand;
 
 /**
  * Put command into a CachedThreadPool
- * /execute -command- -args...-
+ * /execute [command] [args..]
  *
  * @author Liyze09
  */
@@ -32,7 +32,7 @@ public class ExecuteCommand implements Command {
     static class Service implements Runnable {
         @Override
         public void run() {
-            Out.info("start: " + ExecuteCommand.cmd);
+            Util.info("start: " + ExecuteCommand.cmd);
             runCommand(ExecuteCommand.cmd);
         }
     }

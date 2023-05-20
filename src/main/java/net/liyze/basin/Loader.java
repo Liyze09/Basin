@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.jar.JarFile;
 
 import static net.liyze.basin.Main.*;
-import static net.liyze.basin.util.Register.register;
+import static net.liyze.basin.Util.register;
 
 
 public abstract class Loader {

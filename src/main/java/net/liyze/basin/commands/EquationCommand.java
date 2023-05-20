@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.liyze.basin.util.Out.debug;
+import static net.liyze.basin.Util.debug;
 
 
 public class EquationCommand implements Command {

@@ -1,11 +1,11 @@
-package net.liyze.basin.util;
+package net.liyze.basin;
 
 
 import static net.liyze.basin.Basin.shutdown;
 import static net.liyze.basin.Main.*;
 
 @SuppressWarnings("unused")
-public abstract class Out {
+public abstract class Util {
     public static void fatal(String msg) {
         LOGGER.error(msg);
         shutdown();
@@ -25,5 +25,9 @@ public abstract class Out {
 
     public static void debug(String msg) {
         if (debug) LOGGER.info(msg);
+    }
+
+    public static void register(Command cmd) {
+        commands.put(cmd.Name(), cmd);
     }
 }

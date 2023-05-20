@@ -16,28 +16,28 @@ import java.util.concurrent.Executors;
 
 import static net.liyze.basin.Basin.basin;
 import static net.liyze.basin.Commands.regCommands;
-import static net.liyze.basin.Config.cfg;
+import static net.liyze.basin.Config.*;
 import static net.liyze.basin.Loader.loadFilePlugins;
 import static net.liyze.basin.RunCommands.runCommand;
 
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin System");
-    public static HashMap<String, Command> commands = new HashMap<>();
-    public static Toml config = new Toml();
-    public static Toml env = new Toml();
-    public static File userHome = new File("data" + File.separator + "home");
+    public static final HashMap<String, Command> commands = new HashMap<>();
+    public static File config = new File("data/cfg.json");
+    public static final Toml env = new Toml();
+    public static final File userHome = new File("data" + File.separator + "home");
     public static boolean debug = false;
-    static Thread scanCmd = new Thread(Main::scanConsole);
-    static Thread loadPlugins = new Thread(Main::loadPlugins);
+    static final Thread scanCmd = new Thread(Main::scanConsole);
+    static final Thread loadPlugins = new Thread(Main::loadPlugins);
     public static final ExecutorService taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
     public static final ExecutorService servicePool = Executors.newCachedThreadPool();
-    static File plugins = new File("data" + File.separator + "plugins");
+    static final File plugins = new File("data" + File.separator + "plugins");
     public static Map<String, Object> envMap;
 
     public static void main(String[] args) {
         try {
             init();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         regCommands();
@@ -51,28 +51,24 @@ public final class Main {
     private static void init() {
         userHome.mkdirs();
         plugins.mkdirs();
-        File cfgFile = new File("data" + File.separator + "cfg.toml");
         File envFile = new File("data" + File.separator + "env.toml");
-        if (!cfgFile.exists()) {
-            try {
-                cfgFile.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            initConfig();
+        } catch (Exception e) {
+            LOGGER.error("Error when load config file: ", e);
         }
         if (!envFile.exists()) {
             try {
                 envFile.createNewFile();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Error when create environment variable file: ", e);
             }
             try (Writer writer = new FileWriter(envFile)) {
                 writer.append("# Basin Environment Variable");
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Error when create environment variable file: ", e);
             }
         }
-        config.read(cfgFile).to(Config.class);
         envMap = env.read(envFile).toMap();
         LOGGER.info("Inited");
     }
@@ -100,12 +96,8 @@ public final class Main {
         public void run() {
             try {
                 runCommand(command);
-            } catch (RuntimeException e) {
-                try {
-                    e.printStackTrace();
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
