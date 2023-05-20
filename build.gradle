@@ -39,6 +39,13 @@ jar{
         attributes 'Built-By': 'Liyze09'
         attributes 'Build-Jdk': Runtime.version().toString()
     }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from {
+        configurations.compileClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude 'META-INF/versions/9/module-info.class'
 }
 java {
     withSourcesJar()
