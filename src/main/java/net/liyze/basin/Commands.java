@@ -13,5 +13,6 @@ public abstract class Commands {
         register(new BenchCommand());
         register(new ExecuteCommand());
         register(new ScriptCommand());
+        register(new ServerCommand());
     }
 }
