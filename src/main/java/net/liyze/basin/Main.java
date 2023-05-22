@@ -78,7 +78,6 @@ public final class Main {
         Scanner scanner = new Scanner(System.in);
         while (!scanCmd.isInterrupted()) {
             command = scanner.nextLine();
-            command = command.toLowerCase().strip();
             taskPool.submit(new Task());
         }
     }
