@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.liyze.basin.Util.debug;
-
 
 public class EquationCommand implements Command {
     static HashMap<String, Double> leftUnknowns = new HashMap<>();
@@ -44,7 +42,6 @@ public class EquationCommand implements Command {
         int bf;
         double ci;
         var sb = new StringBuilder();
-        debug(left + String.valueOf(right));
         //Left
         for (int i = 0; i < left.size(); ++i) {
             ie = left.get(i);
@@ -148,7 +145,6 @@ public class EquationCommand implements Command {
                 throw new RuntimeException("Unknown: " + ie);
             }
         }
-        debug(leftNum + " " + rightNum);
         allNum = rightNum - leftNum;
         for (Map.Entry<String, Double> entry : rightUnknowns.entrySet()) {
             addUnknown(entry.getKey(), -(entry.getValue()), true);
@@ -160,7 +156,6 @@ public class EquationCommand implements Command {
                 if (h.equals(">")) h = "<";
                 if (h.equals("<")) h = ">";
             } else if (v == 0) h = "=";
-            debug(String.valueOf(leftUnknowns.get(String.valueOf(x[0]))));
             solution.add(allNum / v);
         }
         double s;
@@ -183,7 +178,6 @@ public class EquationCommand implements Command {
     }
 
     private static void addUnknown(String name, double coefficient, boolean isLeft) {
-        debug(coefficient + " " + name);
         double g;
         if (isLeft) {
             if (leftUnknowns.containsKey(name)) {

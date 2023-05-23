@@ -5,6 +5,7 @@ import net.liyze.basin.web.Server;
 
 import java.util.ArrayList;
 
+import static net.liyze.basin.Main.LOGGER;
 import static net.liyze.basin.web.Server.runningServer;
 
 public class ServerCommand implements Command {
@@ -18,6 +19,8 @@ public class ServerCommand implements Command {
                 if (server != null) {
                     server.stop();
                     runningServer.remove(name);
+                } else {
+                    LOGGER.error("{} is not exist.", name);
                 }
             } else throw new IndexOutOfBoundsException();
         } catch (IndexOutOfBoundsException ignored) {

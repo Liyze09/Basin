@@ -12,7 +12,7 @@ public abstract class Loader {
         File[] children = plugins.listFiles((file, s) -> s.matches(".*\\.jar"));
         String c;
         if (children == null) {
-            LOGGER.error("Plugin file isn't exists!");
+            LOGGER.error("Plugin file isn't exist!");
         } else {
             for (File jar : children) {
                 try (JarFile jarFile = new JarFile(jar)) {
@@ -20,7 +20,11 @@ public abstract class Loader {
                     if (!c.isBlank()) {
                         Class<?> cls = Class.forName(c);
                         Object command = cls.getDeclaredConstructor().newInstance();
-                        if (command instanceof Command) register((Command) command);
+                        if (command instanceof Command) {
+                            register((Command) command);
+                        } else {
+                            LOGGER.warn("Plugin {} is unsupport", jar.getName());
+                        }
                     }
                 }
             }

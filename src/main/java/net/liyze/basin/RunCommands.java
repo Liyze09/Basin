@@ -6,7 +6,6 @@ import java.util.List;
 
 import static java.lang.System.out;
 import static net.liyze.basin.Main.*;
-import static net.liyze.basin.Util.error;
 
 public abstract class RunCommands {
     public static void runCommand(String cmd) {
@@ -30,7 +29,7 @@ public abstract class RunCommands {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else error("Unknown command: " + cmdName);
+            } else LOGGER.error("Unknown command: " + cmdName);
         }
     }
 }

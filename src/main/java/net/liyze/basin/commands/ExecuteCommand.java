@@ -1,11 +1,10 @@
 package net.liyze.basin.commands;
 
 import net.liyze.basin.Command;
-import net.liyze.basin.Util;
 
 import java.util.ArrayList;
 
-import static net.liyze.basin.Main.servicePool;
+import static net.liyze.basin.Main.*;
 import static net.liyze.basin.RunCommands.runCommand;
 
 /**
@@ -32,7 +31,7 @@ public class ExecuteCommand implements Command {
     static class Service implements Runnable {
         @Override
         public void run() {
-            Util.info("start: " + ExecuteCommand.cmd);
+            LOGGER.info("start: " + ExecuteCommand.cmd);
             runCommand(ExecuteCommand.cmd);
         }
     }

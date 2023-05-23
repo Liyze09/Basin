@@ -41,7 +41,7 @@ public class Server {
 
     public Server run() throws IOException {
         AtomicReference<Socket> socket = new AtomicReference<>();
-        LOGGER.info("Server {} on {} started", serverName, port);
+        LOGGER.info("Server {} on port {} started", serverName, port);
         new Thread(() -> {
             while (isRunning) {
                 try {
@@ -51,7 +51,7 @@ public class Server {
                 }
                 (new HttpThread(socket.get(), this)).start();
             }
-            LOGGER.info("Server {} on {} stopped", serverName, port);
+            LOGGER.info("Server {} on port {} stopped", serverName, port);
         }).start();
         return this;
     }

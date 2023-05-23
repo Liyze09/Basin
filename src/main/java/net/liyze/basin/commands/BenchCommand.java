@@ -5,7 +5,7 @@ import net.liyze.basin.Command;
 import java.time.Instant;
 import java.util.ArrayList;
 
-import static net.liyze.basin.Util.*;
+import static net.liyze.basin.Main.LOGGER;
 
 /**
  * Test your JVM speed
@@ -13,9 +13,10 @@ import static net.liyze.basin.Util.*;
  * @author Liyze09
  */
 public class BenchCommand implements Command {
+    @SuppressWarnings("unused")
     @Override
     public void run(ArrayList<String> args) {
-        double rpi = 1, pi;
+        double rpi = 1;
         long t = 3;
         long i = 0;
         long start;
@@ -29,9 +30,7 @@ public class BenchCommand implements Command {
             ++i;
             t += 2;
         } while (Instant.now().getEpochSecond() != start + 10);
-        pi = rpi * 4;
-        info(String.valueOf(i));
-        debug(String.valueOf(pi));
+        LOGGER.info(String.valueOf(i));
     }
 
     @Override
