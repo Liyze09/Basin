@@ -1,6 +1,7 @@
 package net.liyze.basin;
 
 import com.moandjiezana.toml.Toml;
+import net.liyze.basin.commands.ScriptCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,9 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -71,6 +70,10 @@ public final class Main {
         }
         envMap = env.read(envFile).toMap();
         LOGGER.info("Inited");
+        try {
+            new ScriptCommand().run(new ArrayList<>(List.of("BOOT")));
+        } catch (RuntimeException ignored) {
+        }
     }
 
     private static String command;

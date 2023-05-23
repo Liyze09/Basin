@@ -7,11 +7,11 @@ import java.net.Socket;
 
 import static net.liyze.basin.Main.LOGGER;
 
-public class HTTP extends Thread {
+public class HttpThread extends Thread {
     protected Socket socket;
     private final Server server;
 
-    public HTTP(Socket socket, Server server) {
+    public HttpThread(Socket socket, Server server) {
         this.socket = socket;
         this.server = server;
     }
@@ -30,7 +30,7 @@ public class HTTP extends Thread {
                 URL = Server.index;
             }
             Return back = new Return(out, server);
-            back.send(URL);
+            if (URL != null) back.send(URL);
         } catch (IOException e) {
             LOGGER.error("HTTP Error: {}", e.toString());
         }

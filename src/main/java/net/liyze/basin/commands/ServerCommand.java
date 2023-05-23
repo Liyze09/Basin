@@ -5,16 +5,29 @@ import net.liyze.basin.web.Server;
 
 import java.util.ArrayList;
 
-public class ServerCommand implements Command {
+import static net.liyze.basin.web.Server.runningServer;
 
+public class ServerCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
-        int port = Integer.parseInt(args.get(0));
         String name = args.get(1);
+        Server server;
         try {
-            new Server(name, port).run();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (args.get(0).equals("stop")) {
+                server = runningServer.get(name);
+                if (server != null) {
+                    server.stop();
+                    runningServer.remove(name);
+                }
+            } else throw new IndexOutOfBoundsException();
+        } catch (IndexOutOfBoundsException ignored) {
+            int port = Integer.parseInt(args.get(0));
+            try {
+                server = new Server(name, port);
+                runningServer.put(args.get(1), server.run());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -22,4 +35,5 @@ public class ServerCommand implements Command {
     public String Name() {
         return "server";
     }
+
 }

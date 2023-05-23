@@ -4,15 +4,23 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static net.liyze.basin.Main.LOGGER;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Server {
+    @SuppressWarnings("unused")
+    public static final Map<String, Function<String, byte[]>> dynamicFunctions = new HashMap<>();
+    public static final Map<String, Server> runningServer = new HashMap<>();
     public String serverName;
     public int port;
     public final File root;
     public static ServerSocket server;
+    public boolean isRunning = true;
     public static String index = "index.html";
 
     public Server(String name, int port) {
@@ -27,12 +35,24 @@ public class Server {
         }
     }
 
-    @SuppressWarnings("InfiniteLoopStatement")
-    public void run() throws Exception {
-        Socket socket;
-        for (; ; ) {
-            socket = server.accept();
-            (new HTTP(socket, this)).start();
-        }
+    public void stop() {
+        this.isRunning = false;
+    }
+
+    public Server run() throws IOException {
+        AtomicReference<Socket> socket = new AtomicReference<>();
+        LOGGER.info("Server {} on {} started", serverName, port);
+        new Thread(() -> {
+            while (isRunning) {
+                try {
+                    socket.set(server.accept());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                (new HttpThread(socket.get(), this)).start();
+            }
+            LOGGER.info("Server {} on {} stopped", serverName, port);
+        }).start();
+        return this;
     }
 }
