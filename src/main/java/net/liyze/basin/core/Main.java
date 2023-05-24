@@ -11,7 +11,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -100,7 +103,9 @@ public final class Main {
         }
         envMap = env.read(envFile).toMap();
         try {
-            new ScriptCommand().run(new ArrayList<>(List.of("BOOT")));
+            ArrayList<String> i = new ArrayList<>();
+            i.add("BOOT");
+            new ScriptCommand().run(i);
         } catch (RuntimeException ignored) {
         }
     }
