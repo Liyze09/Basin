@@ -35,7 +35,7 @@ public abstract class Loader {
                                 ((BasinBoot) boot).onStart();
                                 classes.add(cls);
                             } else {
-                                Main.LOGGER.warn("Web-App {} is unsupported", jar.getName());
+                                Main.LOGGER.warn("App {} is unsupported", jar.getName());
                             }
                         }
                     }
