@@ -1,5 +1,7 @@
 package net.liyze.basin.web;
 
+import net.liyze.basin.core.Main;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-
-import static net.liyze.basin.Main.LOGGER;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Server {
@@ -31,7 +31,7 @@ public class Server {
             server = new ServerSocket(port);
             root.mkdirs();
         } catch (IOException e) {
-            LOGGER.error("Error: {}", e.toString());
+            Main.LOGGER.error("Error: {}", e.toString());
         }
     }
 
@@ -41,7 +41,7 @@ public class Server {
 
     public Server run() throws IOException {
         AtomicReference<Socket> socket = new AtomicReference<>();
-        LOGGER.info("Server {} on port {} started", serverName, port);
+        Main.LOGGER.info("Server {} on port {} started", serverName, port);
         new Thread(() -> {
             while (isRunning) {
                 try {
@@ -51,7 +51,7 @@ public class Server {
                 }
                 (new HttpThread(socket.get(), this)).start();
             }
-            LOGGER.info("Server {} on port {} stopped", serverName, port);
+            Main.LOGGER.info("Server {} on port {} stopped", serverName, port);
         }).start();
         return this;
     }

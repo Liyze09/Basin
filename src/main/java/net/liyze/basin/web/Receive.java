@@ -1,14 +1,14 @@
 package net.liyze.basin.web;
 
+import net.liyze.basin.core.Config;
+import net.liyze.basin.core.Main;
+
 import java.io.IOException;
 import java.io.InputStream;
 
-import static net.liyze.basin.Config.cfg;
-import static net.liyze.basin.Main.LOGGER;
-
 public class Receive {
     private final InputStream input;
-    private final int streamCapacity = cfg.webStreamCapacity;
+    private final int streamCapacity = Config.cfg.webStreamCapacity;
 
     public Receive(InputStream input) {
         this.input = input;
@@ -22,7 +22,7 @@ public class Receive {
             bytes = input.read(data);
         } catch (IOException e) {
             bytes = -1;
-            LOGGER.error("HTTP Error: {}", e.toString());
+            Main.LOGGER.error("HTTP Error: {}", e.toString());
         }
         for (int i = 0; i < bytes; ++i) {
             str.append((char) data[i]);

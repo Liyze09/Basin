@@ -1,8 +1,9 @@
-package net.liyze.basin;
+package net.liyze.basin.core;
 
 import net.liyze.basin.commands.*;
+import net.liyze.basin.core.commands.*;
 
-import static net.liyze.basin.Util.register;
+import static net.liyze.basin.core.Util.register;
 
 public abstract class Commands {
     public static void regCommands() {

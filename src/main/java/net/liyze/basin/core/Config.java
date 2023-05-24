@@ -1,4 +1,4 @@
-package net.liyze.basin;
+package net.liyze.basin.core;
 
 import com.google.gson.GsonBuilder;
 
@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.Reader;
 import java.io.Writer;
 
-import static net.liyze.basin.Main.config;
+import static net.liyze.basin.core.Main.config;
 
 public class Config {
     public static Config cfg = new Config();

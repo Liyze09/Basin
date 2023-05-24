@@ -1,11 +1,10 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Main;
 
 import java.time.Instant;
 import java.util.ArrayList;
-
-import static net.liyze.basin.Main.LOGGER;
 
 /**
  * Test your JVM speed
@@ -30,7 +29,7 @@ public class BenchCommand implements Command {
             ++i;
             t += 2;
         } while (Instant.now().getEpochSecond() != start + 10);
-        LOGGER.info(String.valueOf(i));
+        Main.LOGGER.info(String.valueOf(i));
     }
 
     @Override

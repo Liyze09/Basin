@@ -1,10 +1,9 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Main;
 
 import java.util.ArrayList;
-
-import static net.liyze.basin.Main.*;
 
 /**
  * Is enabled ,print debug
@@ -14,15 +13,15 @@ public class DebugCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
         if (args.contains("true")) {
-            debug = true;
-            LOGGER.info("debug_mode: true");
-            LOGGER.atTrace();
+            Main.debug = true;
+            Main.LOGGER.info("debug_mode: true");
+            Main.LOGGER.atTrace();
         } else if (args.contains("false")) {
-            debug = false;
-            LOGGER.info("debug_mode: false");
-            LOGGER.atInfo();
+            Main.debug = false;
+            Main.LOGGER.info("debug_mode: false");
+            Main.LOGGER.atInfo();
         } else {
-            LOGGER.info("debug_mode: {}", debug);
+            Main.LOGGER.info("debug_mode: {}", Main.debug);
         }
     }
 

@@ -1,6 +1,6 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

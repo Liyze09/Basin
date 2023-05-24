@@ -1,6 +1,7 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Main;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,8 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import static net.liyze.basin.Main.userHome;
-import static net.liyze.basin.RunCommands.runCommand;
+import static net.liyze.basin.core.RunCommands.runCommand;
 
 /**
  * Load a script like
@@ -28,7 +28,7 @@ public class ScriptCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
         try (
-                BufferedReader script = new BufferedReader(new FileReader(userHome + args.get(0), StandardCharsets.UTF_8))
+                BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8))
         ) {
             Stream<String> lines = script.lines();
             lines.forEach(i -> {

@@ -1,10 +1,9 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Main;
 
 import java.util.ArrayList;
-
-import static net.liyze.basin.Main.commands;
 
 /**
  * Print all command loaded.
@@ -14,7 +13,7 @@ import static net.liyze.basin.Main.commands;
 public class ListCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
-        for (String i : commands.keySet()) {
+        for (String i : Main.commands.keySet()) {
             System.out.println(i);
         }
     }

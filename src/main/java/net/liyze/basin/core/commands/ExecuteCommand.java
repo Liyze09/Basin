@@ -1,11 +1,10 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Main;
+import net.liyze.basin.core.RunCommands;
 
 import java.util.ArrayList;
-
-import static net.liyze.basin.Main.*;
-import static net.liyze.basin.RunCommands.runCommand;
 
 /**
  * Put command into a CachedThreadPool
@@ -20,7 +19,7 @@ public class ExecuteCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
         cmd = String.join(" ", args);
-        servicePool.submit(new Service());
+        Main.servicePool.submit(new Service());
     }
 
     @Override
@@ -31,8 +30,8 @@ public class ExecuteCommand implements Command {
     static class Service implements Runnable {
         @Override
         public void run() {
-            LOGGER.info("start: " + ExecuteCommand.cmd);
-            runCommand(ExecuteCommand.cmd);
+            Main.LOGGER.info("start: " + ExecuteCommand.cmd);
+            RunCommands.runCommand(ExecuteCommand.cmd);
         }
     }
 }

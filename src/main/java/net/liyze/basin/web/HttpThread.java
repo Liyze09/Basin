@@ -1,11 +1,11 @@
 package net.liyze.basin.web;
 
+import net.liyze.basin.core.Main;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-
-import static net.liyze.basin.Main.LOGGER;
 
 public class HttpThread extends Thread {
     protected Socket socket;
@@ -18,7 +18,7 @@ public class HttpThread extends Thread {
 
     @Override
     public void run() {
-        LOGGER.trace("A HTTP link started");
+        Main.LOGGER.trace("A HTTP link started");
         InputStream in;
         OutputStream out;
         try {
@@ -32,7 +32,7 @@ public class HttpThread extends Thread {
             Return back = new Return(out, server);
             if (URL != null) back.send(URL);
         } catch (IOException e) {
-            LOGGER.error("HTTP Error: {}", e.toString());
+            Main.LOGGER.error("HTTP Error: {}", e.toString());
         }
     }
 }

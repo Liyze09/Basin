@@ -1,4 +1,4 @@
-package net.liyze.basin;
+package net.liyze.basin.core;
 
 import java.util.ArrayList;
 

@@ -1,11 +1,10 @@
-package net.liyze.basin;
+package net.liyze.basin.core;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.out;
-import static net.liyze.basin.Main.*;
 
 public abstract class RunCommands {
     public static void runCommand(String cmd) {
@@ -13,23 +12,23 @@ public abstract class RunCommands {
             out.println(cmd);
         } else {
             cmd = cmd.toLowerCase().strip().replace("/", "");
-            LOGGER.info("Starting: " + cmd);
+            Main.LOGGER.info("Starting: " + cmd);
             String[] array = cmd.split(" ");
             String cmdName = array[0];
             ArrayList<String> args = new ArrayList<>(List.of(array));
             args.remove(cmdName);
-            Command run = commands.get(cmdName.strip());
+            Command run = Main.commands.get(cmdName.strip());
             if (!(run == null)) {
                 try {
                     run.run(args);
                 } catch (IndexOutOfBoundsException e) {
-                    LOGGER.error("Bad arg input.");
+                    Main.LOGGER.error("Bad arg input.");
                 } catch (RuntimeException e) {
-                    LOGGER.error(String.valueOf(e));
+                    Main.LOGGER.error(String.valueOf(e));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else LOGGER.error("Unknown command: " + cmdName);
+            } else Main.LOGGER.error("Unknown command: " + cmdName);
         }
     }
 }

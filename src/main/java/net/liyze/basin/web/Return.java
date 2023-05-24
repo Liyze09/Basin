@@ -1,5 +1,7 @@
 package net.liyze.basin.web;
 
+import net.liyze.basin.core.Config;
+import net.liyze.basin.core.Main;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
@@ -9,15 +11,13 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.liyze.basin.Config.cfg;
-import static net.liyze.basin.Main.LOGGER;
 import static net.liyze.basin.web.Server.dynamicFunctions;
 
 @SuppressWarnings("unused")
 public class Return {
     private final OutputStream out;
     private final Server server;
-    private final int streamCapacity = cfg.webStreamCapacity;
+    private final int streamCapacity = Config.cfg.webStreamCapacity;
     private String type = "text/html";
 
     public Return(OutputStream out, Server server) {
@@ -42,7 +42,7 @@ public class Return {
                         out.write(bytes);
                         isStatic.set(false);
                     } catch (IOException e) {
-                        LOGGER.error("HTTP Dynamic Error: {}", e.toString());
+                        Main.LOGGER.error("HTTP Dynamic Error: {}", e.toString());
                     }
                 }
             }

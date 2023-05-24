@@ -1,7 +1,7 @@
-package net.liyze.basin;
+package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
-import net.liyze.basin.commands.ScriptCommand;
+import net.liyze.basin.core.commands.ScriptCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,11 +13,10 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static net.liyze.basin.Basin.basin;
-import static net.liyze.basin.Commands.regCommands;
-import static net.liyze.basin.Config.*;
-import static net.liyze.basin.Loader.loadFilePlugins;
-import static net.liyze.basin.RunCommands.runCommand;
+import static net.liyze.basin.core.Basin.basin;
+import static net.liyze.basin.core.Commands.regCommands;
+import static net.liyze.basin.core.Loader.loadFilePlugins;
+import static net.liyze.basin.core.RunCommands.runCommand;
 
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin System");
@@ -28,7 +27,7 @@ public final class Main {
     public static boolean debug = false;
     static final Thread scanCmd = new Thread(Main::scanConsole);
     static final Thread loadPlugins = new Thread(Main::loadPlugins);
-    public static final ExecutorService taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
+    public static final ExecutorService taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
     public static final ExecutorService servicePool = Executors.newCachedThreadPool();
     static final File plugins = new File("data" + File.separator + "plugins");
     public static Map<String, Object> envMap;
@@ -52,7 +51,7 @@ public final class Main {
         plugins.mkdirs();
         File envFile = new File("data" + File.separator + "env.toml");
         try {
-            initConfig();
+            Config.initConfig();
         } catch (Exception e) {
             LOGGER.error("Error when load config file: ", e);
         }

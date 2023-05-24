@@ -1,9 +1,7 @@
-package net.liyze.basin;
+package net.liyze.basin.core;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import static net.liyze.basin.Main.*;
 
 @SuppressWarnings({"SameReturnValue", "unused"})
 public final class Basin {
@@ -41,10 +39,10 @@ public final class Basin {
      * Stop basin after all task finished.
      */
     public static void shutdown() {
-        LOGGER.info("Stopping");
-        scanCmd.interrupt();
-        taskPool.shutdown();
-        servicePool.shutdownNow();
+        Main.LOGGER.info("Stopping");
+        Main.scanCmd.interrupt();
+        Main.taskPool.shutdown();
+        Main.servicePool.shutdownNow();
         System.exit(0);
     }
 }

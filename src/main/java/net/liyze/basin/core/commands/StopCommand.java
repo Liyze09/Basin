@@ -1,10 +1,9 @@
-package net.liyze.basin.commands;
+package net.liyze.basin.core.commands;
 
-import net.liyze.basin.Command;
+import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Basin;
 
 import java.util.ArrayList;
-
-import static net.liyze.basin.Basin.shutdown;
 
 /**
  * Stop basin after all task finished.
@@ -14,7 +13,7 @@ import static net.liyze.basin.Basin.shutdown;
 public class StopCommand implements Command {
     @Override
     public void run(ArrayList<String> args) {
-        shutdown();
+        Basin.shutdown();
     }
 
     @Override
