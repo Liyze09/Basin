@@ -1,5 +1,6 @@
 package net.liyze.basin.core;
 
+import net.liyze.basin.api.Command;
 
 public abstract class Util {
 

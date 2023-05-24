@@ -1,6 +1,8 @@
 package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
+import net.liyze.basin.api.BasinBoot;
+import net.liyze.basin.api.Command;
 import net.liyze.basin.core.commands.ScriptCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,40 +17,69 @@ import java.util.concurrent.Executors;
 
 import static net.liyze.basin.core.Basin.basin;
 import static net.liyze.basin.core.Commands.regCommands;
-import static net.liyze.basin.core.Loader.loadFilePlugins;
+import static net.liyze.basin.core.Loader.*;
 import static net.liyze.basin.core.RunCommands.runCommand;
 
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin System");
     public static final HashMap<String, Command> commands = new HashMap<>();
-    public static File config = new File("data/cfg.json");
+    public static File config = new File("data" + File.separator + "cfg.json");
     public static final Toml env = new Toml();
     public static final File userHome = new File("data" + File.separator + "home");
     public static boolean debug = false;
-    static final Thread scanCmd = new Thread(Main::scanConsole);
-    static final Thread loadPlugins = new Thread(Main::loadPlugins);
-    public static final ExecutorService taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
+    public static ExecutorService taskPool = null;
     public static final ExecutorService servicePool = Executors.newCachedThreadPool();
-    static final File plugins = new File("data" + File.separator + "plugins");
+    static final File jars = new File("data" + File.separator + "jars");
     public static Map<String, Object> envMap;
+    private static String command;
 
     public static void main(String[] args) {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Thread init = new Thread(() -> {
+            try {
+                init();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        Thread load = new Thread(() -> {
+            try {
+                loadJars();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        init.start();
+        load.start();
         regCommands();
-        loadPlugins.start();
+        new Thread(() -> {
+            while (true) {
+                if (!init.isAlive() && !load.isAlive()) {
+                    classes.forEach((i) -> {
+                        try {
+                            ((BasinBoot) i.getDeclaredConstructor().newInstance()).afterStart();
+                        } catch (Exception ignored) {
+                        }
+                    });
+                }
+            }
+        });
         System.out.println("Basin " + Basin.getVersion());
         System.out.println(basin);
-        scanCmd.start();
+        new Thread(() -> {
+            taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
+            debug = Config.cfg.debug;
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                command = scanner.nextLine();
+                taskPool.submit(new Task());
+            }
+        }).start();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void init() {
         userHome.mkdirs();
-        plugins.mkdirs();
+        jars.mkdirs();
         File envFile = new File("data" + File.separator + "env.toml");
         try {
             Config.initConfig();
@@ -68,27 +99,9 @@ public final class Main {
             }
         }
         envMap = env.read(envFile).toMap();
-        LOGGER.info("Inited");
         try {
             new ScriptCommand().run(new ArrayList<>(List.of("BOOT")));
         } catch (RuntimeException ignored) {
-        }
-    }
-
-    private static String command;
-    private static void scanConsole() {
-        Scanner scanner = new Scanner(System.in);
-        while (!scanCmd.isInterrupted()) {
-            command = scanner.nextLine();
-            taskPool.submit(new Task());
-        }
-    }
-
-    private static void loadPlugins() {
-        try {
-            loadFilePlugins();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 

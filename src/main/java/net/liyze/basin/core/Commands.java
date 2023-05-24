@@ -1,6 +1,5 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.commands.*;
 import net.liyze.basin.core.commands.*;
 
 import static net.liyze.basin.core.Util.register;

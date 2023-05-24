@@ -13,6 +13,7 @@ public class Config {
     public static Config cfg = new Config();
     public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
     public int webStreamCapacity = 2048;
+    public boolean debug = false;
 
     static void initConfig() throws Exception {
         if (!config.exists()) {

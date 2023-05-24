@@ -1,6 +1,8 @@
 package net.liyze.basin.core;
 
 
+import net.liyze.basin.api.Command;
+
 import java.util.ArrayList;
 import java.util.List;
 

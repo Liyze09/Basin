@@ -1,7 +1,10 @@
 package net.liyze.basin.core;
 
+import net.liyze.basin.api.BasinBoot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import static net.liyze.basin.core.Loader.classes;
 
 @SuppressWarnings({"SameReturnValue", "unused"})
 public final class Basin {
@@ -17,6 +20,7 @@ public final class Basin {
     @SuppressWarnings("SpellCheckingInspection")
     public static String basin =
             """
+                    \r
                     BBBBBBBBBBBBBBBBB                                         iiii
                     B::::::::::::::::B                                       i::::i
                     B::::::BBBBBB:::::B                                       iiii
@@ -40,7 +44,12 @@ public final class Basin {
      */
     public static void shutdown() {
         Main.LOGGER.info("Stopping");
-        Main.scanCmd.interrupt();
+        classes.forEach((i) -> {
+            try {
+                ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeShutdown();
+            } catch (Exception ignored) {
+            }
+        });
         Main.taskPool.shutdown();
         Main.servicePool.shutdownNow();
         System.exit(0);

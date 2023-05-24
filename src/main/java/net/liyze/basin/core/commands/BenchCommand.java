@@ -1,6 +1,6 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.core.Command;
+import net.liyze.basin.api.Command;
 import net.liyze.basin.core.Main;
 
 import java.time.Instant;
