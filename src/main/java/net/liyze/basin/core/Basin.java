@@ -4,7 +4,7 @@ import net.liyze.basin.api.BasinBoot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import static net.liyze.basin.core.Loader.classes;
+import static net.liyze.basin.core.Loader.BootClasses;
 
 @SuppressWarnings({"SameReturnValue", "unused"})
 public final class Basin {
@@ -44,7 +44,7 @@ public final class Basin {
      */
     public static void shutdown() {
         Main.LOGGER.info("Stopping");
-        classes.forEach((i) -> {
+        BootClasses.forEach((i) -> {
             try {
                 ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeShutdown();
             } catch (Exception ignored) {

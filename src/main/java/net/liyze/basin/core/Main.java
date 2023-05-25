@@ -24,7 +24,7 @@ import static net.liyze.basin.core.Loader.*;
 import static net.liyze.basin.core.RunCommands.runCommand;
 
 public final class Main {
-    public static final Logger LOGGER = LoggerFactory.getLogger("Basin System");
+    public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();
     public static File config = new File("data" + File.separator + "cfg.json");
     public static final Toml env = new Toml();
@@ -57,7 +57,7 @@ public final class Main {
         new Thread(() -> {
             while (true) {
                 if (!init.isAlive() && !load.isAlive()) {
-                    classes.forEach((i) -> {
+                    BootClasses.forEach((i) -> {
                         try {
                             ((BasinBoot) i.getDeclaredConstructor().newInstance()).afterStart();
                         } catch (Exception ignored) {

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 /**
  * Print all command loaded.
- *
  * @author Liyze09
  */
 public class ListCommand implements Command {

@@ -1,6 +1,5 @@
 package net.liyze.basin.web;
 
-import net.liyze.basin.core.Config;
 import net.liyze.basin.core.Main;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -17,7 +16,6 @@ import static net.liyze.basin.web.Server.dynamicFunctions;
 public class Return {
     private final OutputStream out;
     private final Server server;
-    private final int streamCapacity = Config.cfg.webStreamCapacity;
     private String type = "text/html";
 
     public Return(OutputStream out, Server server) {
@@ -32,7 +30,7 @@ public class Return {
 
     @SuppressWarnings("ConstantValue")
     public void send(String page) throws IOException {
-        byte[] data = new byte[streamCapacity];
+        byte[] data = new byte[2048];
         AtomicBoolean isStatic = new AtomicBoolean(true);
         dynamicFunctions.forEach((name, func) -> {
             if (page.matches(name)) {
@@ -51,7 +49,7 @@ public class Return {
             File file = new File(server.root, page);
             if (file.exists()) {
                 try (FileInputStream reader = new FileInputStream(file)) {
-                    int x = reader.read(data, 0, streamCapacity);
+                    int x = reader.read(data, 0, 2047);
                     String msg = " HTTP/1.1 200 OK\r\n" +
                             "Content-Type:" + type +
                             "\r\nContent-Length:" + x + "\r\n\r\n";
@@ -64,7 +62,7 @@ public class Return {
                         Content-Type:text/html\r
                         Content-Length:23\r
                         \r
-                        <h1> 404 File Not Found </h1>
+                        <h1> 404 Not Found </h1>
                         """;
                 out.write(msg.getBytes(StandardCharsets.UTF_8));
             }

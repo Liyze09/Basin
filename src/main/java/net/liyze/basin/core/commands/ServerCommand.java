@@ -15,7 +15,7 @@ public class ServerCommand implements Command {
             if (args.get(0).equals("stop")) {
                 server = Server.runningServer.get(name);
                 if (server != null) {
-                    server.stop();
+                    server.isRunning = false;
                     Server.runningServer.remove(name);
                 } else {
                     Main.LOGGER.error("{} is not exist.", name);

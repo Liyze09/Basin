@@ -12,7 +12,7 @@ import static net.liyze.basin.core.Util.register;
 
 
 public abstract class Loader {
-    public static List<Class<?>> classes = new ArrayList<>();
+    public static List<Class<?>> BootClasses = new ArrayList<>();
 
     public static void loadJars() throws Exception {
         File[] children = Main.jars.listFiles((file, s) -> s.matches(".*\\.jar"));
@@ -33,7 +33,7 @@ public abstract class Loader {
                             Object boot = cls.getDeclaredConstructor().newInstance();
                             if (boot instanceof BasinBoot) {
                                 ((BasinBoot) boot).onStart();
-                                classes.add(cls);
+                                BootClasses.add(cls);
                             } else {
                                 Main.LOGGER.warn("App {} is unsupported", jar.getName());
                             }

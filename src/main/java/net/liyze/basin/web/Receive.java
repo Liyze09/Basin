@@ -1,6 +1,5 @@
 package net.liyze.basin.web;
 
-import net.liyze.basin.core.Config;
 import net.liyze.basin.core.Main;
 
 import java.io.IOException;
@@ -8,16 +7,15 @@ import java.io.InputStream;
 
 public class Receive {
     private final InputStream input;
-    private final int streamCapacity = Config.cfg.webStreamCapacity;
 
     public Receive(InputStream input) {
         this.input = input;
     }
 
     public String get() {
-        StringBuilder str = new StringBuilder(streamCapacity);
+        StringBuilder str = new StringBuilder(2048);
         int bytes;
-        byte[] data = new byte[streamCapacity];
+        byte[] data = new byte[2048];
         try {
             bytes = input.read(data);
         } catch (IOException e) {

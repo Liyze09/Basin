@@ -8,6 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -20,8 +22,10 @@ public class Server {
     public int port;
     public final File root;
     public static ServerSocket server;
+
     public boolean isRunning = true;
     public static String index = "index.html";
+    public static ExecutorService httpPool = Executors.newCachedThreadPool();
 
     public Server(String name, int port) {
         this.port = port;
@@ -35,10 +39,6 @@ public class Server {
         }
     }
 
-    public void stop() {
-        this.isRunning = false;
-    }
-
     public Server run() throws IOException {
         AtomicReference<Socket> socket = new AtomicReference<>();
         Main.LOGGER.info("Server {} on port {} started", serverName, port);
@@ -49,7 +49,7 @@ public class Server {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                (new HttpThread(socket.get(), this)).start();
+                httpPool.submit(new HttpThread(socket.get(), this));
             }
             Main.LOGGER.info("Server {} on port {} stopped", serverName, port);
         }).start();
