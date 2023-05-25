@@ -32,7 +32,7 @@ public abstract class Loader {
                             Class<?> cls = Class.forName(i);
                             Object boot = cls.getDeclaredConstructor().newInstance();
                             if (boot instanceof BasinBoot) {
-                                ((BasinBoot) boot).onStart();
+                                new Thread(() -> ((BasinBoot) boot).onStart());
                                 BootClasses.add(cls);
                             } else {
                                 Main.LOGGER.warn("App {} is unsupported", jar.getName());
