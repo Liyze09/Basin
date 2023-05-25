@@ -6,6 +6,7 @@ import static net.liyze.basin.core.Util.register;
 
 public abstract class Commands {
     public static void regCommands() {
+        register(new ForceStopCommand());
         register(new StopCommand());
         register(new EquationCommand());
         register(new DebugCommand());
@@ -14,5 +15,6 @@ public abstract class Commands {
         register(new ExecuteCommand());
         register(new ScriptCommand());
         register(new ServerCommand());
+        register(new RestartCommand());
     }
 }

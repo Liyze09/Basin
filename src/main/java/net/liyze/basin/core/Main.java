@@ -70,7 +70,7 @@ public final class Main {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void init() {
+    public static void init() {
         userHome.mkdirs();
         jars.mkdirs();
         File envFile = new File("data" + File.separator + "env.toml");
