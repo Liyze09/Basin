@@ -17,7 +17,11 @@ public class RestartCommand implements Command {
         BootClasses.clear();
         taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
         servicePool = Executors.newCachedThreadPool();
-        init();
+        try {
+            init();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         try {
             loadJars();
         } catch (Exception e) {

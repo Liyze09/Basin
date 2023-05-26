@@ -20,9 +20,9 @@ dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'ch.qos.logback:logback-classic:1.4.7'
-    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
-    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
+    implementation 'com.teesoft:jackson-dataformat-toml:1.0'
 }
 test {
 
@@ -47,8 +47,8 @@ jar{
         attributes 'Export-Command': 'net.liyze.basin.core.InternalPlugin'
         attributes 'Boot-Class': 'net.liyze.basin.core.InternalPlugin'
     }
-    exclude 'META-INF/LICENSE.txt'
-    exclude 'META-INF/NOTICE.txt'
+    exclude 'META-INF/**'
+    exclude 'module-info.class'
 }
 java {
     withSourcesJar()

@@ -1,6 +1,6 @@
 package net.liyze.basin.core;
 
-import com.moandjiezana.toml.Toml;
+import com.teesoft.jackson.dataformat.toml.TOMLMapper;
 import net.liyze.basin.api.BasinBoot;
 import net.liyze.basin.api.Command;
 import net.liyze.basin.core.commands.*;
@@ -13,7 +13,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -25,13 +28,13 @@ import static net.liyze.basin.web.Server.dynamicFunctions;
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();
-    public static final Toml env = new Toml();
+    public static TOMLMapper env = new TOMLMapper();
     public static final File userHome = new File("data" + File.separator + "home");
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
     static final File jars = new File("data" + File.separator + "jars");
     public final static File config = new File("data" + File.separator + "cfg.json");
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-    public static Map<String, Object> envMap;
+    public static HashMap<String, Object> envMap;
     public final static List<Class<?>> BootClasses = new ArrayList<>();
     private static String command;
 
@@ -69,8 +72,8 @@ public final class Main {
         System.out.println(basin);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void init() {
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "unchecked"})
+    public static void init() throws IOException {
         userHome.mkdirs();
         jars.mkdirs();
         File envFile = new File("data" + File.separator + "env.toml");
@@ -91,7 +94,7 @@ public final class Main {
                 LOGGER.error("Error when create environment variable file: ", e);
             }
         }
-        envMap = env.read(envFile).toMap();
+        envMap = env.readValue(envFile, HashMap.class);
         taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
     }
 
