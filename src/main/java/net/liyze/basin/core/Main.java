@@ -137,6 +137,7 @@ public final class Main {
     }
 
     public static void runCommand(@NotNull String cmd) {
+        if (command.isBlank()) return;
         ArrayList<String> args = new ArrayList<>(List.of(StringUtils.split(cmd.toLowerCase().strip().replace("/", ""), ' ')));
         String cmdName = args.get(0);
         args.remove(cmdName);
