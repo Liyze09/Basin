@@ -3,7 +3,7 @@ package net.liyze.basin.core.commands;
 import net.liyze.basin.api.Command;
 import net.liyze.basin.core.Basin;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stop basin after all task finished.
@@ -12,7 +12,7 @@ import java.util.ArrayList;
  */
 public class StopCommand implements Command {
     @Override
-    public void run(ArrayList<String> args) {
+    public void run(List<String> args) {
         Basin.shutdown();
     }
 

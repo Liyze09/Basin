@@ -13,17 +13,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static net.liyze.basin.web.Server.dynamicFunctions;
 
 @SuppressWarnings("unused")
-public class Return {
+public class Response {
     private final OutputStream out;
     private final Server server;
     private String type = "text/html";
 
-    public Return(OutputStream out, Server server) {
+    public Response(OutputStream out, Server server) {
         this.out = out;
         this.server = server;
     }
 
-    public Return setType(String type) {
+    public Response setType(String type) {
         this.type = type;
         return this;
     }

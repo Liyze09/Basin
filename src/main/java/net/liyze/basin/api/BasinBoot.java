@@ -7,6 +7,6 @@ public interface BasinBoot {
     default void afterStart() {
     }
 
-    default void beforeShutdown() {
+    default void beforeStop() {
     }
 }

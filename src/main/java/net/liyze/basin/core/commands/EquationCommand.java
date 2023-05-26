@@ -1,10 +1,10 @@
 package net.liyze.basin.core.commands;
 
 import net.liyze.basin.api.Command;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -12,8 +12,29 @@ public class EquationCommand implements Command {
     static HashMap<String, Double> leftUnknowns = new HashMap<>();
     static HashMap<String, Double> rightUnknowns = new HashMap<>();
 
+    private static void addUnknown(String name, double coefficient, boolean isLeft) {
+        double g;
+        if (isLeft) {
+            if (leftUnknowns.containsKey(name)) {
+                g = leftUnknowns.get(name);
+                g += coefficient;
+                leftUnknowns.put(name, g);
+            } else {
+                leftUnknowns.put(name, coefficient);
+            }
+        } else {
+            if (rightUnknowns.containsKey(name)) {
+                g = rightUnknowns.get(name);
+                g += coefficient;
+                rightUnknowns.put(name, g);
+            } else {
+                rightUnknowns.put(name, coefficient);
+            }
+        }
+    }
+
     @Override
-    public void run(@NotNull ArrayList<String> args) throws RuntimeException {
+    public void run(List<String> args) throws RuntimeException {
         String es = args.get(0).toLowerCase().strip().replaceAll("[*]", "");
         char[] e = es.toCharArray();
         char[] x = es.replaceAll("[^a-z]", "").toCharArray();
@@ -175,26 +196,5 @@ public class EquationCommand implements Command {
     @Override
     public String Name() {
         return "equation";
-    }
-
-    private static void addUnknown(String name, double coefficient, boolean isLeft) {
-        double g;
-        if (isLeft) {
-            if (leftUnknowns.containsKey(name)) {
-                g = leftUnknowns.get(name);
-                g += coefficient;
-                leftUnknowns.put(name, g);
-            } else {
-                leftUnknowns.put(name, coefficient);
-            }
-        } else {
-            if (rightUnknowns.containsKey(name)) {
-                g = rightUnknowns.get(name);
-                g += coefficient;
-                rightUnknowns.put(name, g);
-            } else {
-                rightUnknowns.put(name, coefficient);
-            }
-        }
     }
 }

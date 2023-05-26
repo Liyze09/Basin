@@ -31,21 +31,24 @@ sourceSets{
     java
 }
 jar{
-    manifest {
-        attributes 'Manifest-Version': '1.0'
-        attributes 'Main-Class': 'net.liyze.basin.Main'
-        attributes 'Class-Path': 'data/plugins'
-        attributes 'Created-By': 'Gradle 8'
-        attributes 'Built-By': 'Liyze09'
-        attributes 'Build-Jdk': Runtime.version().toString()
-    }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from {
         configurations.compileClasspath.collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
-    exclude 'META-INF/versions/9/module-info.class'
+    manifest {
+        attributes 'Manifest-Version': '1.0'
+        attributes 'Main-Class': 'net.liyze.basin.core.Main'
+        attributes 'Class-Path': 'data/jars'
+        attributes 'Created-By': 'Gradle 8'
+        attributes 'Built-By': 'Liyze09'
+        attributes 'Build-Jdk': Runtime.version().toString()
+        attributes 'Export-Command': 'net.liyze.basin.core.InternalPlugin'
+        attributes 'Boot-Class': 'net.liyze.basin.core.InternalPlugin'
+    }
+    exclude 'META-INF/LICENSE.txt'
+    exclude 'META-INF/NOTICE.txt'
 }
 java {
     withSourcesJar()

@@ -3,15 +3,16 @@ package net.liyze.basin.core.commands;
 import net.liyze.basin.api.Command;
 import net.liyze.basin.core.Main;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Print all command loaded.
+ *
  * @author Liyze09
  */
 public class ListCommand implements Command {
     @Override
-    public void run(ArrayList<String> args) {
+    public void run(List<String> args) {
         for (String i : Main.commands.keySet()) {
             System.out.println(i);
         }

@@ -8,8 +8,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class HttpThread extends Thread {
-    protected Socket socket;
     private final Server server;
+    protected Socket socket;
 
     public HttpThread(Socket socket, Server server) {
         this.socket = socket;
@@ -25,11 +25,11 @@ public class HttpThread extends Thread {
             in = socket.getInputStream();
             out = socket.getOutputStream();
             Receive receive = new Receive(in);
-            String URL = receive.get();
+            String URL = receive.receive();
             if ("/".equals(URL)) {
                 URL = Server.index;
             }
-            Return back = new Return(out, server);
+            Response back = new Response(out, server);
             if (URL != null) back.send(URL);
         } catch (IOException e) {
             Main.LOGGER.error("HTTP Error: {}", e.toString());

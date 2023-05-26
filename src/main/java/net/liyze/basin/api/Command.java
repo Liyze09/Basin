@@ -1,6 +1,6 @@
 package net.liyze.basin.api;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface Command {
     /**
@@ -8,7 +8,7 @@ public interface Command {
      *
      * @author Liyze09
      */
-    void run(ArrayList<String> args);
+    void run(List<String> args);
 
     /**
      * The Name of the command

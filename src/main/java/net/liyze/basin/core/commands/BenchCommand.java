@@ -4,7 +4,7 @@ import net.liyze.basin.api.Command;
 import net.liyze.basin.core.Main;
 
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test your JVM speed
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class BenchCommand implements Command {
     @SuppressWarnings("unused")
     @Override
-    public void run(ArrayList<String> args) {
+    public void run(List<String> args) {
         double rpi = 1;
         long t = 3;
         long i = 0;

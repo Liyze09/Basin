@@ -2,11 +2,11 @@ package net.liyze.basin.core.commands;
 
 import net.liyze.basin.api.Command;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ForceStopCommand implements Command {
     @Override
-    public void run(ArrayList<String> args) {
+    public void run(List<String> args) {
         System.exit(0);
     }
 

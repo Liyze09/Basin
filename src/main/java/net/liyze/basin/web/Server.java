@@ -18,14 +18,13 @@ public class Server {
     @SuppressWarnings("unused")
     public static final Map<String, Function<String, byte[]>> dynamicFunctions = new HashMap<>();
     public static final Map<String, Server> runningServer = new HashMap<>();
-    public String serverName;
-    public int port;
-    public final File root;
     public static ServerSocket server;
-
-    public boolean isRunning = true;
     public static String index = "index.html";
     public static ExecutorService httpPool = Executors.newCachedThreadPool();
+    public final File root;
+    public String serverName;
+    public int port;
+    public boolean isRunning = true;
 
     public Server(String name, int port) {
         this.port = port;

@@ -7,10 +7,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static net.liyze.basin.core.RunCommands.runCommand;
+import static net.liyze.basin.core.Main.runCommand;
 
 /**
  * Load a script like
@@ -26,7 +26,7 @@ import static net.liyze.basin.core.RunCommands.runCommand;
  */
 public class ScriptCommand implements Command {
     @Override
-    public void run(ArrayList<String> args) {
+    public void run(List<String> args) {
         try (
                 BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8))
         ) {

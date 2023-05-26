@@ -4,19 +4,10 @@ import net.liyze.basin.api.BasinBoot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import static net.liyze.basin.core.Loader.BootClasses;
+import static net.liyze.basin.core.Main.BootClasses;
 
 @SuppressWarnings({"SameReturnValue", "unused"})
 public final class Basin {
-    @Contract(pure = true)
-    public static @NotNull String getVersion() {
-        return "0.1";
-    }
-
-    public static int getVersionNum() {
-        return 1;
-    }
-
     @SuppressWarnings("SpellCheckingInspection")
     public static String basin =
             """
@@ -39,6 +30,15 @@ public final class Basin {
                     BBBBBBBBBBBBBBBBB     aaaaaaaaaa  aaaa   sssssssssss     iiiiiiii  nnnnnn    nnnnnn
                     """;
 
+    @Contract(pure = true)
+    public static @NotNull String getVersion() {
+        return "0.1";
+    }
+
+    public static int getVersionNum() {
+        return 1;
+    }
+
     /**
      * Stop basin after all task finished.
      */
@@ -46,7 +46,7 @@ public final class Basin {
         Main.LOGGER.info("Stopping");
         BootClasses.forEach((i) -> {
             try {
-                ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeShutdown();
+                ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
             } catch (Exception ignored) {
             }
         });

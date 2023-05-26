@@ -4,11 +4,11 @@ import net.liyze.basin.api.Command;
 import net.liyze.basin.core.Main;
 import net.liyze.basin.web.Server;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ServerCommand implements Command {
     @Override
-    public void run(ArrayList<String> args) {
+    public void run(List<String> args) {
         String name = args.get(1);
         Server server;
         try {
