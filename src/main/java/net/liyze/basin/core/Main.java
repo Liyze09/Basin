@@ -46,14 +46,14 @@ public final class Main {
                 LOGGER.info("Init method are finished.");
                 loadJars();
                 LOGGER.info("Loader's method are finished.");
-                BootClasses.forEach((i) -> new Thread(() -> {
+                BootClasses.forEach((i) -> servicePool.submit(new Thread(() -> {
                     try {
                         BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
                         in.afterStart();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                }).start());
+                })));
                 LOGGER.info("Startup method are finished.");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -62,6 +62,11 @@ public final class Main {
         taskPool.submit(init);
         new Thread(() -> {
             regCommands();
+            try {
+                new ScriptCommand().run(List.of("BOOT"));
+                LOGGER.info("BOOT script was finished");
+            } catch (Exception ignored) {
+            }
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();
@@ -138,7 +143,7 @@ public final class Main {
     }
 
     public static void runCommand(@NotNull String ac) {
-        if (command.isBlank()) return;
+        if (ac.isBlank()) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         for (String cmd : alc) {
             ArrayList<String> args = new ArrayList<>(List.of(StringUtils.split(cmd.toLowerCase().strip().replace("/", ""), ' ')));
