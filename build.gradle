@@ -45,8 +45,8 @@ jar{
         attributes 'Created-By': 'Gradle 8'
         attributes 'Built-By': 'Liyze09'
         attributes 'Build-Jdk': Runtime.version().toString()
-        attributes 'Export-Command': 'net.liyze.basin.core.InternalPlugin'
-        attributes 'Boot-Class': 'net.liyze.basin.core.InternalPlugin'
+        attributes 'Export-Command': 'net.liyze.basin.core.InternalPluginDemo'
+        attributes 'Boot-Class': 'net.liyze.basin.core.InternalPluginDemo'
     }
     exclude 'META-INF/**'
     exclude 'module-info.class'
