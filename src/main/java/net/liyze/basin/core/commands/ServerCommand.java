@@ -15,7 +15,7 @@ public class ServerCommand implements Command {
             if (args.get(0).equals("stop")) {
                 server = Server.runningServer.get(name);
                 if (server != null) {
-                    server.isRunning = false;
+                    server.stop();
                     Server.runningServer.remove(name);
                 } else {
                     Main.LOGGER.error("{} is not exist.", name);
@@ -25,7 +25,7 @@ public class ServerCommand implements Command {
             int port = Integer.parseInt(args.get(0));
             try {
                 server = new Server(name, port);
-                Server.runningServer.put(args.get(1), server.run());
+                Server.runningServer.put(name, server.run());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

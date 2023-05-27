@@ -1,6 +1,6 @@
 package net.liyze.basin.core;
 
-import com.teesoft.jackson.dataformat.toml.TOMLMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.liyze.basin.api.BasinBoot;
 import net.liyze.basin.api.Command;
 import net.liyze.basin.core.commands.*;
@@ -28,7 +28,7 @@ import static net.liyze.basin.web.Server.dynamicFunctions;
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();
-    public static TOMLMapper env = new TOMLMapper();
+    public static ObjectMapper env = new ObjectMapper();
     public static final File userHome = new File("data" + File.separator + "home");
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
     static final File jars = new File("data" + File.separator + "jars");
@@ -76,7 +76,7 @@ public final class Main {
     public static void init() throws IOException {
         userHome.mkdirs();
         jars.mkdirs();
-        File envFile = new File("data" + File.separator + "env.toml");
+        File envFile = new File("data" + File.separator + "env.json");
         try {
             Config.initConfig();
         } catch (Exception e) {
@@ -89,9 +89,7 @@ public final class Main {
                 LOGGER.error("Error when create environment variable file: ", e);
             }
             try (Writer writer = new FileWriter(envFile)) {
-                writer.append("# Basin Environment Variable");
-            } catch (IOException e) {
-                LOGGER.error("Error when create environment variable file: ", e);
+                writer.write("{\n}");
             }
         }
         envMap = env.readValue(envFile, HashMap.class);
@@ -139,24 +137,27 @@ public final class Main {
         }
     }
 
-    public static void runCommand(@NotNull String cmd) {
+    public static void runCommand(@NotNull String ac) {
         if (command.isBlank()) return;
-        ArrayList<String> args = new ArrayList<>(List.of(StringUtils.split(cmd.toLowerCase().strip().replace("/", ""), ' ')));
-        String cmdName = args.get(0);
-        args.remove(cmdName);
-        Command run = commands.get(cmdName.strip());
-        LOGGER.info("Starting: " + cmd);
-        if (!(run == null)) {
-            try {
-                run.run(args);
-            } catch (IndexOutOfBoundsException e) {
-                LOGGER.error("Bad arg input.");
-            } catch (RuntimeException e) {
-                LOGGER.error(String.valueOf(e));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else LOGGER.error("Unknown command: " + cmdName);
+        ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
+        for (String cmd : alc) {
+            ArrayList<String> args = new ArrayList<>(List.of(StringUtils.split(cmd.toLowerCase().strip().replace("/", ""), ' ')));
+            String cmdName = args.get(0);
+            args.remove(cmdName);
+            Command run = commands.get(cmdName.strip());
+            LOGGER.info("Starting: " + cmd);
+            if (!(run == null)) {
+                try {
+                    run.run(args);
+                } catch (IndexOutOfBoundsException e) {
+                    LOGGER.error("Bad arg input.");
+                } catch (RuntimeException e) {
+                    LOGGER.error(String.valueOf(e));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else LOGGER.error("Unknown command: " + cmdName);
+        }
     }
 
     public static void regCommands() {
