@@ -37,6 +37,7 @@ jar{
             it.isDirectory() ? it : zipTree(it)
         }
     }
+    from("LICENSE")
     manifest {
         attributes 'Manifest-Version': '1.0'
         attributes 'Main-Class': 'net.liyze.basin.core.Main'

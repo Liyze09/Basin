@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smartboot.http.server.HttpRequest;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -177,7 +178,7 @@ public final class Main {
     }
 
     @SuppressWarnings("unused")
-    public static void register(String regex, Function<String, byte[]> function) {
+    public static void register(String regex, Function<HttpRequest, byte[]> function) {
         dynamicFunctions.put(regex, function);
     }
 

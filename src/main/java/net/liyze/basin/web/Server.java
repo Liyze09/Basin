@@ -22,7 +22,7 @@ import static net.liyze.basin.core.Main.LOGGER;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Server {
     @SuppressWarnings("unused")
-    public static final Map<String, Function<String, byte[]>> dynamicFunctions = new HashMap<>();
+    public static final Map<String, Function<HttpRequest, byte[]>> dynamicFunctions = new HashMap<>();
     public static final Map<String, Server> runningServer = new HashMap<>();
     public final File root;
     public String serverName;
@@ -60,7 +60,7 @@ public class Server {
                     dynamicFunctions.forEach((r, f) -> {
                         if (finalUri.matches(r)) {
                             try {
-                                byte[] bytes = f.apply(finalUri);
+                                byte[] bytes = f.apply(request);
                                 if (bytes != null) {
                                     response.write(bytes);
                                     isStatic.set(false);
