@@ -21,8 +21,12 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'ch.qos.logback:logback-classic:1.4.7'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
     implementation 'org.smartboot.http:smart-http-server:1.2.1'
+    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    implementation 'net.bytebuddy:byte-buddy:1.14.4'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
 }
 test {
 
@@ -53,6 +57,6 @@ jar{
 }
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_15
-    targetCompatibility = JavaVersion.VERSION_15
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }

@@ -1,6 +1,6 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.api.BasinBoot;
+import net.liyze.basin.interfaces.BasinBoot;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

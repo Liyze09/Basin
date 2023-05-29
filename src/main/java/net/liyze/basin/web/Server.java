@@ -46,6 +46,9 @@ public class Server {
         try {
             ServerSocket socket = new ServerSocket(port);
             socket.close();
+        }catch (Exception e){
+            LOGGER.error("Port {} is using!", port);
+        }try {
             bootstrap.configuration().serverName(serverName);
             bootstrap.httpHandler(new HttpServerHandler() {
                 @Override
@@ -57,24 +60,25 @@ public class Server {
                     }
                     String finalUri = uri;
                     AtomicBoolean isStatic = new AtomicBoolean(true);
-                    dynamicFunctions.forEach((r, f) -> {
-                        if (finalUri.matches(r)) {
-                            try {
-                                byte[] bytes = f.apply(request);
-                                if (bytes != null) {
-                                    response.write(bytes);
-                                    isStatic.set(false);
-                                }
-                            } catch (IOException e) {
-                                LOGGER.info("HTTP Error {}", e.toString());
-                            }
-                        }
-                    });
-                    if (!isStatic.get()) return;
                     File file = new File(root + File.separator + uri);
                     if (!file.exists()) {
-                        file = new File(root + File.separator + "404.html");
-                        response.setHttpStatus(HttpStatus.NOT_FOUND);
+                        dynamicFunctions.forEach((r, f) -> {
+                            if (finalUri.matches(r)) {
+                                try {
+                                    byte[] bytes = f.apply(request);
+                                    if (bytes != null) {
+                                        response.write(bytes);
+                                        isStatic.set(false);
+                                    }
+                                } catch (IOException e) {
+                                    LOGGER.info("HTTP Error {}", e.toString());
+                                }
+                            }
+                        });
+                        if (isStatic.get()){
+                            file = new File(root + File.separator + "404.html");
+                            response.setHttpStatus(HttpStatus.NOT_FOUND);
+                        } else return;
                     }
                     if (type == null) {
                         if (file.toString().endsWith(".html")) {
@@ -110,7 +114,7 @@ public class Server {
                 }
             }).setPort(port).start();
         } catch (Exception e) {
-            LOGGER.error("Port {} is using!", port);
+            e.printStackTrace();
         }
         return this;
     }

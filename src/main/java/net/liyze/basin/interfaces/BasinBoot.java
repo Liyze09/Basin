@@ -1,4 +1,4 @@
-package net.liyze.basin.api;
+package net.liyze.basin.interfaces;
 
 public interface BasinBoot {
     default void onStart() {

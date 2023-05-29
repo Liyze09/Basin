@@ -1,6 +1,11 @@
 package net.liyze.basin.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.Reader;
+import java.io.Writer;
 
 import static net.liyze.basin.core.Main.config;
 
@@ -9,10 +14,14 @@ public final class Config {
     public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
 
     static void initConfig() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        if (!config.exists()) {
-            mapper.writeValue(config, cfg);
+        Gson gson=new Gson();
+        if (!config.exists()){
+            try(Writer writer = new FileWriter(config)){
+                writer.write(gson.toJson(cfg));
+            }
         }
-        cfg = mapper.readValue(config, Config.class);
+        try(Reader reader = new FileReader(config)){
+            gson.fromJson(reader, Config.class);
+        }
     }
 }

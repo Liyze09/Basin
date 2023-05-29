@@ -1,7 +1,7 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.api.BasinBoot;
-import net.liyze.basin.api.Command;
+import net.liyze.basin.interfaces.BasinBoot;
+import net.liyze.basin.interfaces.Command;
 
 import java.util.List;
 
