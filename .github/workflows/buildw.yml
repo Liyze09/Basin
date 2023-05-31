@@ -1,0 +1,37 @@
+name: build_without_cache
+on: [ workflow_dispatch ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check_env
+        run: env
+
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: setup_Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      - name: clean cache
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
+
+      - name: build
+        run: ./gradlew build
+
+      - name: artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: useful-additions-artifacts
+          path: build/libs
