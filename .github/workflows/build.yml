@@ -39,7 +39,8 @@ jobs:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: prepare to build
-        run: chmod -x gradlew
+        run: chmod -x ./gradlew
+
       - name: build
         run: ./gradlew build
 
