@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 
-
 /**
  * Used for BeanPostProcessor.
  */

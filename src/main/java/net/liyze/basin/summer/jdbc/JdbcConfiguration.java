@@ -1,5 +1,7 @@
 package net.liyze.basin.summer.jdbc;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import net.liyze.basin.summer.annotation.Autowired;
 import net.liyze.basin.summer.annotation.Bean;
 import net.liyze.basin.summer.annotation.Configuration;
@@ -7,8 +9,6 @@ import net.liyze.basin.summer.annotation.Value;
 import net.liyze.basin.summer.jdbc.tx.DataSourceTransactionManager;
 import net.liyze.basin.summer.jdbc.tx.PlatformTransactionManager;
 import net.liyze.basin.summer.jdbc.tx.TransactionalBeanPostProcessor;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
 

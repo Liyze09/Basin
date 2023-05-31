@@ -14,13 +14,13 @@ public final class Config {
     public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
 
     static void initConfig() throws Exception {
-        Gson gson=new Gson();
-        if (!config.exists()){
-            try(Writer writer = new FileWriter(config)){
+        Gson gson = new Gson();
+        if (!config.exists()) {
+            try (Writer writer = new FileWriter(config)) {
                 writer.write(gson.toJson(cfg));
             }
         }
-        try(Reader reader = new FileReader(config)){
+        try (Reader reader = new FileReader(config)) {
             gson.fromJson(reader, Config.class);
         }
     }

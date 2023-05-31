@@ -1,9 +1,9 @@
 package net.liyze.basin.summer.jdbc;
 
+import jakarta.annotation.Nullable;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import jakarta.annotation.Nullable;
 
 @FunctionalInterface
 public interface PreparedStatementCallback<T> {

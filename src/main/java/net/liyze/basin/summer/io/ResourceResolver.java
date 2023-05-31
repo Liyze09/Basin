@@ -20,8 +20,8 @@ import java.util.function.Function;
 
 /**
  * A simple classpath scan works both in directory and jar:
- * 
- * https://stackoverflow.com/questions/520328/can-you-find-all-classes-in-a-package-using-reflection#58773038
+ * <p>
+ * <a href="https://stackoverflow.com/questions/520328/can-you-find-all-classes-in-a-package-using-reflection#58773038">...</a>
  */
 public class ResourceResolver {
 
@@ -35,10 +35,9 @@ public class ResourceResolver {
 
     public <R> List<R> scan(Function<Resource, R> mapper) {
         String basePackagePath = this.basePackage.replace(".", "/");
-        String path = basePackagePath;
         try {
             List<R> collector = new ArrayList<>();
-            scan0(basePackagePath, path, collector, mapper);
+            scan0(basePackagePath, basePackagePath, collector, mapper);
             return collector;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -67,7 +66,7 @@ public class ResourceResolver {
     }
 
     ClassLoader getContextClassLoader() {
-        ClassLoader cl = null;
+        ClassLoader cl;
         cl = Thread.currentThread().getContextClassLoader();
         if (cl == null) {
             cl = getClass().getClassLoader();
@@ -82,7 +81,7 @@ public class ResourceResolver {
     <R> void scanFile(boolean isJar, String base, Path root, List<R> collector, Function<Resource, R> mapper) throws IOException {
         String baseDir = removeTrailingSlash(base);
         Files.walk(root).filter(Files::isRegularFile).forEach(file -> {
-            Resource res = null;
+            Resource res;
             if (isJar) {
                 res = new Resource(baseDir, removeLeadingSlash(file.toString()));
             } else {

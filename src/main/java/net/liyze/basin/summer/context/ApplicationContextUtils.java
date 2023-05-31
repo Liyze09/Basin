@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 
-
 public class ApplicationContextUtils {
 
     private static ApplicationContext applicationContext = null;

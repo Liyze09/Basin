@@ -1,17 +1,15 @@
 package net.liyze.basin.summer.jdbc.tx;
 
+import net.liyze.basin.summer.exception.TransactionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.liyze.basin.summer.exception.TransactionException;
 
 public class DataSourceTransactionManager implements PlatformTransactionManager, InvocationHandler {
 
@@ -25,6 +23,7 @@ public class DataSourceTransactionManager implements PlatformTransactionManager,
         this.dataSource = dataSource;
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         TransactionStatus ts = transactionStatus.get();

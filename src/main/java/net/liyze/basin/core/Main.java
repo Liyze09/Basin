@@ -1,9 +1,9 @@
 package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
+import net.liyze.basin.core.commands.*;
 import net.liyze.basin.interfaces.BasinBoot;
 import net.liyze.basin.interfaces.Command;
-import net.liyze.basin.core.commands.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -26,14 +26,14 @@ import static net.liyze.basin.web.Server.dynamicFunctions;
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();
-    public static Toml env = new Toml();
     public static final File userHome = new File("data" + File.separator + "home");
-    public static ExecutorService servicePool = Executors.newCachedThreadPool();
-    static final File jars = new File("data" + File.separator + "jars");
     public final static File config = new File("data" + File.separator + "cfg.json");
+    public final static List<Class<?>> BootClasses = new ArrayList<>();
+    static final File jars = new File("data" + File.separator + "jars");
+    public static Toml env = new Toml();
+    public static ExecutorService servicePool = Executors.newCachedThreadPool();
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
-    public final static List<Class<?>> BootClasses = new ArrayList<>();
     private static String command;
 
     public static void main(String[] args) {
@@ -74,7 +74,7 @@ public final class Main {
     public static void init() throws IOException {
         userHome.mkdirs();
         jars.mkdirs();
-        File envFile = new File("data" + File.separator + "env.json");
+        File envFile = new File("data" + File.separator + "env.toml");
         try {
             Config.initConfig();
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public final class Main {
                 LOGGER.error("Error when create environment variable file: ", e);
             }
             try (Writer writer = new FileWriter(envFile)) {
-                writer.write("{\n}");
+                writer.write("# Basin Environment");
             }
         }
         envMap = env.read(envFile).toMap();

@@ -15,8 +15,6 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
     private final String name;
     // bean class:
     private final Class<?> beanClass;
-    // bean instance:
-    private Object instance = null;
     // constructor or null:
     private final Constructor<?> constructor;
     // factory name or null:
@@ -27,7 +25,8 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
     private final int order;
     // has @Primary?
     private final boolean primary;
-
+    // bean instance:
+    private Object instance = null;
     // autowired and called init method:
     private boolean init = false;
 
@@ -38,7 +37,7 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
     private Method destroyMethod;
 
     public BeanDefinition(String name, Class<?> beanClass, Constructor<?> constructor, int order, boolean primary, String initMethodName,
-            String destroyMethodName, Method initMethod, Method destroyMethod) {
+                          String destroyMethodName, Method initMethod, Method destroyMethod) {
         this.name = name;
         this.beanClass = beanClass;
         this.constructor = constructor;
@@ -51,7 +50,7 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
     }
 
     public BeanDefinition(String name, Class<?> beanClass, String factoryName, Method factoryMethod, int order, boolean primary, String initMethodName,
-            String destroyMethodName, Method initMethod, Method destroyMethod) {
+                          String destroyMethodName, Method initMethod, Method destroyMethod) {
         this.name = name;
         this.beanClass = beanClass;
         this.constructor = null;
@@ -124,14 +123,6 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
         return this.instance;
     }
 
-    public Object getRequiredInstance() {
-        if (this.instance == null) {
-            throw new BeanCreationException(String.format("Instance of bean with name '%s' and type '%s' is not instantiated during current stage.",
-                    this.getName(), this.getBeanClass().getName()));
-        }
-        return this.instance;
-    }
-
     public void setInstance(Object instance) {
         Objects.requireNonNull(instance, "Bean instance is null.");
         if (!this.beanClass.isAssignableFrom(instance.getClass())) {
@@ -139,6 +130,14 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
                     this.beanClass.getName()));
         }
         this.instance = instance;
+    }
+
+    public Object getRequiredInstance() {
+        if (this.instance == null) {
+            throw new BeanCreationException(String.format("Instance of bean with name '%s' and type '%s' is not instantiated during current stage.",
+                    this.getName(), this.getBeanClass().getName()));
+        }
+        return this.instance;
     }
 
     public boolean isInit() {
@@ -162,7 +161,7 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
 
     String getCreateDetail() {
         if (this.factoryMethod != null) {
-            String params = String.join(", ", Arrays.stream(this.factoryMethod.getParameterTypes()).map(t -> t.getSimpleName()).toArray(String[]::new));
+            String params = String.join(", ", Arrays.stream(this.factoryMethod.getParameterTypes()).map(Class::getSimpleName).toArray(String[]::new));
             return this.factoryMethod.getDeclaringClass().getSimpleName() + "." + this.factoryMethod.getName() + "(" + params + ")";
         }
         return null;

@@ -1,8 +1,8 @@
 package net.liyze.basin.summer.jdbc.tx;
 
-import java.sql.Connection;
-
 import jakarta.annotation.Nullable;
+
+import java.sql.Connection;
 
 public class TransactionalUtils {
 

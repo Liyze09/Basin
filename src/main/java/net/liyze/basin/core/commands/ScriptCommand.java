@@ -1,7 +1,7 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.interfaces.Command;
 import net.liyze.basin.core.Main;
+import net.liyze.basin.interfaces.Command;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

@@ -9,7 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class ClassUtils {
@@ -33,7 +32,7 @@ public class ClassUtils {
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "SpellCheckingInspection"})
     public static <A extends Annotation> A getAnnotation(Annotation[] annos, Class<A> annoClass) {
         for (Annotation anno : annos) {
             if (annoClass.isInstance(anno)) {
@@ -45,10 +44,10 @@ public class ClassUtils {
 
     /**
      * Get bean name by:
-     * 
+     * <p>
      * <code>
-     * @Bean
-     * Hello createHello() {}
+     * <p>
+     * {@code @Bean} Hello createHello() {}
      * </code>
      */
     public static String getBeanName(Method method) {
@@ -62,10 +61,10 @@ public class ClassUtils {
 
     /**
      * Get bean name by:
-     * 
+     * <p>
      * <code>
-     * @Component
-     * public class Hello {}
+     * <p>
+     * &#064;Component  public class Hello {}
      * </code>
      */
     public static String getBeanName(Class<?> clazz) {
@@ -98,21 +97,21 @@ public class ClassUtils {
     /**
      * Get non-arg method by @PostConstruct or @PreDestroy. Not search in super
      * class.
-     * 
+     * <p>
      * <code>
-     * @PostConstruct void init() {}
+     * <p>
+     * &#064;PostConstruct  void init() {}
      * </code>
      */
     @Nullable
     public static Method findAnnotationMethod(Class<?> clazz, Class<? extends Annotation> annoClass) {
         // try get declared method:
-        List<Method> ms = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.isAnnotationPresent(annoClass)).map(m -> {
+        List<Method> ms = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.isAnnotationPresent(annoClass)).peek(m -> {
             if (m.getParameterCount() != 0) {
                 throw new BeanDefinitionException(
                         String.format("Method '%s' with @%s must not have argument: %s", m.getName(), annoClass.getSimpleName(), clazz.getName()));
             }
-            return m;
-        }).collect(Collectors.toList());
+        }).toList();
         if (ms.isEmpty()) {
             return null;
         }

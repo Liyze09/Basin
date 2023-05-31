@@ -25,9 +25,9 @@ public class Server {
     public static final Map<String, Function<HttpRequest, byte[]>> dynamicFunctions = new HashMap<>();
     public static final Map<String, Server> runningServer = new HashMap<>();
     public final File root;
+    private final HttpBootstrap bootstrap = new HttpBootstrap();
     public String serverName;
     public int port;
-    private final HttpBootstrap bootstrap = new HttpBootstrap();
 
     public Server(String name, int port) {
         this.port = port;
@@ -46,9 +46,10 @@ public class Server {
         try {
             ServerSocket socket = new ServerSocket(port);
             socket.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             LOGGER.error("Port {} is using!", port);
-        }try {
+        }
+        try {
             bootstrap.configuration().serverName(serverName);
             bootstrap.httpHandler(new HttpServerHandler() {
                 @Override
@@ -75,7 +76,7 @@ public class Server {
                                 }
                             }
                         });
-                        if (isStatic.get()){
+                        if (isStatic.get()) {
                             file = new File(root + File.separator + "404.html");
                             response.setHttpStatus(HttpStatus.NOT_FOUND);
                         } else return;

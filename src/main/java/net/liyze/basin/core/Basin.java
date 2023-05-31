@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static net.liyze.basin.core.Main.BootClasses;
 
-@SuppressWarnings({"SameReturnValue", "unused"})
+@SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     @SuppressWarnings("SpellCheckingInspection")
     public static String basin =

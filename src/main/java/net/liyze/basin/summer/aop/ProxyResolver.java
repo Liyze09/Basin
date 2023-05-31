@@ -8,27 +8,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 
 /**
  * Create proxy by subclassing and override methods with interceptor.
  */
 public class ProxyResolver {
 
+    private static ProxyResolver INSTANCE = null;
     final Logger logger = LoggerFactory.getLogger(getClass());
-
     final ByteBuddy byteBuddy = new ByteBuddy();
 
-    private static ProxyResolver INSTANCE = null;
+    private ProxyResolver() {
+    }
 
     public static ProxyResolver getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ProxyResolver();
         }
         return INSTANCE;
-    }
-
-    private ProxyResolver() {
     }
 
     @SuppressWarnings("unchecked")
@@ -41,12 +38,9 @@ public class ProxyResolver {
                 // intercept methods:
                 .method(ElementMatchers.isPublic()).intercept(InvocationHandlerAdapter.of(
                         // proxy method invoke:
-                        new InvocationHandler() {
-                            @Override
-                            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                                // delegate to origin bean:
-                                return handler.invoke(bean, method, args);
-                            }
+                        (proxy, method, args) -> {
+                            // delegate to origin bean:
+                            return handler.invoke(bean, method, args);
                         }))
                 // generate proxy class:
                 .make().load(targetClass.getClassLoader()).getLoaded();

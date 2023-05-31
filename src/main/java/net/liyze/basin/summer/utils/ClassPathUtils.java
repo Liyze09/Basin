@@ -1,12 +1,12 @@
 package net.liyze.basin.summer.utils;
 
+import net.liyze.basin.summer.io.InputStreamCallback;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-
-import net.liyze.basin.summer.io.InputStreamCallback;
 
 public class ClassPathUtils {
 
@@ -33,7 +33,7 @@ public class ClassPathUtils {
     }
 
     static ClassLoader getContextClassLoader() {
-        ClassLoader cl = null;
+        ClassLoader cl;
         cl = Thread.currentThread().getContextClassLoader();
         if (cl == null) {
             cl = ClassPathUtils.class.getClassLoader();

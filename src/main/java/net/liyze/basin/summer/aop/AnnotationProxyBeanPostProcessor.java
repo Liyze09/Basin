@@ -1,18 +1,18 @@
 package net.liyze.basin.summer.aop;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-
 import net.liyze.basin.summer.context.ApplicationContextUtils;
 import net.liyze.basin.summer.context.BeanDefinition;
 import net.liyze.basin.summer.context.BeanPostProcessor;
 import net.liyze.basin.summer.context.ConfigurableApplicationContext;
 import net.liyze.basin.summer.exception.AopConfigException;
 import net.liyze.basin.summer.exception.BeansException;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AnnotationProxyBeanPostProcessor<A extends Annotation> implements BeanPostProcessor {
 
@@ -71,10 +71,9 @@ public abstract class AnnotationProxyBeanPostProcessor<A extends Annotation> imp
     @SuppressWarnings("unchecked")
     private Class<A> getParameterizedType() {
         Type type = getClass().getGenericSuperclass();
-        if (!(type instanceof ParameterizedType)) {
+        if (!(type instanceof ParameterizedType pt)) {
             throw new IllegalArgumentException("Class " + getClass().getName() + " does not have parameterized type.");
         }
-        ParameterizedType pt = (ParameterizedType) type;
         Type[] types = pt.getActualTypeArguments();
         if (types.length != 1) {
             throw new IllegalArgumentException("Class " + getClass().getName() + " has more than 1 parameterized types.");

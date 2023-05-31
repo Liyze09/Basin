@@ -1,17 +1,12 @@
 package net.liyze.basin.summer.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.sql.DataSource;
-
 import net.liyze.basin.summer.exception.DataAccessException;
 import net.liyze.basin.summer.jdbc.tx.TransactionalUtils;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JdbcTemplate {
 
@@ -107,9 +102,7 @@ public class JdbcTemplate {
     public int update(String sql, Object... args) throws DataAccessException {
         return execute(preparedStatementCreator(sql, args),
                 // PreparedStatementCallback
-                (PreparedStatement ps) -> {
-                    return ps.executeUpdate();
-                });
+                PreparedStatement::executeUpdate);
     }
 
     public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action) {

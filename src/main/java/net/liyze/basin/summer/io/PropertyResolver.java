@@ -14,7 +14,11 @@ import java.util.*;
 import java.util.function.Function;
 
 import static net.liyze.basin.core.Main.envMap;
-
+/*
+Edited
+YAML to TOML
+Used Basin's settings.
+*/
 
 public class PropertyResolver {
 
@@ -23,10 +27,9 @@ public class PropertyResolver {
     Map<String, Object> properties = new HashMap<>();
     Map<Class<?>, Function<String, Object>> converters = new HashMap<>();
 
-    public PropertyResolver(String name) {
+    public PropertyResolver() {
         this.properties.putAll(System.getenv());
         this.properties.putAll(envMap);
-        this.properties.putAll(loadTomlAsMap(name+".toml"));
         if (logger.isDebugEnabled()) {
             List<String> keys = new ArrayList<>(this.properties.keySet());
             Collections.sort(keys);
@@ -63,6 +66,16 @@ public class PropertyResolver {
         converters.put(ZonedDateTime.class, ZonedDateTime::parse);
         converters.put(Duration.class, Duration::parse);
         converters.put(ZoneId.class, ZoneId::of);
+    }
+
+    public static @NotNull Map<String, Object> loadTomlAsMap(String path) {
+        Map<String, Object> data;
+        try (Reader reader = new FileReader(path)) {
+            data = new Toml().read(reader).toMap();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return data;
     }
 
     public boolean containsProperty(String key) {
@@ -160,15 +173,6 @@ public class PropertyResolver {
             throw new IllegalArgumentException("Invalid key: " + key);
         }
         return key;
-    }
-    public static @NotNull Map<String, Object> loadTomlAsMap(String path) {
-        Map<String, Object> data;
-        try (Reader reader = new FileReader(path)){
-            data = new Toml().read(reader).toMap();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return data;
     }
 }
 
