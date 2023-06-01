@@ -14,7 +14,7 @@ public class RestartCommand implements Command {
         servicePool.shutdownNow();
         commands.clear();
         BootClasses.clear();
-        vars.clear();
+        publicVars.clear();
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
         servicePool = Executors.newCachedThreadPool();
         try {

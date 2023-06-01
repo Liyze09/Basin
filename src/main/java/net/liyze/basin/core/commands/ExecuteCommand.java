@@ -5,7 +5,7 @@ import net.liyze.basin.interfaces.Command;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.runCommand;
+import static net.liyze.basin.core.Main.publicRunCommand;
 
 /**
  * Put command into a CachedThreadPool
@@ -32,7 +32,7 @@ public class ExecuteCommand implements Command {
         @Override
         public void run() {
             Main.LOGGER.info("start: " + ExecuteCommand.cmd);
-            runCommand(ExecuteCommand.cmd);
+            publicRunCommand(ExecuteCommand.cmd);
         }
     }
 }

@@ -36,7 +36,6 @@ public final class Main {
     public static Map<String, Object> envMap;
     private static String command;
     public static Config cfg = Config.initConfig();
-    ;
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
@@ -63,12 +62,19 @@ public final class Main {
         });
         taskPool.submit(init);
         new Thread(() -> {
+            Parser parser = new Parser();
             regCommands();
-            if (!cfg.startCommand.isBlank()) runCommand(cfg.startCommand);
+            if (!cfg.startCommand.isBlank()) publicRunCommand(cfg.startCommand);
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();
-                taskPool.submit(new Task());
+                taskPool.submit(new Thread(() -> {
+                    try {
+                        parser.parse(command);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }));
             }
         }).start();
         System.out.println("Basin " + Basin.getVersion());
@@ -135,8 +141,9 @@ public final class Main {
         }
     }
 
-    public static Map<String, String> vars = new HashMap<>();
-    public static void runCommand(@NotNull String ac) {
+    public static Map<String, String> publicVars = new HashMap<>();
+
+    public static void publicRunCommand(@NotNull String ac) {
         if (ac.isBlank()) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         for (String cmd : alc) {
@@ -146,8 +153,8 @@ public final class Main {
                     args.add(i);
                 } else {
                     String string;
-                    if (vars != null) {
-                        string = vars.get(i.replaceFirst("\\$", ""));
+                    if (publicVars != null) {
+                        string = publicVars.get(i.replaceFirst("\\$", ""));
                         args.add(string);
                     }
                 }
@@ -155,7 +162,7 @@ public final class Main {
             String cmdName = args.get(0);
             if (cmdName.matches(".*=.*")) {
                 String[] var = StringUtils.split(cmdName, "=");
-                vars.put(var[0].strip(), var[1].strip());
+                publicVars.put(var[0].strip(), var[1].strip());
                 return;
             }
             args.remove(cmdName);
@@ -192,16 +199,5 @@ public final class Main {
     @SuppressWarnings("unused")
     public static void register(String regex, Function<HttpRequest, byte[]> function) {
         dynamicFunctions.put(regex, function);
-    }
-
-    static class Task implements Runnable {
-        @Override
-        public void run() {
-            try {
-                runCommand(command);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static net.liyze.basin.core.Main.runCommand;
+import static net.liyze.basin.core.Main.publicRunCommand;
 
 /**
  * Load a script like
@@ -32,7 +32,7 @@ public class ScriptCommand implements Command {
         ) {
             Stream<String> lines = script.lines();
             lines.forEach(i -> {
-                if (!(i).isEmpty()) runCommand(i);
+                if (!(i).isEmpty()) publicRunCommand(i);
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
