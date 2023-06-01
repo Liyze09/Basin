@@ -35,7 +35,8 @@ public final class Main {
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
     private static String command;
-    public static Config cfg;
+    public static Config cfg = Config.initConfig();
+    ;
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
@@ -79,11 +80,6 @@ public final class Main {
         userHome.mkdirs();
         jars.mkdirs();
         File envFile = new File("data" + File.separator + "env.toml");
-        try {
-            cfg = Config.initConfig();
-        } catch (Exception e) {
-            LOGGER.error("Error when load config file: ", e);
-        }
         if (!envFile.exists()) {
             try {
                 envFile.createNewFile();
@@ -91,7 +87,7 @@ public final class Main {
                 LOGGER.error("Error when create environment variable file: ", e);
             }
             try (Writer writer = new FileWriter(envFile)) {
-                writer.write("# Basin Environment");
+                writer.write("# Basin Environment Variable");
             }
         }
         envMap = env.read(envFile).toMap();
@@ -141,7 +137,7 @@ public final class Main {
 
     public static Map<String, String> vars = new HashMap<>();
     public static void runCommand(@NotNull String ac) {
-        if (command.isBlank()) return;
+        if (ac.isBlank()) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         for (String cmd : alc) {
             ArrayList<String> args = new ArrayList<>();
