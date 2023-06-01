@@ -35,6 +35,7 @@ public final class Main {
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
     private static String command;
+    public static Config cfg;
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
@@ -42,17 +43,19 @@ public final class Main {
             try {
                 init();
                 LOGGER.info("Init method are finished.");
-                loadJars();
-                LOGGER.info("Loader's method are finished.");
-                BootClasses.forEach((i) -> new Thread(() -> {
-                    try {
-                        BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
-                        in.afterStart();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }).start());
-                LOGGER.info("Startup method are finished.");
+                if (cfg.doLoadJars) {
+                    loadJars();
+                    LOGGER.info("Loader's method are finished.");
+                    BootClasses.forEach((i) -> new Thread(() -> {
+                        try {
+                            BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
+                            in.afterStart();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).start());
+                    LOGGER.info("Startup method are finished.");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -60,6 +63,7 @@ public final class Main {
         taskPool.submit(init);
         new Thread(() -> {
             regCommands();
+            if (!cfg.startCommand.isBlank()) runCommand(cfg.startCommand);
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();
@@ -76,7 +80,7 @@ public final class Main {
         jars.mkdirs();
         File envFile = new File("data" + File.separator + "env.toml");
         try {
-            Config.initConfig();
+            cfg = Config.initConfig();
         } catch (Exception e) {
             LOGGER.error("Error when load config file: ", e);
         }
@@ -91,7 +95,7 @@ public final class Main {
             }
         }
         envMap = env.read(envFile).toMap();
-        taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
+        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
     }
 
     public static void loadJars() throws Exception {
@@ -135,22 +139,37 @@ public final class Main {
         }
     }
 
+    public static Map<String, String> vars = new HashMap<>();
     public static void runCommand(@NotNull String ac) {
         if (command.isBlank()) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         for (String cmd : alc) {
-            ArrayList<String> args = new ArrayList<>(List.of(StringUtils.split(cmd.toLowerCase().strip().replace("/", ""), ' ')));
+            ArrayList<String> args = new ArrayList<>();
+            for (String i : List.of(StringUtils.split(cmd.strip(), ' '))) {
+                if (!i.startsWith("$")) {
+                    args.add(i);
+                } else {
+                    String string;
+                    if (vars != null) {
+                        string = vars.get(i.replaceFirst("\\$", ""));
+                        args.add(string);
+                    }
+                }
+            }
             String cmdName = args.get(0);
+            if (cmdName.matches(".*=.*")) {
+                String[] var = StringUtils.split(cmdName, "=");
+                vars.put(var[0].strip(), var[1].strip());
+                return;
+            }
             args.remove(cmdName);
-            Command run = commands.get(cmdName.strip());
+            Command run = commands.get(cmdName.toLowerCase().strip());
             LOGGER.info("Starting: " + cmd);
             if (!(run == null)) {
                 try {
                     run.run(args);
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");
-                } catch (RuntimeException e) {
-                    LOGGER.error(String.valueOf(e));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

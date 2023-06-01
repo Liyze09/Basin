@@ -1,6 +1,5 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.core.Config;
 import net.liyze.basin.interfaces.Command;
 
 import java.util.List;
@@ -15,7 +14,8 @@ public class RestartCommand implements Command {
         servicePool.shutdownNow();
         commands.clear();
         BootClasses.clear();
-        taskPool = Executors.newFixedThreadPool(Config.cfg.taskPoolSize);
+        vars.clear();
+        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
         servicePool = Executors.newCachedThreadPool();
         try {
             init();
