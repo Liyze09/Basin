@@ -11,9 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static net.liyze.basin.core.Main.LOGGER;
 import static net.liyze.basin.core.Main.commands;
 
-public class Parser {
+public class Conversation {
     public final Map<String, String> vars = new HashMap<>();
 
     public void parse(@NotNull String ac) {
@@ -25,9 +26,17 @@ public class Parser {
                 if (!i.startsWith("$")) {
                     args.add(i);
                 } else {
-                    String string = vars.get(i.replaceFirst("\\$", ""));
+                    i = i.replaceFirst("\\$", "");
+                    String string = vars.get(i);
                     if (string != null) {
                         args.add(string);
+                    } else {
+                        String string0 = vars.get(i);
+                        if (string0 != null) {
+                            args.add(string0);
+                        } else {
+                            LOGGER.info("Undefined Variable {}", i);
+                        }
                     }
                 }
             }

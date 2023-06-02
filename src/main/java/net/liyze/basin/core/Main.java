@@ -36,13 +36,16 @@ public final class Main {
     public static Map<String, Object> envMap;
     private static String command;
     public static Config cfg = Config.initConfig();
-    public static final Parser consoleParser = new Parser();
+    public static final Conversation CONSOLE_CONVERSATION = new Conversation();
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
         Thread init = new Thread(() -> {
             try {
                 init();
+                envMap.forEach((key, value) -> {
+                    publicVars.put(key, value.toString());
+                });
                 LOGGER.info("Init method are finished.");
                 if (cfg.doLoadJars) {
                     loadJars();
@@ -63,15 +66,15 @@ public final class Main {
         });
         taskPool.submit(init);
         new Thread(() -> {
-            Parser parser = new Parser();
+            Conversation conversation = new Conversation();
             regCommands();
-            if (!cfg.startCommand.isBlank()) consoleParser.parse(cfg.startCommand);
+            if (!cfg.startCommand.isBlank()) CONSOLE_CONVERSATION.parse(cfg.startCommand);
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();
                 taskPool.submit(new Thread(() -> {
                     try {
-                        parser.parse(command);
+                        conversation.parse(command);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

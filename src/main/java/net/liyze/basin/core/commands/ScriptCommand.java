@@ -1,7 +1,7 @@
 package net.liyze.basin.core.commands;
 
+import net.liyze.basin.core.Conversation;
 import net.liyze.basin.core.Main;
-import net.liyze.basin.core.Parser;
 import net.liyze.basin.interfaces.Command;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,10 +30,10 @@ public class ScriptCommand implements Command {
         try (
                 BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8))
         ) {
-            Parser parser = new Parser();
+            Conversation conversation = new Conversation();
             Stream<String> lines = script.lines();
             lines.forEach(i -> {
-                if (!(i).isEmpty()) parser.parse(i);
+                if (!(i).isEmpty()) conversation.parse(i);
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
