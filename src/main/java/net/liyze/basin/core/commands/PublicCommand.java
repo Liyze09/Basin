@@ -1,4 +1,4 @@
-﻿package net.liyze.basin.core.commands;
+package net.liyze.basin.core.commands;
 
 import net.liyze.basin.interfaces.Command;
 
@@ -14,6 +14,7 @@ public class PublicCommand implements Command {
 
     @Override
     public String Name() {
-        return null;
+        return "public";
     }
 }
+
