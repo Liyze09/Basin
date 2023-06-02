@@ -20,12 +20,12 @@ public class RestartCommand implements Command {
         try {
             init();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         try {
             loadJars();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         regCommands();
         LOGGER.info("Restarted!");

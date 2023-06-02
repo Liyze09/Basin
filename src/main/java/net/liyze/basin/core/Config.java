@@ -15,6 +15,7 @@ public final class Config {
     public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
     public boolean doLoadJars = true;
     public String startCommand = "";
+    public boolean enableRemote = false;
 
     static Config initConfig() {
         Config cfg = new Config();

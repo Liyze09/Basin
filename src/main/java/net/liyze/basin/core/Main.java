@@ -4,6 +4,7 @@ import com.moandjiezana.toml.Toml;
 import net.liyze.basin.core.commands.*;
 import net.liyze.basin.interfaces.BasinBoot;
 import net.liyze.basin.interfaces.Command;
+import net.liyze.basin.remote.Server;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -43,9 +44,7 @@ public final class Main {
         Thread init = new Thread(() -> {
             try {
                 init();
-                envMap.forEach((key, value) -> {
-                    publicVars.put(key, value.toString());
-                });
+                envMap.forEach((key, value) -> publicVars.put(key, value.toString()));
                 LOGGER.info("Init method are finished.");
                 if (cfg.doLoadJars) {
                     loadJars();
@@ -55,19 +54,26 @@ public final class Main {
                             BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
                             in.afterStart();
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            LOGGER.error(e.toString());
                         }
                     }).start());
                     LOGGER.info("Startup method are finished.");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error(e.toString());
             }
         });
         taskPool.submit(init);
         new Thread(() -> {
             Conversation conversation = new Conversation();
             regCommands();
+            if (cfg.enableRemote) {
+                try {
+                    Server.server();
+                } catch (Exception e) {
+                    LOGGER.error(e.toString());
+                }
+            }
             if (!cfg.startCommand.isBlank()) CONSOLE_CONVERSATION.parse(cfg.startCommand);
             Scanner scanner = new Scanner(System.in);
             while (true) {
@@ -76,7 +82,7 @@ public final class Main {
                     try {
                         conversation.parse(command);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        LOGGER.error(e.toString());
                     }
                 }));
             }
@@ -147,6 +153,7 @@ public final class Main {
 
     public static Map<String, String> publicVars = new HashMap<>();
 
+    @SuppressWarnings("DataFlowIssue")
     public static void publicRunCommand(@NotNull String ac) {
         if (ac.isBlank()) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
@@ -178,7 +185,7 @@ public final class Main {
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.toString());
                 }
             } else LOGGER.error("Unknown command: " + cmdName);
         }
@@ -195,6 +202,7 @@ public final class Main {
         register(new ServerCommand());
         register(new RestartCommand());
         register(new PublicCommand());
+        register(new RemoteCommand());
     }
 
     public static void register(Command cmd) {
