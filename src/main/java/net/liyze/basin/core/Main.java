@@ -36,6 +36,7 @@ public final class Main {
     public static Map<String, Object> envMap;
     private static String command;
     public static Config cfg = Config.initConfig();
+    public static final Parser consoleParser = new Parser();
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
@@ -64,7 +65,7 @@ public final class Main {
         new Thread(() -> {
             Parser parser = new Parser();
             regCommands();
-            if (!cfg.startCommand.isBlank()) publicRunCommand(cfg.startCommand);
+            if (!cfg.startCommand.isBlank()) consoleParser.parse(cfg.startCommand);
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();

@@ -25,7 +25,6 @@ dependencies {
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-    implementation 'net.bytebuddy:byte-buddy:1.14.4'
     implementation 'com.zaxxer:HikariCP:5.0.1'
 }
 test {
@@ -54,6 +53,9 @@ jar{
     }
     exclude 'META-INF/**'
     exclude 'module-info.class'
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 java {
     withSourcesJar()

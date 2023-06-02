@@ -1,7 +1,9 @@
 package net.liyze.basin.core.commands;
 
 import net.liyze.basin.core.Main;
+import net.liyze.basin.core.Parser;
 import net.liyze.basin.interfaces.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,8 +11,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static net.liyze.basin.core.Main.publicRunCommand;
 
 /**
  * Load a script like
@@ -26,13 +26,14 @@ import static net.liyze.basin.core.Main.publicRunCommand;
  */
 public class ScriptCommand implements Command {
     @Override
-    public void run(List<String> args) {
+    public void run(@NotNull List<String> args) {
         try (
                 BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8))
         ) {
+            Parser parser = new Parser();
             Stream<String> lines = script.lines();
             lines.forEach(i -> {
-                if (!(i).isEmpty()) publicRunCommand(i);
+                if (!(i).isEmpty()) parser.parse(i);
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
