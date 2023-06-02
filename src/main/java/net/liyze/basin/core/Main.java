@@ -191,6 +191,7 @@ public final class Main {
         register(new ScriptCommand());
         register(new ServerCommand());
         register(new RestartCommand());
+        register(new PublicCommand());
     }
 
     public static void register(Command cmd) {

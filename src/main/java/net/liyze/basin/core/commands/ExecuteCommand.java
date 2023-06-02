@@ -15,25 +15,17 @@ import static net.liyze.basin.core.Main.publicRunCommand;
  */
 public class ExecuteCommand implements Command {
 
-    static String cmd = "";
 
     @Override
     public void run(List<String> args) {
-        cmd = String.join(" ", args);
-        Main.servicePool.submit(new Service());
+        Main.servicePool.submit(new Thread(() -> {
+            publicRunCommand(String.join(" ", args));
+        }));
     }
 
     @Override
     public String Name() {
         return "execute";
-    }
-
-    static class Service implements Runnable {
-        @Override
-        public void run() {
-            Main.LOGGER.info("start: " + ExecuteCommand.cmd);
-            publicRunCommand(ExecuteCommand.cmd);
-        }
     }
 }
 

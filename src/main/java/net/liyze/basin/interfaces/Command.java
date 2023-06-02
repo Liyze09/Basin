@@ -15,4 +15,9 @@ public interface Command {
      */
 
     String Name();
+
+    @SuppressWarnings("unused")
+    default Object returns() {
+        return null;
+    }
 }
