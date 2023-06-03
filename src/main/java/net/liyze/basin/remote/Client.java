@@ -22,7 +22,7 @@ public class Client {
         byte[] msg = ("brc:" + message).getBytes(StandardCharsets.UTF_8);
 
         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        SecretKey keySpec = new SecretKeySpec(envMap.get(host + "_token").toString().getBytes(StandardCharsets.UTF_8), "AES");
+        SecretKey keySpec = new SecretKeySpec(envMap.get("\"" + host + "_token\"").toString().getBytes(StandardCharsets.UTF_8), "AES");
         cipher.init(Cipher.ENCRYPT_MODE, keySpec);
         msg = cipher.doFinal(msg);
 

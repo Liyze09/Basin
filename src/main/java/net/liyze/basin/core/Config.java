@@ -18,10 +18,12 @@ public final class Config {
     public boolean enableRemote = false;
     public String accessToken = "";
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     static Config initConfig() {
         Config cfg = new Config();
         if (!config.exists()) {
             try (Writer writer = Files.newBufferedWriter(config.toPath())) {
+                config.createNewFile();
                 (new GsonBuilder().setPrettyPrinting().create()).toJson(Config.class.getDeclaredConstructor().newInstance(), writer);
             } catch (Exception e) {
                 LOGGER.info("Error on loading config {}", e.toString());

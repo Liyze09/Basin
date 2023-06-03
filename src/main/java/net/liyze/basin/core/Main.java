@@ -203,6 +203,7 @@ public final class Main {
         register(new RestartCommand());
         register(new PublicCommand());
         register(new RemoteCommand());
+        register(new ExecCommand());
     }
 
     public static void register(Command cmd) {
