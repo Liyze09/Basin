@@ -9,7 +9,7 @@
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
-            <pattern>%d{MM-dd HH:mm:ss.SS} %-6level[%thread] %logger{36}: %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SS} %-6level[%thread] %logger{36}: %msg%n</pattern>
             <charset>utf-8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
