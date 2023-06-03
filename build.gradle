@@ -32,7 +32,6 @@ sourceSets{
     java
 }
 jar{
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from {
         configurations.runtimeClasspath.collect {
             it.isDirectory() ? it : zipTree(it)
@@ -49,7 +48,10 @@ jar{
         attributes 'Export-Command': 'net.liyze.basin.core.InternalPluginDemo'
         attributes 'Boot-Class': 'net.liyze.basin.core.InternalPluginDemo'
     }
-    exclude 'META-INF/**'
+    exclude 'META-INF/versions/**'
+    exclude 'META-INF/LICENSE.txt'
+    exclude 'META-INF/NOTICE.txt'
+    exclude 'META-INF/INDEX.LIST'
     exclude 'module-info.class'
 }
 tasks.withType(JavaCompile).configureEach {
