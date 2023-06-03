@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -37,7 +38,7 @@ public final class Main {
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
     public static Config cfg = Config.initConfig();
-    public static Map<String, String> publicVars = new HashMap<>();
+    public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     private static String command;
 
     public static void main(String[] args) {
@@ -152,7 +153,7 @@ public final class Main {
         }
     }
 
-    @SuppressWarnings("DataFlowIssue")
+    @SuppressWarnings({"DataFlowIssue", "ConstantValue"})
     public static void publicRunCommand(@NotNull String ac) {
         if (ac.isBlank() || ac.startsWith("#")) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));

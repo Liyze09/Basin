@@ -7,14 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.liyze.basin.core.Main.*;
 
 public class Conversation {
-    public final Map<String, String> vars = new HashMap<>();
+    public final Map<String, String> vars = new ConcurrentHashMap<>();
 
     @SuppressWarnings("DataFlowIssue")
     public void parse(@NotNull String ac) {

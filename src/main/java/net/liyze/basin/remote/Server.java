@@ -1,35 +1,42 @@
 package net.liyze.basin.remote;
 
 import net.liyze.basin.core.Conversation;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
-import org.smartboot.socket.extension.protocol.StringProtocol;
+import org.smartboot.socket.extension.protocol.ByteArrayProtocol;
 import org.smartboot.socket.transport.AioQuickServer;
 import org.smartboot.socket.transport.WriteBuffer;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.remote.Client.toHex;
+import static net.liyze.basin.core.Main.*;
 
 public class Server {
     public static void server(@NotNull String token) throws Exception {
         final Conversation conversation = new Conversation();
-        MessageDigest md = MessageDigest.getInstance("SHA-512");
-        md.update(token.getBytes(StandardCharsets.UTF_8));
-        String tokenHex = toHex(md.digest());
-        MessageProcessor<String> processor = (session, msg) -> {
+
+        MessageProcessor<byte[]> processor = (s, b) -> {
+            Cipher cipher;
+            String msg = "";
+            try {
+                cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                SecretKey keySpec = new SecretKeySpec(cfg.accessToken.getBytes(StandardCharsets.UTF_8), "AES");
+                cipher.init(Cipher.DECRYPT_MODE, keySpec);
+                msg = new String(cipher.doFinal(b), StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                LOGGER.info(e.toString());
+            }
             LOGGER.info("Remote: {}", msg);
-            String[] request = StringUtils.split(msg, '#');
-            if (request.length != 3 || !request[0].equals("brc:") || !request[1].equals(tokenHex)) {
+            if (!msg.startsWith("brc:")) {
                 LOGGER.warn("Illegal BRC Request: {}", msg);
                 return;
             }
-            conversation.parse(request[2]);
-            try (WriteBuffer outputStream = session.writeBuffer()) {
+            conversation.parse(msg.substring(4));
+            try (WriteBuffer outputStream = s.writeBuffer()) {
                 try {
                     byte[] bytes = "200".getBytes();
                     outputStream.writeInt(bytes.length);
@@ -39,7 +46,7 @@ public class Server {
                 }
             }
         };
-        AioQuickServer server = new AioQuickServer(600, new StringProtocol(), processor);
+        AioQuickServer server = new AioQuickServer(600, new ByteArrayProtocol(), processor);
         server.start();
     }
 }
