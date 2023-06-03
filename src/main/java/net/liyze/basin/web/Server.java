@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,16 +43,11 @@ public class Server {
     public Server run() throws IOException {
         LOGGER.info("Server {} on port {} started", serverName, port);
         try {
-            ServerSocket socket = new ServerSocket(port);
-            socket.close();
-        } catch (Exception e) {
-            LOGGER.error("Port {} is using!", port);
-        }
-        try {
             bootstrap.configuration().serverName(serverName);
             bootstrap.httpHandler(new HttpServerHandler() {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response) {
+                    LOGGER.debug("A HTTP Link {} started from {}", request.getRequestURL(), request.getRemoteHost());
                     String uri = request.getRequestURI();
                     String type = request.getContentType();
                     if (uri.equals("/") || uri.isBlank()) {
@@ -105,7 +99,7 @@ public class Server {
                         response.setContentLength(bytes.length);
                         response.write(bytes);
                     } catch (IOException e) {
-                        LOGGER.info("HTTP Error {}", e.toString());
+                        LOGGER.warn("HTTP Error {}", e.toString());
                         try {
                             response.write("<h1>  500 Internal Server Error  </h1>".getBytes(StandardCharsets.UTF_8));
                         } catch (IOException ex) {
@@ -115,7 +109,7 @@ public class Server {
                 }
             }).setPort(port).start();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.toString());
         }
         return this;
     }

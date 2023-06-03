@@ -34,7 +34,7 @@ sourceSets{
 jar{
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from {
-        configurations.compileClasspath.collect {
+        configurations.runtimeClasspath.collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
