@@ -3,17 +3,17 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS}-%-4relative %-5level[%thread] %logger{36}: %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-6level[%thread] %logger{36}: %msg%n</pattern>
         </encoder>
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
-            <pattern>%d{MM-dd HH:mm:ss.S} %-5level[%thread] %logger{36}: %msg%n</pattern>
+            <pattern>%d{MM-dd HH:mm:ss.SS} %-6level[%thread] %logger{36}: %msg%n</pattern>
             <charset>utf-8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>data/log/%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+            <fileNamePattern>data/log/%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>14</maxHistory>
             <totalSizeCap>512MB</totalSizeCap>
         </rollingPolicy>
