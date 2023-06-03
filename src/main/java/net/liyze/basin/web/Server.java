@@ -66,7 +66,7 @@ public class Server {
                                         isStatic.set(false);
                                     }
                                 } catch (IOException e) {
-                                    LOGGER.info("HTTP Error {}", e.toString());
+                                    LOGGER.warn("HTTP Error {}", e.toString());
                                 }
                             }
                         });
@@ -103,7 +103,7 @@ public class Server {
                         try {
                             response.write("<body style=\"background:grey;\"><h1>500 Internal Server Error</h1></body>".getBytes(StandardCharsets.UTF_8));
                         } catch (IOException ex) {
-                            LOGGER.info("HTTP Error {}", e.toString());
+                            LOGGER.warn("HTTP Error {}", e.toString());
                         }
                     }
                 }
