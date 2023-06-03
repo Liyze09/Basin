@@ -9,7 +9,7 @@ import static net.liyze.basin.core.Main.BootClasses;
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     @SuppressWarnings("SpellCheckingInspection")
-    public static String basin =
+    public static String basin = String.format(
             """
                     \r
                     BBBBBBBBBBBBBBBBB                                         iiii
@@ -28,7 +28,8 @@ public final class Basin {
                     B:::::::::::::::::B a:::::aaaa::::::a  s::::::::::::::s  i::::::i  n::::n    n::::n
                     B::::::::::::::::B   a::::::::::aa:::a  s:::::::::::ss   i::::::i  n::::n    n::::n
                     BBBBBBBBBBBBBBBBB     aaaaaaaaaa  aaaa   sssssssssss     iiiiiiii  nnnnnn    nnnnnn
-                    """;
+                    :: Basin :: (%s)
+                    """, getVersion());
 
     @Contract(pure = true)
     public static @NotNull String getVersion() {
