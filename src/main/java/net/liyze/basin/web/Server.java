@@ -101,7 +101,7 @@ public class Server {
                     } catch (IOException e) {
                         LOGGER.warn("HTTP Error {}", e.toString());
                         try {
-                            response.write("<h1>  500 Internal Server Error  </h1>".getBytes(StandardCharsets.UTF_8));
+                            response.write("<body style=\"background:grey;\"><h1>500 Internal Server Error</h1></body>".getBytes(StandardCharsets.UTF_8));
                         } catch (IOException ex) {
                             LOGGER.info("HTTP Error {}", e.toString());
                         }
