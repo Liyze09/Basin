@@ -3,12 +3,13 @@ package net.liyze.basin.core.commands;
 import net.liyze.basin.core.Main;
 import net.liyze.basin.interfaces.Command;
 import net.liyze.basin.web.Server;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class ServerCommand implements Command {
     @Override
-    public void run(List<String> args) {
+    public void run(@NotNull List<String> args) {
         String name = args.get(1);
         Server server;
         try {
@@ -33,7 +34,7 @@ public class ServerCommand implements Command {
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "server";
     }
 

@@ -15,9 +15,10 @@ import static net.liyze.basin.core.Main.*;
 
 public class Conversation {
     public final Map<String, String> vars = new HashMap<>();
+
     @SuppressWarnings("DataFlowIssue")
     public void parse(@NotNull String ac) {
-        if (ac.isBlank()) return;
+        if (ac.isBlank() || ac.startsWith("#")) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         ArrayList<String> args = new ArrayList<>();
         for (String cmd : alc) {

@@ -16,6 +16,7 @@ public final class Config {
     public boolean doLoadJars = true;
     public String startCommand = "";
     public boolean enableRemote = false;
+    public String accessToken = "";
 
     static Config initConfig() {
         Config cfg = new Config();

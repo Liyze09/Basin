@@ -1,6 +1,7 @@
 package net.liyze.basin.core.commands;
 
 import net.liyze.basin.interfaces.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -9,7 +10,7 @@ import static net.liyze.basin.core.Main.*;
 
 public class RestartCommand implements Command {
     @Override
-    public void run(List<String> args) {
+    public void run(@NotNull List<String> args) {
         taskPool.shutdownNow();
         servicePool.shutdownNow();
         commands.clear();
@@ -32,7 +33,7 @@ public class RestartCommand implements Command {
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "restart";
     }
 }

@@ -2,6 +2,7 @@ package net.liyze.basin.core.commands;
 
 import net.liyze.basin.core.Basin;
 import net.liyze.basin.interfaces.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -12,12 +13,12 @@ import java.util.List;
  */
 public class StopCommand implements Command {
     @Override
-    public void run(List<String> args) {
+    public void run(@NotNull List<String> args) {
         Basin.shutdown();
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "stop";
     }
 }

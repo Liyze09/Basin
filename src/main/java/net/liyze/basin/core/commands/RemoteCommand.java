@@ -2,6 +2,7 @@ package net.liyze.basin.core.commands;
 
 import net.liyze.basin.interfaces.Command;
 import net.liyze.basin.remote.Client;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -9,9 +10,8 @@ import static net.liyze.basin.core.Main.LOGGER;
 
 public class RemoteCommand implements Command {
     @Override
-    public void run(List<String> args) {
-        String host = args.get(0);
-        args.remove(0);
+    public void run(@NotNull List<String> args) {
+        String host = args.remove(0);
         try {
             Client.send(String.join(" ", args), host);
         } catch (Exception e) {
@@ -20,7 +20,7 @@ public class RemoteCommand implements Command {
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "remote";
     }
 }

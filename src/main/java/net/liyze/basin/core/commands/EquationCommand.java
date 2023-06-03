@@ -1,6 +1,7 @@
 package net.liyze.basin.core.commands;
 
 import net.liyze.basin.interfaces.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public class EquationCommand implements Command {
     }
 
     @Override
-    public void run(List<String> args) throws RuntimeException {
+    public void run(@NotNull List<String> args) throws RuntimeException {
         String es = args.get(0).toLowerCase().strip().replaceAll("[*]", "");
         char[] e = es.toCharArray();
         char[] x = es.replaceAll("[^a-z]", "").toCharArray();
@@ -194,7 +195,7 @@ public class EquationCommand implements Command {
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "equation";
     }
 }

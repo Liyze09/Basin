@@ -1,5 +1,8 @@
 package net.liyze.basin.interfaces;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
 public interface Command {
@@ -8,16 +11,16 @@ public interface Command {
      *
      * @author Liyze09
      */
-    void run(List<String> args);
+    void run(@NotNull List<String> args);
 
     /**
      * The Name of the command
      */
 
-    String Name();
+    @NotNull String Name();
 
     @SuppressWarnings("unused")
-    default Object returns() {
+    default @Nullable Object returns() {
         return null;
     }
 }

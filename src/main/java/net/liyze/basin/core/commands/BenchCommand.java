@@ -2,6 +2,7 @@ package net.liyze.basin.core.commands;
 
 import net.liyze.basin.core.Main;
 import net.liyze.basin.interfaces.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 public class BenchCommand implements Command {
     @SuppressWarnings("unused")
     @Override
-    public void run(List<String> args) {
+    public void run(@NotNull List<String> args) {
         double rpi = 1;
         long t = 3;
         long i = 0;
@@ -33,7 +34,7 @@ public class BenchCommand implements Command {
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "bench";
     }
 }

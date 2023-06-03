@@ -41,7 +41,7 @@ public class ScriptCommand implements Command {
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "script";
     }
 }

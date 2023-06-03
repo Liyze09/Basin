@@ -2,6 +2,7 @@ package net.liyze.basin.core.commands;
 
 import net.liyze.basin.core.Main;
 import net.liyze.basin.interfaces.Command;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -17,14 +18,12 @@ public class ExecuteCommand implements Command {
 
 
     @Override
-    public void run(List<String> args) {
-        Main.servicePool.submit(new Thread(() -> {
-            publicRunCommand(String.join(" ", args));
-        }));
+    public void run(@NotNull List<String> args) {
+        Main.servicePool.submit(new Thread(() -> publicRunCommand(String.join(" ", args))));
     }
 
     @Override
-    public String Name() {
+    public @NotNull String Name() {
         return "execute";
     }
 }

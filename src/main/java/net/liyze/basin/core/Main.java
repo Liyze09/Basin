@@ -30,14 +30,15 @@ public final class Main {
     public static final File userHome = new File("data" + File.separator + "home");
     public final static File config = new File("data" + File.separator + "cfg.json");
     public final static List<Class<?>> BootClasses = new ArrayList<>();
+    public static final Conversation CONSOLE_CONVERSATION = new Conversation();
     static final File jars = new File("data" + File.separator + "jars");
     public static Toml env = new Toml();
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
-    private static String command;
     public static Config cfg = Config.initConfig();
-    public static final Conversation CONSOLE_CONVERSATION = new Conversation();
+    public static Map<String, String> publicVars = new HashMap<>();
+    private static String command;
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
@@ -67,9 +68,9 @@ public final class Main {
         new Thread(() -> {
             Conversation conversation = new Conversation();
             regCommands();
-            if (cfg.enableRemote) {
+            if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
                 try {
-                    Server.server();
+                    Server.server(cfg.accessToken);
                 } catch (Exception e) {
                     LOGGER.error(e.toString());
                 }
@@ -103,7 +104,7 @@ public final class Main {
                 LOGGER.error("Error when create environment variable file: ", e);
             }
             try (Writer writer = new FileWriter(envFile)) {
-                writer.write("# Basin Environment Variable");
+                writer.write("# Basin Environment Variables");
             }
         }
         envMap = env.read(envFile).toMap();
@@ -151,11 +152,9 @@ public final class Main {
         }
     }
 
-    public static Map<String, String> publicVars = new HashMap<>();
-
     @SuppressWarnings("DataFlowIssue")
     public static void publicRunCommand(@NotNull String ac) {
-        if (ac.isBlank()) return;
+        if (ac.isBlank() || ac.startsWith("#")) return;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         for (String cmd : alc) {
             ArrayList<String> args = new ArrayList<>();
