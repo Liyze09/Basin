@@ -10,16 +10,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.liyze.basin.core.Main.*;
 
 public class Conversation {
     public final Map<String, String> vars = new ConcurrentHashMap<>();
 
-    @SuppressWarnings("DataFlowIssue")
     public boolean parse(@NotNull String ac) {
         if (ac.isBlank() || ac.startsWith("#")) return true;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
+        AtomicBoolean p = new AtomicBoolean(true);
+        alc.forEach((cmd) -> {
+            if (!parse(alc)) p.set(false);
+        });
+        return p.get();
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public boolean parse(@NotNull List<String> alc) {
         ArrayList<String> args = new ArrayList<>();
         for (String cmd : alc) {
             for (String i : List.of(StringUtils.split(cmd.strip(), ' '))) {

@@ -10,7 +10,7 @@ import static net.liyze.basin.core.Main.publicRunCommand;
 public class PublicCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
-        publicRunCommand(String.join(" ", args));
+        publicRunCommand(args);
     }
 
     @Override

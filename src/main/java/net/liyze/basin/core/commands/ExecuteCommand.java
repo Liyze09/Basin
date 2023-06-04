@@ -19,7 +19,7 @@ public class ExecuteCommand implements Command {
 
     @Override
     public void run(@NotNull List<String> args) {
-        Main.servicePool.submit(new Thread(() -> publicRunCommand(String.join(" ", args))));
+        Main.servicePool.submit(new Thread(() -> publicRunCommand(args)));
     }
 
     @Override

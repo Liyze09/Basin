@@ -16,8 +16,17 @@ import java.nio.charset.StandardCharsets;
 import static net.liyze.basin.core.Main.LOGGER;
 
 public class Server {
-    public void server(@NotNull String token, int port) throws Exception {
-        final Conversation conversation = new Conversation();
+    private final String token;
+    private final int port;
+    private final Conversation REMOTE_CONVERSATION;
+
+    public Server(@NotNull String token, int port, Conversation remoteConversation) {
+        this.token = token;
+        this.port = port;
+        REMOTE_CONVERSATION = remoteConversation;
+    }
+
+    public void start() throws Exception {
         MessageProcessor<byte[]> processor = (s, b) -> {
             Cipher cipher;
             String msg = "";
@@ -29,7 +38,7 @@ public class Server {
                     msg = new String(cipher.doFinal(b), StandardCharsets.UTF_8);
                 } catch (Exception e) {
                     try {
-                        outputStream.write("2".getBytes(StandardCharsets.UTF_8));
+                        outputStream.write("Illegal BRC Request.".getBytes(StandardCharsets.UTF_8));
                     } catch (IOException ex) {
                         LOGGER.error(ex.toString());
                     }
@@ -37,30 +46,37 @@ public class Server {
                 }
                 if (!msg.startsWith("brc:")) {
                     try {
+                        byte[] bytes = "Illegal BRC Request.".getBytes(StandardCharsets.UTF_8);
                         LOGGER.warn("Illegal BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
-                    } catch (IOException ignored) {
+                        outputStream.writeInt(bytes.length);
+                        outputStream.write(bytes);
+                    } catch (IOException e) {
                         LOGGER.warn("Illegal BRC Request: {}", msg);
                     }
                     return;
                 }
-                if (!conversation.parse(msg.substring(4))) {
+                if (!REMOTE_CONVERSATION.parse(msg.substring(4))) {
                     try {
-                        outputStream.write("1".getBytes(StandardCharsets.UTF_8));
+                        byte[] bytes = "Failed to run the command.".getBytes(StandardCharsets.UTF_8);
+                        outputStream.writeInt(bytes.length);
+                        outputStream.write(bytes);
                     } catch (IOException ex) {
                         LOGGER.error(ex.toString());
                     }
-                }
-                try {
-                    byte[] bytes = "0".getBytes(StandardCharsets.UTF_8);
-                    outputStream.writeInt(bytes.length);
-                    outputStream.write(bytes);
-                    LOGGER.info("BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
-                } catch (IOException e) {
-                    LOGGER.warn(e.toString());
+                } else {
+                    try {
+                        byte[] bytes = "Okay".getBytes(StandardCharsets.UTF_8);
+                        outputStream.writeInt(bytes.length);
+                        outputStream.write(bytes);
+                        LOGGER.info("BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
+                    } catch (IOException e) {
+                        LOGGER.warn(e.toString());
+                    }
                 }
             }
         };
         AioQuickServer server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
+        server.setLowMemory(true);
         server.start();
     }
 }

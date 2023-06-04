@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.jar.JarFile;
 
@@ -71,7 +72,7 @@ public final class Main {
             regCommands();
             if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
                 try {
-                    new Server().server(cfg.accessToken, cfg.remotePort);
+                    new Server(cfg.accessToken, cfg.remotePort, new Conversation()).start();
                 } catch (Exception e) {
                     LOGGER.error(e.toString());
                 }
@@ -154,9 +155,7 @@ public final class Main {
     }
 
     @SuppressWarnings({"DataFlowIssue", "ConstantValue"})
-    public static void publicRunCommand(@NotNull String ac) {
-        if (ac.isBlank() || ac.startsWith("#")) return;
-        ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
+    public static boolean publicRunCommand(@NotNull List<String> alc) {
         for (String cmd : alc) {
             ArrayList<String> args = new ArrayList<>();
             for (String i : List.of(StringUtils.split(cmd.strip(), ' '))) {
@@ -174,7 +173,7 @@ public final class Main {
             if (cmdName.matches(".*=.*")) {
                 String[] var = StringUtils.split(cmdName, "=");
                 publicVars.put(var[0].strip(), var[1].strip());
-                return;
+                return true;
             }
             args.remove(cmdName);
             Command run = commands.get(cmdName.toLowerCase().strip());
@@ -182,6 +181,7 @@ public final class Main {
             if (!(run == null)) {
                 try {
                     run.run(args);
+                    return true;
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");
                 } catch (Exception e) {
@@ -189,6 +189,17 @@ public final class Main {
                 }
             } else LOGGER.error("Unknown command: " + cmdName);
         }
+        return false;
+    }
+
+    public static boolean publicRunCommand(@NotNull String ac) {
+        if (ac.isBlank() || ac.startsWith("#")) return true;
+        ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
+        AtomicBoolean p = new AtomicBoolean(true);
+        alc.forEach((cmd) -> {
+            if (!publicRunCommand(alc)) p.set(false);
+        });
+        return p.get();
     }
 
     public static void regCommands() {
