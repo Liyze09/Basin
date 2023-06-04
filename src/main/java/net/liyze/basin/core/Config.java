@@ -17,6 +17,7 @@ public final class Config {
     public String startCommand = "";
     public boolean enableRemote = false;
     public String accessToken = "";
+    public int remotePort = 32768;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     static Config initConfig() {

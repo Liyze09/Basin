@@ -8,11 +8,11 @@ import java.util.List;
 
 import static net.liyze.basin.core.Main.LOGGER;
 
-public class ExecCommand implements Command {
+public class ShellCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
         try {
-            System.out.println(Runtime.getRuntime().exec(args.toArray(new String[0])).toString());
+            LOGGER.info(Runtime.getRuntime().exec(args.toArray(new String[0])).toString());
         } catch (IOException e) {
             LOGGER.error(e.toString());
         }

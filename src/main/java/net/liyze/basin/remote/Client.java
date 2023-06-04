@@ -1,5 +1,6 @@
 package net.liyze.basin.remote;
 
+import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.protocol.StringProtocol;
 import org.smartboot.socket.transport.AioQuickClient;
@@ -14,15 +15,15 @@ import java.nio.charset.StandardCharsets;
 import static net.liyze.basin.core.Main.*;
 
 public class Client {
-    public static void send(String message, String host) throws Exception {
+    public static void send(String message, String host, @NotNull String token, int port) throws Exception {
         MessageProcessor<String> processor = (session, msg) -> LOGGER.info("Receive from server: " + msg);
-        AioQuickClient client = new AioQuickClient(host, 600, new StringProtocol(), processor);
+        AioQuickClient client = new AioQuickClient(host, port, new StringProtocol(), processor);
         AioSession session = client.start();
         WriteBuffer writeBuffer = session.writeBuffer();
         byte[] msg = ("brc:" + message).getBytes(StandardCharsets.UTF_8);
 
         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        SecretKey keySpec = new SecretKeySpec(envMap.get("\"" + host + "_token\"").toString().getBytes(StandardCharsets.UTF_8), "AES");
+        SecretKey keySpec = new SecretKeySpec(token.getBytes(StandardCharsets.UTF_8), "AES");
         cipher.init(Cipher.ENCRYPT_MODE, keySpec);
         msg = cipher.doFinal(msg);
 
@@ -31,5 +32,9 @@ public class Client {
         writeBuffer.flush();
         LOGGER.info("Remote Sent: \"{}\" to \"{}\"", message, host);
         writeBuffer.close();
+    }
+
+    public static void send(String message, String host, @NotNull String token) throws Exception {
+        send(message, host, token, cfg.remotePort);
     }
 }

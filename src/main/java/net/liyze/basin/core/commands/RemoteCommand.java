@@ -6,14 +6,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Main.*;
 
 public class RemoteCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
         String host = args.remove(0);
         try {
-            Client.send(String.join(" ", args), host);
+            Client.send(String.join(" ", args), host, envMap.get("\"" + host + "_token\"").toString());
         } catch (Exception e) {
             LOGGER.error(e.toString());
         }

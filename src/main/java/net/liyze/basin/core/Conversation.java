@@ -17,8 +17,8 @@ public class Conversation {
     public final Map<String, String> vars = new ConcurrentHashMap<>();
 
     @SuppressWarnings("DataFlowIssue")
-    public void parse(@NotNull String ac) {
-        if (ac.isBlank() || ac.startsWith("#")) return;
+    public boolean parse(@NotNull String ac) {
+        if (ac.isBlank() || ac.startsWith("#")) return true;
         ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
         ArrayList<String> args = new ArrayList<>();
         for (String cmd : alc) {
@@ -45,7 +45,7 @@ public class Conversation {
             if (cmdName.matches(".*=.*")) {
                 String[] var = StringUtils.split(cmdName, "=");
                 vars.put(var[0].strip(), var[1].strip());
-                return;
+                return true;
             }
             args.remove(cmdName);
             Command run = commands.get(cmdName.toLowerCase().strip());
@@ -53,6 +53,7 @@ public class Conversation {
             if (!(run == null)) {
                 try {
                     run.run(args);
+                    return true;
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");
                 } catch (Exception e) {
@@ -60,5 +61,6 @@ public class Conversation {
                 }
             } else LOGGER.error("Unknown command: " + cmdName);
         }
+        return false;
     }
 }

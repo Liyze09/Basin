@@ -71,7 +71,7 @@ public final class Main {
             regCommands();
             if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
                 try {
-                    Server.server(cfg.accessToken);
+                    new Server().server(cfg.accessToken, cfg.remotePort);
                 } catch (Exception e) {
                     LOGGER.error(e.toString());
                 }
@@ -203,7 +203,7 @@ public final class Main {
         register(new RestartCommand());
         register(new PublicCommand());
         register(new RemoteCommand());
-        register(new ExecCommand());
+        register(new ShellCommand());
     }
 
     public static void register(Command cmd) {
