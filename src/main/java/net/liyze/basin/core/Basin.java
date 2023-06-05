@@ -1,15 +1,30 @@
 package net.liyze.basin.core;
 
 import net.liyze.basin.interfaces.BasinBoot;
+import net.liyze.basin.web.Server;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import static net.liyze.basin.core.Main.BootClasses;
+import java.util.concurrent.Executors;
+
+import static net.liyze.basin.core.Conversation.cs;
+import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.remote.Server.servers;
+import static net.liyze.basin.web.Server.runningServer;
 
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
+    private Basin() {
+    }
+
+    private static final Basin b = new Basin();
+
+    public static Basin getBasin() {
+        return b;
+    }
+
     @SuppressWarnings("SpellCheckingInspection")
-    public static String basin = String.format(
+    public String basin = String.format(
             """
                     \r
                     BBBBBBBBBBBBBBBBB                                         iiii
@@ -32,18 +47,18 @@ public final class Basin {
                     """, getVersion());
 
     @Contract(pure = true)
-    public static @NotNull String getVersion() {
+    public @NotNull String getVersion() {
         return "0.1";
     }
 
-    public static int getVersionNum() {
+    public int getVersionNum() {
         return 1;
     }
 
     /**
      * Stop basin after all task finished.
      */
-    public static void shutdown() {
+    public void shutdown() {
         Main.LOGGER.info("Stopping\n\n");
         BootClasses.forEach((i) -> {
             try {
@@ -54,5 +69,56 @@ public final class Basin {
         Main.taskPool.shutdown();
         Main.servicePool.shutdownNow();
         System.exit(0);
+    }
+
+    public void restart() {
+        BootClasses.forEach((i) -> {
+            try {
+                BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
+                in.beforeStop();
+            } catch (Exception e) {
+                LOGGER.error(e.toString());
+            }
+        });
+        cs.forEach(c -> c.vars.clear());
+        taskPool.shutdownNow();
+        servicePool.shutdownNow();
+        servers.forEach(net.liyze.basin.remote.Server::shutdown);
+        servers.clear();
+        runningServer.values().forEach(Server::stop);
+        runningServer.clear();
+        commands.clear();
+        BootClasses.clear();
+        publicVars.clear();
+        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
+        servicePool = Executors.newCachedThreadPool();
+        try {
+            init();
+        } catch (Exception e) {
+            LOGGER.error(e.toString());
+        }
+        try {
+            loadJars();
+            BootClasses.forEach((i) -> {
+                try {
+                    BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
+                    in.afterStart();
+                } catch (Exception e) {
+                    LOGGER.error(e.toString());
+                }
+            });
+        } catch (Exception e) {
+            LOGGER.error(e.toString());
+        }
+        regCommands();
+        if (!cfg.startCommand.isBlank()) CONSOLE_CONVERSATION.parse(cfg.startCommand);
+        if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
+            try {
+                new net.liyze.basin.remote.Server(cfg.accessToken, cfg.remotePort, new Conversation()).start();
+            } catch (Exception e) {
+                LOGGER.error(e.toString());
+            }
+        }
+        LOGGER.info("Restarted!");
     }
 }

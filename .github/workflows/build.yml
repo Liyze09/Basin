@@ -49,5 +49,5 @@ jobs:
       - name: artifact
         uses: actions/upload-artifact@v3
         with:
-          name: useful-additions-artifacts
-          path: build/libs
+          name: basin-artifact
+          path: build/libs/.*[^e].jar

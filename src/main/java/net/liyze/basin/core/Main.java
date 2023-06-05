@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.jar.JarFile;
 
-import static net.liyze.basin.core.Basin.basin;
 import static net.liyze.basin.web.Server.dynamicFunctions;
 
 public final class Main {
@@ -52,14 +51,14 @@ public final class Main {
                 if (cfg.doLoadJars) {
                     loadJars();
                     LOGGER.info("Loader's method are finished.");
-                    BootClasses.forEach((i) -> new Thread(() -> {
+                    BootClasses.forEach((i) -> servicePool.submit(new Thread(() -> {
                         try {
                             BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
                             in.afterStart();
                         } catch (Exception e) {
                             LOGGER.error(e.toString());
                         }
-                    }).start());
+                    })));
                     LOGGER.info("Startup method are finished.");
                 }
             } catch (Exception e) {
@@ -90,8 +89,7 @@ public final class Main {
                 }));
             }
         }).start();
-        System.out.println("Basin " + Basin.getVersion());
-        System.out.println(basin);
+        System.out.println(Basin.getBasin().basin);
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})

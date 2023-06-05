@@ -14,7 +14,7 @@ import java.util.List;
 public class StopCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
-        Basin.shutdown();
+        Basin.getBasin().shutdown();
     }
 
     @Override
