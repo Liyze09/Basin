@@ -15,7 +15,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static net.liyze.basin.core.Main.*;
 
 public class Conversation {
+    public static final List<Conversation> cs = new ArrayList<>();
     public final Map<String, String> vars = new ConcurrentHashMap<>();
+
+    public Conversation() {
+        cs.add(this);
+    }
 
     public boolean parse(@NotNull String ac) {
         if (ac.isBlank() || ac.startsWith("#")) return true;

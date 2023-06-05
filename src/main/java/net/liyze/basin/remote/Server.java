@@ -12,18 +12,27 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.liyze.basin.core.Main.LOGGER;
 
 public class Server {
+    public static final List<Server> servers = new ArrayList<>();
     private final String token;
     private final int port;
     private final Conversation REMOTE_CONVERSATION;
+    public AioQuickServer server = null;
 
     public Server(@NotNull String token, int port, Conversation remoteConversation) {
+        servers.add(this);
         this.token = token;
         this.port = port;
         REMOTE_CONVERSATION = remoteConversation;
+    }
+
+    public void shutdown() {
+        server.shutdown();
     }
 
     public void start() throws Exception {
@@ -75,7 +84,7 @@ public class Server {
                 }
             }
         };
-        AioQuickServer server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
+        server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
         server.setLowMemory(true);
         server.start();
     }
