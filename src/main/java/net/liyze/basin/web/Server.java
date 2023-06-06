@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public class Server {
                             if (m.getAnnotation(GetMapping.class) != null) {
                                 if (m.getAnnotation(GetMapping.class).path().startsWith(finalUri)) {
                                     try {
-                                        view.set((View) m.invoke(bean.getBeanClass(), finalUri));
+                                        view.set((View) m.invoke(bean.getInstance(), finalUri));
                                     } catch (Exception e) {
                                         LOGGER.error(e.toString());
                                     }
@@ -79,7 +80,7 @@ public class Server {
                             if (m.getAnnotation(PostMapping.class) != null) {
                                 if (m.getAnnotation(PostMapping.class).path().startsWith(finalUri)) {
                                     try {
-                                        view.set((View) m.invoke(bean.getBeanClass(), finalUri));
+                                        view.set((View) m.invoke(bean.getInstance(), finalUri));
                                     } catch (Exception e) {
                                         LOGGER.error(e.toString());
                                     }
@@ -97,10 +98,27 @@ public class Server {
                             return;
                         }
                     }
-                    File file = new File(root + File.separator + uri);
+                    File file = new File(root + File.separator + uri.replace('/', File.separatorChar));
                     if (!file.exists()) {
-                        file = new File(root + File.separator + "404.html");
-                        response.setHttpStatus(HttpStatus.NOT_FOUND);
+                        if (this.getClass().getResource("/static/" + root + uri) == null) {
+                            file = new File(root + File.separator + "404.html");
+                            response.setHttpStatus(HttpStatus.NOT_FOUND);
+                            if (!file.exists()) {
+                                try {
+                                    //noinspection DataFlowIssue
+                                    file = new File(this.getClass().getResource("/static/404.html").toURI());
+                                } catch (URISyntaxException e) {
+                                    LOGGER.error(e.toString());
+                                }
+                            }
+                        } else {
+                            try {
+                                //noinspection DataFlowIssue
+                                file = new File(this.getClass().getResource("/static/" + root + uri).toURI());
+                            } catch (URISyntaxException e) {
+                                LOGGER.error(e.toString());
+                            }
+                        }
                     }
                     if (type == null) {
                         if (file.toString().endsWith(".html")) {
