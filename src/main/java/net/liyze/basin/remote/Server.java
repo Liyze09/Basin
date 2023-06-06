@@ -39,17 +39,18 @@ public class Server {
         MessageProcessor<byte[]> processor = (s, b) -> {
             Cipher cipher;
             String msg = "";
-            try (WriteBuffer outputStream = s.writeBuffer()) {
+
+            WriteBuffer outputStream = s.writeBuffer();
+            try {
+                cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                SecretKey keySpec = new SecretKeySpec(token.getBytes(StandardCharsets.UTF_8), "AES");
+                cipher.init(Cipher.DECRYPT_MODE, keySpec);
+                msg = new String(cipher.doFinal(b), StandardCharsets.UTF_8);
+            } catch (Exception e) {
                 try {
-                    cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                    SecretKey keySpec = new SecretKeySpec(token.getBytes(StandardCharsets.UTF_8), "AES");
-                    cipher.init(Cipher.DECRYPT_MODE, keySpec);
-                    msg = new String(cipher.doFinal(b), StandardCharsets.UTF_8);
-                } catch (Exception e) {
-                    try {
-                        outputStream.write("Illegal BRC Request.".getBytes(StandardCharsets.UTF_8));
-                    } catch (IOException ex) {
-                        LOGGER.error(ex.toString());
+                    outputStream.write("Illegal BRC Request.".getBytes(StandardCharsets.UTF_8));
+                } catch (IOException ex) {
+                    LOGGER.error(ex.toString());
                     }
                     LOGGER.warn(e.toString());
                 }
@@ -82,7 +83,7 @@ public class Server {
                         LOGGER.warn(e.toString());
                     }
                 }
-            }
+
         };
         server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
         server.setLowMemory(true);

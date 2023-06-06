@@ -12,7 +12,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Main.cfg;
 
 public class Client {
     public static void send(String message, String host, @NotNull String token, int port) throws Exception {
@@ -31,7 +32,6 @@ public class Client {
         writeBuffer.write(msg);
         writeBuffer.flush();
         LOGGER.info("Remote Sent: \"{}\" to \"{}\"", message, host);
-        writeBuffer.close();
     }
 
     public static void send(String message, String host, @NotNull String token) throws Exception {

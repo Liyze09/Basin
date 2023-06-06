@@ -1,8 +1,8 @@
 package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
+import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.core.commands.*;
-import net.liyze.basin.framework.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.interfaces.BasinBoot;
 import net.liyze.basin.interfaces.Command;
 import net.liyze.basin.remote.Server;
@@ -63,9 +63,6 @@ public final class Main {
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }
-            contexts.forEach(i -> {
-
-            });
         });
         taskPool.submit(init);
         new Thread(() -> {

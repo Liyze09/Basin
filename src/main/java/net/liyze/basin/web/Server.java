@@ -1,5 +1,8 @@
 package net.liyze.basin.web;
 
+import net.liyze.basin.context.BeanDefinition;
+import net.liyze.basin.web.annotation.GetMapping;
+import net.liyze.basin.web.annotation.PostMapping;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
@@ -11,11 +14,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Main.contexts;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Server {
@@ -41,6 +47,8 @@ public class Server {
 
     public Server run() throws IOException {
         LOGGER.info("Server {} on port {} started", serverName, port);
+        final List<BeanDefinition> models = new ArrayList<>();
+        contexts.forEach(i -> models.addAll(i.findBeanDefinitions(Model.class)));
         try {
             bootstrap.configuration().serverName(serverName);
             bootstrap.httpHandler(new HttpServerHandler() {
@@ -52,13 +60,47 @@ public class Server {
                     if (uri.equals("/") || uri.isBlank()) {
                         uri = "index.html";
                     }
-                    AtomicBoolean isStatic = new AtomicBoolean(true);
+                    final String finalUri = uri;
+                    AtomicReference<View> view = new AtomicReference<>(null);
+                    if (request.getMethod().equalsIgnoreCase("get")) {
+                        models.forEach(bean -> List.of(bean.getBeanClass().getMethods()).forEach(m -> {
+                            if (m.getAnnotation(GetMapping.class) != null) {
+                                if (m.getAnnotation(GetMapping.class).path().startsWith(finalUri)) {
+                                    try {
+                                        view.set((View) m.invoke(bean.getBeanClass(), finalUri));
+                                    } catch (Exception e) {
+                                        LOGGER.error(e.toString());
+                                    }
+                                }
+                            }
+                        }));
+                    } else {
+                        models.forEach(bean -> List.of(bean.getBeanClass().getMethods()).forEach(m -> {
+                            if (m.getAnnotation(PostMapping.class) != null) {
+                                if (m.getAnnotation(PostMapping.class).path().startsWith(finalUri)) {
+                                    try {
+                                        view.set((View) m.invoke(bean.getBeanClass(), finalUri));
+                                    } catch (Exception e) {
+                                        LOGGER.error(e.toString());
+                                    }
+                                }
+                            }
+                        }));
+                    }
+                    if (view.get() != null) {
+                        byte[] r = view.get().getPage(request);
+                        response.setContentLength(r.length);
+                        try {
+                            response.write(r);
+                        } catch (IOException e) {
+                            LOGGER.error(e.toString());
+                            return;
+                        }
+                    }
                     File file = new File(root + File.separator + uri);
                     if (!file.exists()) {
-                        if (isStatic.get()) {
-                            file = new File(root + File.separator + "404.html");
-                            response.setHttpStatus(HttpStatus.NOT_FOUND);
-                        } else return;
+                        file = new File(root + File.separator + "404.html");
+                        response.setHttpStatus(HttpStatus.NOT_FOUND);
                     }
                     if (type == null) {
                         if (file.toString().endsWith(".html")) {
