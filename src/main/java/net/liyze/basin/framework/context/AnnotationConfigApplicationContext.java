@@ -14,6 +14,8 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.liyze.basin.core.Main.contexts;
+
 
 @SuppressWarnings({"SpellCheckingInspection", "GrazieInspection", "unused", "ResultOfMethodCallIgnored"})
 public class AnnotationConfigApplicationContext implements ConfigurableApplicationContext {
@@ -27,6 +29,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     private final Set<String> creatingBeanNames;
 
     public AnnotationConfigApplicationContext(Class<?> configClass) {
+        contexts.add(this);
         PropertyResolver propertyResolver = new PropertyResolver();
         ApplicationContextUtils.setApplicationContext(this);
 

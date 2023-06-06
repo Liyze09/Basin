@@ -2,6 +2,7 @@ package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
 import net.liyze.basin.core.commands.*;
+import net.liyze.basin.framework.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.interfaces.BasinBoot;
 import net.liyze.basin.interfaces.Command;
 import net.liyze.basin.remote.Server;
@@ -9,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smartboot.http.server.HttpRequest;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -20,10 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.jar.JarFile;
 
-import static net.liyze.basin.web.Server.dynamicFunctions;
 
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
@@ -40,6 +38,7 @@ public final class Main {
     public static Config cfg = Config.initConfig();
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     private static String command;
+    public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
@@ -64,6 +63,9 @@ public final class Main {
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }
+            contexts.forEach(i -> {
+
+            });
         });
         taskPool.submit(init);
         new Thread(() -> {
@@ -217,10 +219,5 @@ public final class Main {
 
     public static void register(Command cmd) {
         commands.put(cmd.Name(), cmd);
-    }
-
-    @SuppressWarnings("unused")
-    public static void register(String regex, Function<HttpRequest, byte[]> function) {
-        dynamicFunctions.put(regex, function);
     }
 }

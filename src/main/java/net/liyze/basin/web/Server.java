@@ -14,14 +14,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 import static net.liyze.basin.core.Main.LOGGER;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Server {
     @SuppressWarnings("unused")
-    public static final Map<String, Function<HttpRequest, byte[]>> dynamicFunctions = new HashMap<>();
+
     public static final Map<String, Server> runningServer = new HashMap<>();
     public final File root;
     private final HttpBootstrap bootstrap = new HttpBootstrap();
@@ -53,23 +52,9 @@ public class Server {
                     if (uri.equals("/") || uri.isBlank()) {
                         uri = "index.html";
                     }
-                    String finalUri = uri;
                     AtomicBoolean isStatic = new AtomicBoolean(true);
                     File file = new File(root + File.separator + uri);
                     if (!file.exists()) {
-                        dynamicFunctions.forEach((r, f) -> {
-                            if (finalUri.matches(r)) {
-                                try {
-                                    byte[] bytes = f.apply(request);
-                                    if (bytes != null) {
-                                        response.write(bytes);
-                                        isStatic.set(false);
-                                    }
-                                } catch (IOException e) {
-                                    LOGGER.warn("HTTP Error {}", e.toString());
-                                }
-                            }
-                        });
                         if (isStatic.get()) {
                             file = new File(root + File.separator + "404.html");
                             response.setHttpStatus(HttpStatus.NOT_FOUND);
