@@ -58,6 +58,7 @@ jar{
         attributes 'Boot-Class': 'net.liyze.basin.core.InternalPluginDemo'
     }
     exclude 'META-INF/versions/**'
+    exclude 'META-INF/maven/**'
     exclude 'META-INF/LICENSE.txt'
     exclude 'META-INF/NOTICE.txt'
     exclude 'META-INF/INDEX.LIST'

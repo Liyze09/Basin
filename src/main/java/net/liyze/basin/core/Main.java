@@ -39,10 +39,11 @@ public final class Main {
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     private static String command;
     public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
+    public static final Map<String, String> mineTypes = new HashMap<>();
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");
-        Thread init = new Thread(() -> {
+        taskPool.submit(new Thread(() -> {
             try {
                 init();
                 envMap.forEach((key, value) -> publicVars.put(key, value.toString()));
@@ -63,8 +64,7 @@ public final class Main {
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }
-        });
-        taskPool.submit(init);
+        }));
         new Thread(() -> {
             Conversation conversation = new Conversation();
             regCommands();

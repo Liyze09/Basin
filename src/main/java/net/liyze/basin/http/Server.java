@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +57,13 @@ public class Server {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response) {
                     LOGGER.debug("A HTTP Link {} started from {}", request.getRequestURL(), request.getRemoteHost());
+                    LOGGER.trace("Request:\nMethod: {}\nContentType: {}\nCharacterEncoding: {}\nProtocol: {}\nScheme: {}",
+                            request.getMethod(),
+                            request.getContentType(),
+                            request.getCharacterEncoding(),
+                            request.getProtocol(),
+                            request.getScheme());
                     String uri = request.getRequestURI();
-                    String type = request.getContentType();
                     if (uri.equals("/") || uri.isBlank()) {
                         uri = "/index.html";
                     }
@@ -125,24 +131,12 @@ public class Server {
                             }
                         }
                     }
-                    if (type == null) {
-                        if (file.toString().endsWith(".html")) {
-                            response.setContentType("text/html");
-                        } else if (file.toString().endsWith(".mp4")) {
-                            response.setContentType("video/mp4");
-                        } else if (file.toString().endsWith(".ogg")) {
-                            response.setContentType("video/ogg");
-                        } else if (file.toString().endsWith(".webm")) {
-                            response.setContentType("video/webm");
-                        } else if (file.toString().endsWith(".mp3")) {
-                            response.setContentType("audio/mpeg");
-                        } else if (file.toString().endsWith(".wav")) {
-                            response.setContentType("audio/wav");
-                        } else if (file.toString().endsWith(".css")) {
-                            response.setContentType("text/css");
-                        }
-                    } else {
-                        response.setContentType(type);
+                    if (request.getContentType() != null)
+                        response.setContentType(request.getContentType());
+                    else try {
+                        response.setContentType(Files.probeContentType(file.toPath()));
+                    } catch (IOException e) {
+                        LOGGER.error(e.toString());
                     }
                     try (InputStream stream = new FileInputStream(file)) {
                         byte[] bytes = stream.readAllBytes();
@@ -156,6 +150,10 @@ public class Server {
                             LOGGER.warn("HTTP Error {}", e.toString());
                         }
                     }
+                    LOGGER.trace("Response:\nStatus: {}\nContentType: {}\nReasonPhrase: {}",
+                            response.getHttpStatus(),
+                            response.getContentType(),
+                            response.getReasonPhrase());
                 }
             }).setPort(port).start();
         } catch (Exception e) {
