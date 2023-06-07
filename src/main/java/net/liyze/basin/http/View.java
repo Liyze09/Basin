@@ -1,4 +1,4 @@
-package net.liyze.basin.web;
+package net.liyze.basin.http;
 
 import org.smartboot.http.server.HttpRequest;
 

@@ -1,8 +1,8 @@
 package net.liyze.basin.core.commands;
 
 import net.liyze.basin.core.Main;
+import net.liyze.basin.http.Server;
 import net.liyze.basin.interfaces.Command;
-import net.liyze.basin.web.Server;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

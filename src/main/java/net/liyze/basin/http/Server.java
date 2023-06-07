@@ -1,8 +1,8 @@
-package net.liyze.basin.web;
+package net.liyze.basin.http;
 
 import net.liyze.basin.context.BeanDefinition;
-import net.liyze.basin.web.annotation.GetMapping;
-import net.liyze.basin.web.annotation.PostMapping;
+import net.liyze.basin.http.annotation.GetMapping;
+import net.liyze.basin.http.annotation.PostMapping;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
 import org.smartboot.http.server.HttpRequest;
@@ -59,7 +59,7 @@ public class Server {
                     String uri = request.getRequestURI();
                     String type = request.getContentType();
                     if (uri.equals("/") || uri.isBlank()) {
-                        uri = "index.html";
+                        uri = "/index.html";
                     }
                     final String finalUri = uri;
                     AtomicReference<View> view = new AtomicReference<>(null);
@@ -98,9 +98,9 @@ public class Server {
                             return;
                         }
                     }
-                    File file = new File(root + File.separator + uri.replace('/', File.separatorChar));
+                    File file = new File(root + uri.replace('/', File.separatorChar));
                     if (!file.exists()) {
-                        if (this.getClass().getResource("/static/" + root + uri) == null) {
+                        if (this.getClass().getResource("/static/" + root + uri) == null && (this.getClass().getResource("/static/" + uri) == null)) {
                             file = new File(root + File.separator + "404.html");
                             response.setHttpStatus(HttpStatus.NOT_FOUND);
                             if (!file.exists()) {
@@ -113,8 +113,13 @@ public class Server {
                             }
                         } else {
                             try {
-                                //noinspection DataFlowIssue
-                                file = new File(this.getClass().getResource("/static/" + root + uri).toURI());
+                                if (this.getClass().getResource("/static/" + root + uri) != null) {
+                                    //noinspection DataFlowIssue
+                                    file = new File(this.getClass().getResource("/static/" + root + uri).toURI());
+                                } else {
+                                    //noinspection DataFlowIssue
+                                    file = new File(this.getClass().getResource("/static" + uri).toURI());
+                                }
                             } catch (URISyntaxException e) {
                                 LOGGER.error(e.toString());
                             }
@@ -146,7 +151,7 @@ public class Server {
                     } catch (IOException e) {
                         LOGGER.warn("HTTP Error {}", e.toString());
                         try {
-                            response.write("<body style=\"background:grey;\"><h1>500 Internal Server Error</h1></body>".getBytes(StandardCharsets.UTF_8));
+                            response.write("<html><body><h1 style=\"font-family:arial;font-size:64px;text-align:center;\">500 Internal Server Error</h1></body></html>".getBytes(StandardCharsets.UTF_8));
                         } catch (IOException ex) {
                             LOGGER.warn("HTTP Error {}", e.toString());
                         }

@@ -1,7 +1,7 @@
 package net.liyze.basin.core;
 
+import net.liyze.basin.http.Server;
 import net.liyze.basin.interfaces.BasinBoot;
-import net.liyze.basin.web.Server;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,8 +9,8 @@ import java.util.concurrent.Executors;
 
 import static net.liyze.basin.core.Conversation.cs;
 import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.http.Server.runningServer;
 import static net.liyze.basin.remote.Server.servers;
-import static net.liyze.basin.web.Server.runningServer;
 
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
