@@ -16,6 +16,7 @@ public final class Config {
     public boolean doLoadJars = true;
     public String startCommand = "";
     public boolean enableRemote = false;
+    public boolean enableShellCommand = false;
     public String accessToken = "";
     public int remotePort = 32768;
 

@@ -25,6 +25,10 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     protected final PropertyResolver propertyResolver;
     protected final Map<String, BeanDefinition> beans;
 
+    public Collection<BeanDefinition> getBeanDefinitions() {
+        return this.beans.values();
+    }
+
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
     private final Set<String> creatingBeanNames;
 
@@ -161,7 +165,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
                 final Class<?> type = param.getType();
                 if (value != null) {
                     // 参数是@Value:
-                    args[i] = this.propertyResolver.getRequiredProperty(value.value(), type);
+                    args[i] = this.propertyResolver.getRequiredProperty(value.value());
                 } else {
                     // 参数是@Autowired:
                     String name = autowired.name();
@@ -376,7 +380,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
 
         // @Value注入:
         if (value != null) {
-            Object propValue = this.propertyResolver.getRequiredProperty(value.value(), accessibleType);
+            Object propValue = this.propertyResolver.getRequiredProperty(value.value());
             if (field != null) {
                 logger.atDebug().log("Field injection: {}.{} = {}", def.getBeanClass().getName(), null, propValue);
                 field.set(bean, propValue);

@@ -211,7 +211,7 @@ public final class Main {
         register(new RestartCommand());
         register(new PublicCommand());
         register(new RemoteCommand());
-        register(new ShellCommand());
+        if (cfg.enableShellCommand) register(new ShellCommand());
     }
 
     public static void register(Command cmd) {

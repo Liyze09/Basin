@@ -22,13 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.core.Main.contexts;
+import static net.liyze.basin.core.Main.*;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Server {
-    @SuppressWarnings("unused")
-
     public static final Map<String, Server> runningServer = new HashMap<>();
     public final File root;
     private final HttpBootstrap bootstrap = new HttpBootstrap();
@@ -46,11 +43,11 @@ public class Server {
         bootstrap.shutdown();
         LOGGER.info("Server {} on port {} stopped", serverName, port);
     }
-
+    @SuppressWarnings("DataFlowIssue")
     public Server run() throws IOException {
         LOGGER.info("Server {} on port {} started", serverName, port);
         final List<BeanDefinition> models = new ArrayList<>();
-        contexts.forEach(i -> models.addAll(i.findBeanDefinitions(Model.class)));
+        contexts.forEach(i -> models.addAll(i.getBeanDefinitions().stream().filter(bean -> bean.getBeanClass().isAnnotationPresent(Model.class)).toList()));
         try {
             bootstrap.configuration().serverName(serverName);
             bootstrap.httpHandler(new HttpServerHandler() {
@@ -120,10 +117,8 @@ public class Server {
                         } else {
                             try {
                                 if (this.getClass().getResource("/static/" + root + uri) != null) {
-                                    //noinspection DataFlowIssue
                                     file = new File(this.getClass().getResource("/static/" + root + uri).toURI());
                                 } else {
-                                    //noinspection DataFlowIssue
                                     file = new File(this.getClass().getResource("/static" + uri).toURI());
                                 }
                             } catch (URISyntaxException e) {
