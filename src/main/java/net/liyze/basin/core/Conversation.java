@@ -86,13 +86,7 @@ public class Conversation {
             if (!(run == null)) {
                 try {
                     LOGGER.debug(cmdName + "started.");
-                    if (cfg.enableParallel) {
-                        run.run(args);
-                    } else {
-                        synchronized (this) {
-                            run.run(args);
-                        }
-                    }
+                    run.run(args);
                     return true;
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");

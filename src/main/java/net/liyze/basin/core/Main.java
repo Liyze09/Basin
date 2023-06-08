@@ -41,7 +41,7 @@ public final class Main {
     private static String command;
 
     public static void main(String[] args) {
-        LOGGER.info("Basin started.");
+        LOGGER.info("----------------------------------------------\nBasin started.");
         taskPool.submit(new Thread(() -> {
             try {
                 init();
@@ -78,13 +78,21 @@ public final class Main {
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();
-                taskPool.submit(new Thread(() -> {
+                if (cfg.enableParallel) {
+                    taskPool.submit(new Thread(() -> {
+                        try {
+                            conversation.sync().parse(command);
+                        } catch (Exception e) {
+                            LOGGER.error(e.toString());
+                        }
+                    }));
+                } else {
                     try {
                         conversation.sync().parse(command);
                     } catch (Exception e) {
                         LOGGER.error(e.toString());
                     }
-                }));
+                }
             }
         }).start();
         System.out.println(Basin.getBasin().basin);

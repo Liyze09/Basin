@@ -58,7 +58,7 @@ public final class Basin {
      * Stop basin after all task finished.
      */
     public void shutdown() {
-        Main.LOGGER.info("Stopping\n\n");
+        Main.LOGGER.info("Stopping\n");
         BootClasses.forEach((i) -> {
             try {
                 ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
