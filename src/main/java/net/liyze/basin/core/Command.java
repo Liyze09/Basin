@@ -1,10 +1,14 @@
 package net.liyze.basin.core;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Basin Command's SPI
+ */
 public interface Command {
     /**
      * What to do when start the command
@@ -16,9 +20,9 @@ public interface Command {
     /**
      * The Name of the command
      */
-
     @NotNull String Name();
 
+    @ApiStatus.Experimental
     @SuppressWarnings("unused")
     default @Nullable Object returns() {
         return null;

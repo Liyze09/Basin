@@ -113,7 +113,7 @@ public class HttpServer implements Server {
                             return;
                         }
                     }
-                    File file = new File(root + uri.replace('/', File.separatorChar));
+                    File file = new File(root + File.separator + uri.replace('/', File.separatorChar));
                     if (!file.exists()) {
                         if (this.getClass().getResource("/static/" + root + uri) == null && (this.getClass().getResource("/static/" + uri) == null)) {
                             file = new File(root + File.separator + "404.html");

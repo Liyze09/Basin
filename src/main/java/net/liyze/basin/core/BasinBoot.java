@@ -1,5 +1,8 @@
 package net.liyze.basin.core;
 
+/**
+ * Basin's Plugin/Boot SPI
+ */
 public interface BasinBoot {
     /**
      * Runs on basin loading app jar

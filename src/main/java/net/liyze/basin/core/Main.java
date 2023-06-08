@@ -93,7 +93,7 @@ public final class Main {
                 }
             }
         }).start();
-        System.out.println(Basin.getBasin().basin);
+        System.out.println(Basin.getBasin().banner);
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})

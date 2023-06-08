@@ -12,11 +12,20 @@ import static net.liyze.basin.core.Main.*;
 import static net.liyze.basin.http.HttpServer.runningServer;
 import static net.liyze.basin.remote.RemoteServer.servers;
 
+/**
+ * Basin's data class.
+ */
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
+    /**
+     * The singleton.
+     */
     private static final Basin b = new Basin();
+    /**
+     * Basin's ASCII banner
+     */
     @SuppressWarnings("SpellCheckingInspection")
-    public String basin = String.format(
+    public String banner = String.format(
             """
                     \r
                     BBBBBBBBBBBBBBBBB                                         iiii
@@ -41,15 +50,24 @@ public final class Basin {
     private Basin() {
     }
 
+    /**
+     * Get the singleton
+     */
     public static Basin getBasin() {
         return b;
     }
 
+    /**
+     * Get version version's String.
+     */
     @Contract(pure = true)
     public @NotNull String getVersion() {
         return "0.1";
     }
 
+    /**
+     * Get version version's int.
+     */
     public int getVersionNum() {
         return 1;
     }
@@ -70,6 +88,9 @@ public final class Basin {
         System.exit(0);
     }
 
+    /**
+     * Restart basin.
+     */
     public void restart() {
         BootClasses.forEach((i) -> {
             try {

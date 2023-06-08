@@ -16,7 +16,13 @@ import static net.liyze.basin.core.Main.*;
  * Basin Command Parser
  */
 public class Conversation {
+    /**
+     * All inited Conversation.
+     */
     public static final List<Conversation> cs = new ArrayList<>();
+    /**
+     * This Conversation's vars.
+     */
     public final Map<String, String> vars = new ConcurrentHashMap<>();
 
     public Conversation() {

@@ -14,7 +14,6 @@ import static net.liyze.basin.core.Main.*;
  * Basin Config Bean
  */
 public final class Config {
-
     public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
     public boolean doLoadJars = true;
     public String startCommand = "";
@@ -24,6 +23,9 @@ public final class Config {
     public int remotePort = 32768;
     public boolean enableParallel = true;
 
+    /**
+     * Load the config {@code cfg.json}
+     */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     static Config initConfig() {
         Config cfg = new Config();
