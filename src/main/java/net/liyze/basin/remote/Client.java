@@ -15,6 +15,9 @@ import java.nio.charset.StandardCharsets;
 import static net.liyze.basin.core.Main.*;
 
 public class Client {
+    /**
+     * Send {@code message} to {@code host}:{@code port} use {@code token}.
+     */
     public static void send(String message, String host, @NotNull String token, int port) throws Exception {
         MessageProcessor<String> processor = (session, msg) -> LOGGER.info("Receive from server: " + msg);
         AioQuickClient client = new AioQuickClient(host, port, new StringProtocol(), processor);
@@ -33,6 +36,9 @@ public class Client {
         LOGGER.info("Remote Sent: \"{}\" to \"{}\"", message, host);
     }
 
+    /**
+     * Send {@code <message>} to {@code <host>}:default port use {@code <token>}.
+     */
     public static void send(String message, String host, @NotNull String token) throws Exception {
         send(message, host, token, cfg.remotePort);
     }

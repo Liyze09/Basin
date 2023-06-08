@@ -1,6 +1,7 @@
 package net.liyze.basin.remote;
 
 import net.liyze.basin.core.Conversation;
+import net.liyze.basin.core.Server;
 import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.protocol.ByteArrayProtocol;
@@ -17,25 +18,34 @@ import java.util.List;
 
 import static net.liyze.basin.core.Main.LOGGER;
 
-public class Server {
-    public static final List<Server> servers = new ArrayList<>();
+public class RemoteServer implements Server {
+    public static final List<net.liyze.basin.core.Server> servers = new ArrayList<>();
     private final String token;
     private final int port;
     private final Conversation REMOTE_CONVERSATION;
     public AioQuickServer server = null;
 
-    public Server(@NotNull String token, int port, Conversation remoteConversation) {
+    /**
+     * Init remote server at{@code <port>} with {@code <token>} and use {@code <remoteConversation>} to parse remote command.
+     */
+    public RemoteServer(@NotNull String token, int port, Conversation remoteConversation) {
         servers.add(this);
         this.token = token;
         this.port = port;
         REMOTE_CONVERSATION = remoteConversation;
     }
 
-    public void shutdown() {
+    /**
+     * Stop remote Server
+     */
+    public void stop() {
         server.shutdown();
     }
 
-    public void start() throws Exception {
+    /**
+     * Start remote server
+     */
+    public RemoteServer start() {
         MessageProcessor<byte[]> processor = (s, b) -> {
             Cipher cipher;
             String msg = "";
@@ -86,6 +96,11 @@ public class Server {
         };
         server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
         server.setLowMemory(true);
-        server.start();
+        try {
+            server.start();
+        } catch (IOException e) {
+            LOGGER.error("Failed to start server {}", e.toString());
+        }
+        return this;
     }
 }

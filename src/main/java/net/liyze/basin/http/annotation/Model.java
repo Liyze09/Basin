@@ -1,4 +1,4 @@
-package net.liyze.basin.http;
+package net.liyze.basin.http.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

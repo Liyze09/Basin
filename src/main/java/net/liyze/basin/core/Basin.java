@@ -1,7 +1,7 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.http.Server;
-import net.liyze.basin.interfaces.BasinBoot;
+import net.liyze.basin.http.HttpServer;
+import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,8 +9,8 @@ import java.util.concurrent.Executors;
 
 import static net.liyze.basin.core.Conversation.cs;
 import static net.liyze.basin.core.Main.*;
-import static net.liyze.basin.http.Server.runningServer;
-import static net.liyze.basin.remote.Server.servers;
+import static net.liyze.basin.http.HttpServer.runningServer;
+import static net.liyze.basin.remote.RemoteServer.servers;
 
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
@@ -82,9 +82,9 @@ public final class Basin {
         cs.forEach(c -> c.vars.clear());
         taskPool.shutdownNow();
         servicePool.shutdownNow();
-        servers.forEach(net.liyze.basin.remote.Server::shutdown);
+        servers.forEach(Server::stop);
         servers.clear();
-        runningServer.values().forEach(Server::stop);
+        runningServer.values().forEach(HttpServer::stop);
         runningServer.clear();
         commands.clear();
         BootClasses.clear();
@@ -113,7 +113,7 @@ public final class Basin {
         if (!cfg.startCommand.isBlank()) CONSOLE_CONVERSATION.parse(cfg.startCommand);
         if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
             try {
-                new net.liyze.basin.remote.Server(cfg.accessToken, cfg.remotePort, new Conversation()).start();
+                new RemoteServer(cfg.accessToken, cfg.remotePort, new Conversation()).start();
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }

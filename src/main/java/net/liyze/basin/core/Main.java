@@ -3,9 +3,7 @@ package net.liyze.basin.core;
 import com.moandjiezana.toml.Toml;
 import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.core.commands.*;
-import net.liyze.basin.interfaces.BasinBoot;
-import net.liyze.basin.interfaces.Command;
-import net.liyze.basin.remote.Server;
+import net.liyze.basin.remote.RemoteServer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +67,7 @@ public final class Main {
             regCommands();
             if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
                 try {
-                    new Server(cfg.accessToken, cfg.remotePort, new Conversation()).start();
+                    new RemoteServer(cfg.accessToken, cfg.remotePort, new Conversation()).start();
                 } catch (Exception e) {
                     LOGGER.error(e.toString());
                 }

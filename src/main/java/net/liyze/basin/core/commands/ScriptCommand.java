@@ -1,8 +1,8 @@
 package net.liyze.basin.core.commands;
 
+import net.liyze.basin.core.Command;
 import net.liyze.basin.core.Conversation;
 import net.liyze.basin.core.Main;
-import net.liyze.basin.interfaces.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;

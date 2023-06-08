@@ -1,4 +1,4 @@
-package net.liyze.basin.interfaces;
+package net.liyze.basin.core;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

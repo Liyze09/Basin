@@ -1,6 +1,6 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.interfaces.Command;
+import net.liyze.basin.core.Command;
 import net.liyze.basin.remote.Client;
 import org.jetbrains.annotations.NotNull;
 

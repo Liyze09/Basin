@@ -1,4 +1,4 @@
-package net.liyze.basin.interfaces;
+package net.liyze.basin.core;
 
 public interface BasinBoot {
     /**

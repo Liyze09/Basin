@@ -1,6 +1,5 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.interfaces.Command;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -24,33 +23,39 @@ public class Conversation {
         cs.add(this);
     }
 
+    /**
+     * Sync variables to the public environment.
+     */
     public Conversation sync() {
         vars.putAll(publicVars);
         return this;
     }
 
     /**
-     * Parse command from String
+     * Parse command from String.
      */
     public boolean parse(@NotNull String ac) {
         if (ac.isBlank() || ac.startsWith("#")) return true;
-        List<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), ' ')));
-        return parse(alc);
+        LOGGER.info(ac);
+        return parse(new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), ' '))));
     }
 
+    /**
+     * Parse command from a List.
+     */
     public boolean parse(@NotNull List<String> alc) {
         final List<List<String>> allArgs = new ArrayList<>();
         {
-            List<String> areaArgs = new ArrayList<>();
+            final List<String> areaArgs = new ArrayList<>();
             //Pre-parse
             for (String i : alc) {
-                //Multi Command
+                //Multi Command Apply
                 if (i.equals("&")) {
                     allArgs.add(areaArgs);
                     areaArgs.clear();
                     continue;
                 }
-                //Var Apply
+                //Variables Apply
                 if (!i.startsWith("$")) {
                     areaArgs.add(i);
                 } else {
@@ -71,7 +76,7 @@ public class Conversation {
             allArgs.add(areaArgs);
         }
         for (List<String> args : allArgs) {
-            String cmdName = args.get(0);
+            final String cmdName = args.get(0);
             final Logger LOGGER = LoggerFactory.getLogger(cmdName);
             //Var Define Apply
             if (cmdName.matches(".*=.*")) {
@@ -81,7 +86,7 @@ public class Conversation {
                 return true;
             }
             args.remove(cmdName);
-            Command run = commands.get(cmdName.toLowerCase().strip());
+            final Command run = commands.get(cmdName.toLowerCase().strip());
             //Run command method
             if (!(run == null)) {
                 try {

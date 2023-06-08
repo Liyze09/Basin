@@ -1,8 +1,8 @@
 package net.liyze.basin.core.commands;
 
+import net.liyze.basin.core.Command;
 import net.liyze.basin.core.Main;
-import net.liyze.basin.http.Server;
-import net.liyze.basin.interfaces.Command;
+import net.liyze.basin.http.HttpServer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -11,13 +11,13 @@ public class ServerCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
         String name = args.get(1);
-        Server server;
+        HttpServer server;
         try {
             if (args.get(0).equals("stop")) {
-                server = Server.runningServer.get(name);
+                server = HttpServer.runningServer.get(name);
                 if (server != null) {
                     server.stop();
-                    Server.runningServer.remove(name);
+                    HttpServer.runningServer.remove(name);
                 } else {
                     Main.LOGGER.error("{} is not exist.", name);
                 }
@@ -25,8 +25,8 @@ public class ServerCommand implements Command {
         } catch (IndexOutOfBoundsException ignored) {
             int port = Integer.parseInt(args.get(0));
             try {
-                server = new Server(name, port);
-                Server.runningServer.put(name, server.run());
+                server = new HttpServer(name, port);
+                HttpServer.runningServer.put(name, server.start());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

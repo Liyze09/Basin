@@ -1,7 +1,5 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.interfaces.BasinBoot;
-import net.liyze.basin.interfaces.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

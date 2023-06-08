@@ -1,7 +1,9 @@
 package net.liyze.basin.http;
 
 import net.liyze.basin.context.BeanDefinition;
+import net.liyze.basin.core.Server;
 import net.liyze.basin.http.annotation.GetMapping;
+import net.liyze.basin.http.annotation.Model;
 import net.liyze.basin.http.annotation.PostMapping;
 import org.smartboot.http.common.enums.HttpStatus;
 import org.smartboot.http.server.HttpBootstrap;
@@ -25,27 +27,36 @@ import java.util.concurrent.atomic.AtomicReference;
 import static net.liyze.basin.core.Main.*;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
-public class Server {
-    public static final Map<String, Server> runningServer = new HashMap<>();
+public class HttpServer implements Server {
+    public static final Map<String, HttpServer> runningServer = new HashMap<>();
     public final File root;
     private final HttpBootstrap bootstrap = new HttpBootstrap();
     public String serverName;
     public int port;
 
-    public Server(String name, int port) {
+    /**
+     * Init server on {@code <port>} with {@code <name>}
+     */
+    public HttpServer(String name, int port) {
         this.port = port;
         this.serverName = name;
         root = new File("data/web/" + serverName + "/root");
         root.mkdirs();
     }
 
+    /**
+     * Stop web server.
+     */
     public void stop() {
         bootstrap.shutdown();
         LOGGER.info("Server {} on port {} stopped", serverName, port);
     }
 
+    /**
+     * Start web server.
+     */
     @SuppressWarnings("DataFlowIssue")
-    public Server run() throws IOException {
+    public HttpServer start() {
         LOGGER.info("Server {} on port {} started", serverName, port);
         final List<BeanDefinition> models = new ArrayList<>();
         contexts.forEach(i -> models.addAll(i.getBeanDefinitions().stream().filter(bean -> bean.getBeanClass().isAnnotationPresent(Model.class)).toList()));
@@ -146,10 +157,11 @@ public class Server {
                             LOGGER.warn("HTTP Error {}", e.toString());
                         }
                     }
-                    LOGGER.trace("Response:\nStatus: {}\nContentType: {}\nReasonPhrase: {}",
+                    LOGGER.trace("Response:\nStatus: {} {}\nContentType: {}",
                             response.getHttpStatus(),
-                            response.getContentType(),
-                            response.getReasonPhrase());
+                            response.getReasonPhrase(),
+                            response.getContentType()
+                    );
                 }
             }).setPort(port).start();
         } catch (Exception e) {
