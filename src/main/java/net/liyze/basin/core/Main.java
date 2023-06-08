@@ -7,7 +7,6 @@ import net.liyze.basin.interfaces.BasinBoot;
 import net.liyze.basin.interfaces.Command;
 import net.liyze.basin.remote.Server;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +18,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarFile;
 
-
+/**
+ * Basin start class
+ */
 public final class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();
@@ -32,7 +32,6 @@ public final class Main {
     public static final Conversation CONSOLE_CONVERSATION = new Conversation();
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
-    public static final Map<String, String> mineTypes = new HashMap<>();
     static final File jars = new File("data" + File.separator + "jars");
     public static Toml env = new Toml();
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
@@ -81,7 +80,7 @@ public final class Main {
                 command = scanner.nextLine();
                 taskPool.submit(new Thread(() -> {
                     try {
-                        conversation.parse(command);
+                        conversation.sync().parse(command);
                     } catch (Exception e) {
                         LOGGER.error(e.toString());
                     }
@@ -150,55 +149,6 @@ public final class Main {
             }
         }
     }
-
-    @SuppressWarnings({"DataFlowIssue", "ConstantValue"})
-    public static boolean publicRunCommand(@NotNull List<String> alc) {
-        for (String cmd : alc) {
-            ArrayList<String> args = new ArrayList<>();
-            for (String i : List.of(StringUtils.split(cmd.strip(), ' '))) {
-                if (!i.startsWith("$")) {
-                    args.add(i);
-                } else {
-                    String string;
-                    if (publicVars != null) {
-                        string = publicVars.get(i.replaceFirst("\\$", ""));
-                        args.add(string);
-                    }
-                }
-            }
-            String cmdName = args.get(0);
-            if (cmdName.matches(".*=.*")) {
-                String[] var = StringUtils.split(cmdName, "=");
-                publicVars.put(var[0].strip(), var[1].strip());
-                return true;
-            }
-            args.remove(cmdName);
-            Command run = commands.get(cmdName.toLowerCase().strip());
-            LOGGER.info("Starting: " + cmd);
-            if (!(run == null)) {
-                try {
-                    run.run(args);
-                    return true;
-                } catch (IndexOutOfBoundsException e) {
-                    LOGGER.error("Bad arg input.");
-                } catch (Exception e) {
-                    LOGGER.error(e.toString());
-                }
-            } else LOGGER.error("Unknown command: " + cmdName);
-        }
-        return false;
-    }
-
-    public static boolean publicRunCommand(@NotNull String ac) {
-        if (ac.isBlank() || ac.startsWith("#")) return true;
-        ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
-        AtomicBoolean p = new AtomicBoolean(true);
-        alc.forEach((cmd) -> {
-            if (!publicRunCommand(alc)) p.set(false);
-        });
-        return p.get();
-    }
-
     public static void regCommands() {
         register(new ForceStopCommand());
         register(new StopCommand());

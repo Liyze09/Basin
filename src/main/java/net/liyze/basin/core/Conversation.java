@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.liyze.basin.core.Main.*;
 
+/**
+ * Basin Command Parser
+ */
 public class Conversation {
     public static final List<Conversation> cs = new ArrayList<>();
     public final Map<String, String> vars = new ConcurrentHashMap<>();
@@ -22,59 +24,84 @@ public class Conversation {
         cs.add(this);
     }
 
-    public boolean parse(@NotNull String ac) {
-        if (ac.isBlank() || ac.startsWith("#")) return true;
-        ArrayList<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), '&')));
-        AtomicBoolean p = new AtomicBoolean(true);
-        alc.forEach((cmd) -> {
-            if (!parse(alc)) p.set(false);
-        });
-        return p.get();
+    public Conversation sync() {
+        vars.putAll(publicVars);
+        return this;
     }
 
-    @SuppressWarnings("DataFlowIssue")
+    /**
+     * Parse command from String
+     */
+    public boolean parse(@NotNull String ac) {
+        if (ac.isBlank() || ac.startsWith("#")) return true;
+        List<String> alc = new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), ' ')));
+        return parse(alc);
+    }
+
     public boolean parse(@NotNull List<String> alc) {
-        ArrayList<String> args = new ArrayList<>();
-        for (String cmd : alc) {
-            for (String i : List.of(StringUtils.split(cmd.strip(), ' '))) {
+        final List<List<String>> allArgs = new ArrayList<>();
+        {
+            List<String> areaArgs = new ArrayList<>();
+            //Pre-parse
+            for (String i : alc) {
+                //Multi Command
+                if (i.equals("&")) {
+                    allArgs.add(areaArgs);
+                    areaArgs.clear();
+                    continue;
+                }
+                //Var Apply
                 if (!i.startsWith("$")) {
-                    args.add(i);
+                    areaArgs.add(i);
                 } else {
                     i = i.replaceFirst("\\$", "");
                     String string = vars.get(i);
                     if (string != null) {
-                        args.add(string);
+                        areaArgs.add(string);
                     } else {
                         String string0 = vars.get(i);
                         if (string0 != null) {
-                            args.add(string0);
+                            areaArgs.add(string0);
                         } else {
-                            LOGGER.info("Undefined Variable {}", i);
+                            LOGGER.warn("Undefined Variable {}", i);
                         }
                     }
                 }
             }
+            allArgs.add(areaArgs);
+        }
+        for (List<String> args : allArgs) {
             String cmdName = args.get(0);
             final Logger LOGGER = LoggerFactory.getLogger(cmdName);
+            //Var Define Apply
             if (cmdName.matches(".*=.*")) {
                 String[] var = StringUtils.split(cmdName, "=");
                 vars.put(var[0].strip(), var[1].strip());
+                LOGGER.info(cmdName);
                 return true;
             }
             args.remove(cmdName);
             Command run = commands.get(cmdName.toLowerCase().strip());
-            LOGGER.info("Starting: " + cmd);
+            //Run command method
             if (!(run == null)) {
                 try {
-                    run.run(args);
+                    LOGGER.debug(cmdName + "started.");
+                    if (cfg.enableParallel) {
+                        run.run(args);
+                    } else {
+                        synchronized (this) {
+                            run.run(args);
+                        }
+                    }
                     return true;
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.toString());
                 }
             } else LOGGER.error("Unknown command: " + cmdName);
         }
         return false;
     }
+
 }

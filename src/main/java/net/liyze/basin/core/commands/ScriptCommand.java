@@ -30,7 +30,7 @@ public class ScriptCommand implements Command {
         try (
                 BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8))
         ) {
-            Conversation conversation = new Conversation();
+            Conversation conversation = new Conversation().sync();
             Stream<String> lines = script.lines();
             lines.forEach(i -> {
                 if (!(i).isEmpty()) conversation.parse(i);

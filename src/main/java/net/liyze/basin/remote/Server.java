@@ -39,7 +39,6 @@ public class Server {
         MessageProcessor<byte[]> processor = (s, b) -> {
             Cipher cipher;
             String msg = "";
-
             WriteBuffer outputStream = s.writeBuffer();
             try {
                 cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -65,7 +64,7 @@ public class Server {
                 }
                 return;
             }
-            if (!REMOTE_CONVERSATION.parse(msg.substring(4))) {
+            if (!REMOTE_CONVERSATION.sync().parse(msg.substring(4))) {
                 try {
                     byte[] bytes = "Failed to run the command.".getBytes(StandardCharsets.UTF_8);
                     outputStream.writeInt(bytes.length);

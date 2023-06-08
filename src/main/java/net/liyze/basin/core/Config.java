@@ -10,6 +10,9 @@ import java.nio.file.Files;
 
 import static net.liyze.basin.core.Main.*;
 
+/**
+ * Basin Config Bean
+ */
 public final class Config {
 
     public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
@@ -19,6 +22,7 @@ public final class Config {
     public boolean enableShellCommand = false;
     public String accessToken = "";
     public int remotePort = 32768;
+    public boolean enableParallel = true;
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     static Config initConfig() {
