@@ -15,18 +15,6 @@ repositories {
     maven {
         url "https://maven.aliyun.com/repository/gradle-plugin"
     }
-    maven {
-        name = "OSSRH"
-        if (project.version.toString().endsWith("-SNAPSHOT")) {
-            url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
-        } else {
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-        }
-        credentials {
-            username = findProperty("OSSRH_USERNAME") ?: System.getenv("OSSRH_USERNAME")
-            password = findProperty("OSSEH_PASSWORD") ?: System.getenv("OSSRH_PASSWORD")
-        }
-    }
     mavenCentral()
 }
 
@@ -85,7 +73,6 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifactId = 'Basin'
-            from components.java
             pom {
                 name = 'basin'
                 description = ''
@@ -108,6 +95,20 @@ publishing {
                     developerConnection = 'scm:git:ssh://github.com/Liyze09/Basin.git'
                     url = 'https://github.com/Liyze09/Basin'
                 }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            if (project.version.toString().endsWith("-SNAPSHOT")) {
+                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+            credentials {
+                username = findProperty("OSSRH_USERNAME") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("OSSEH_PASSWORD") ?: System.getenv("OSSRH_PASSWORD")
             }
         }
     }
