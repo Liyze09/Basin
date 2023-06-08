@@ -43,6 +43,7 @@ public class Server {
         bootstrap.shutdown();
         LOGGER.info("Server {} on port {} stopped", serverName, port);
     }
+
     @SuppressWarnings("DataFlowIssue")
     public Server run() throws IOException {
         LOGGER.info("Server {} on port {} started", serverName, port);

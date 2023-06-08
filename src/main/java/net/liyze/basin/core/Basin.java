@@ -14,15 +14,7 @@ import static net.liyze.basin.remote.Server.servers;
 
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
-    private Basin() {
-    }
-
     private static final Basin b = new Basin();
-
-    public static Basin getBasin() {
-        return b;
-    }
-
     @SuppressWarnings("SpellCheckingInspection")
     public String basin = String.format(
             """
@@ -45,6 +37,13 @@ public final class Basin {
                     BBBBBBBBBBBBBBBBB     aaaaaaaaaa  aaaa   sssssssssss     iiiiiiii  nnnnnn    nnnnnn
                     :: Basin :: (%s)
                     """, getVersion());
+
+    private Basin() {
+    }
+
+    public static Basin getBasin() {
+        return b;
+    }
 
     @Contract(pure = true)
     public @NotNull String getVersion() {

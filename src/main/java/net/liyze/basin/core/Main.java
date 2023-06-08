@@ -30,16 +30,16 @@ public final class Main {
     public final static File config = new File("data" + File.separator + "cfg.json");
     public final static List<Class<?>> BootClasses = new ArrayList<>();
     public static final Conversation CONSOLE_CONVERSATION = new Conversation();
+    public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
+    public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
+    public static final Map<String, String> mineTypes = new HashMap<>();
     static final File jars = new File("data" + File.separator + "jars");
     public static Toml env = new Toml();
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
     public static Config cfg = Config.initConfig();
-    public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     private static String command;
-    public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
-    public static final Map<String, String> mineTypes = new HashMap<>();
 
     public static void main(String[] args) {
         LOGGER.info("Basin started.");

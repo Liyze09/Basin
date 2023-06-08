@@ -12,8 +12,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.core.Main.cfg;
+import static net.liyze.basin.core.Main.*;
 
 public class Client {
     public static void send(String message, String host, @NotNull String token, int port) throws Exception {

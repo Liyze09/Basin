@@ -24,14 +24,8 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
 
     protected final PropertyResolver propertyResolver;
     protected final Map<String, BeanDefinition> beans;
-
-    public Collection<BeanDefinition> getBeanDefinitions() {
-        return this.beans.values();
-    }
-
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
     private final Set<String> creatingBeanNames;
-
     public AnnotationConfigApplicationContext(Class<?> configClass) {
         contexts.add(this);
         PropertyResolver propertyResolver = new PropertyResolver();
@@ -78,6 +72,10 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
         if (logger.isDebugEnabled()) {
             this.beans.values().stream().sorted().forEach(def -> logger.debug("bean initialized: {}", def));
         }
+    }
+
+    public Collection<BeanDefinition> getBeanDefinitions() {
+        return this.beans.values();
     }
 
     /**

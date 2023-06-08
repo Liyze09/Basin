@@ -51,38 +51,38 @@ public class Server {
                     outputStream.write("Illegal BRC Request.".getBytes(StandardCharsets.UTF_8));
                 } catch (IOException ex) {
                     LOGGER.error(ex.toString());
-                    }
+                }
+                LOGGER.warn(e.toString());
+            }
+            if (!msg.startsWith("brc:")) {
+                try {
+                    byte[] bytes = "Illegal BRC Request.".getBytes(StandardCharsets.UTF_8);
+                    LOGGER.warn("Illegal BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
+                    outputStream.writeInt(bytes.length);
+                    outputStream.write(bytes);
+                } catch (IOException e) {
+                    LOGGER.warn("Illegal BRC Request: {}", msg);
+                }
+                return;
+            }
+            if (!REMOTE_CONVERSATION.parse(msg.substring(4))) {
+                try {
+                    byte[] bytes = "Failed to run the command.".getBytes(StandardCharsets.UTF_8);
+                    outputStream.writeInt(bytes.length);
+                    outputStream.write(bytes);
+                } catch (IOException ex) {
+                    LOGGER.error(ex.toString());
+                }
+            } else {
+                try {
+                    byte[] bytes = "Okay".getBytes(StandardCharsets.UTF_8);
+                    outputStream.writeInt(bytes.length);
+                    outputStream.write(bytes);
+                    LOGGER.info("BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
+                } catch (IOException e) {
                     LOGGER.warn(e.toString());
                 }
-                if (!msg.startsWith("brc:")) {
-                    try {
-                        byte[] bytes = "Illegal BRC Request.".getBytes(StandardCharsets.UTF_8);
-                        LOGGER.warn("Illegal BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
-                        outputStream.writeInt(bytes.length);
-                        outputStream.write(bytes);
-                    } catch (IOException e) {
-                        LOGGER.warn("Illegal BRC Request: {}", msg);
-                    }
-                    return;
-                }
-                if (!REMOTE_CONVERSATION.parse(msg.substring(4))) {
-                    try {
-                        byte[] bytes = "Failed to run the command.".getBytes(StandardCharsets.UTF_8);
-                        outputStream.writeInt(bytes.length);
-                        outputStream.write(bytes);
-                    } catch (IOException ex) {
-                        LOGGER.error(ex.toString());
-                    }
-                } else {
-                    try {
-                        byte[] bytes = "Okay".getBytes(StandardCharsets.UTF_8);
-                        outputStream.writeInt(bytes.length);
-                        outputStream.write(bytes);
-                        LOGGER.info("BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
-                    } catch (IOException e) {
-                        LOGGER.warn(e.toString());
-                    }
-                }
+            }
 
         };
         server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
