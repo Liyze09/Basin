@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     //https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
     //https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation 'org.slf4j:slf4j-api:2.0.7'
     //https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
@@ -75,7 +75,7 @@ publishing {
             artifactId = 'Basin'
             pom {
                 name = 'basin'
-                description = ''
+                description = 'Basin'
                 url = 'hjttps://github.com/Liyze09/Basin'
                 licenses {
                     license {
