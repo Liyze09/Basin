@@ -1,5 +1,5 @@
 #file: noinspection SpellCheckingInspection
-name: build
+name: publish
 on: [ workflow_dispatch, release ]
 
 permissions:
