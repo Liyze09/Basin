@@ -69,34 +69,23 @@ public class Parser {
                     areaArgs.clear();
                     continue;
                 }
-                //Variables Apply
-                if (!i.startsWith("$")) {
-                    areaArgs.add(i);
-                } else {
-                    i = i.replaceFirst("\\$", "");
-                    String string = vars.get(i);
-                    if (string != null) {
-                        areaArgs.add(string);
-                    } else {
-                        String string0 = vars.get(i);
-                        if (string0 != null) {
-                            areaArgs.add(string0);
-                        } else {
-                            LOGGER.warn("Undefined Variable {}", i);
-                        }
-                    }
-                }
                 AtomicReference<String> f = new AtomicReference<>();
+                AtomicReference<String> s = new AtomicReference<>(null);
                 ps.forEach(c -> {
                     try {
                         PreParser parser = c.getDeclaredConstructor(Parser.class).newInstance(this);
-                        if (f.get().matches(parser.getRegex())) {
-                            //TODO
+                        if (f.get().matches(parser.getRegex()) && s.get() == null) {
+                            s.set(parser.apply(f.get()));
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
+                if (s.get() != null) {
+                    areaArgs.add(s.get());
+                } else {
+                    areaArgs.add(i);
+                }
             }
             allArgs.add(areaArgs);
         }
