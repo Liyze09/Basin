@@ -1,5 +1,7 @@
 package net.liyze.basin.script;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.function.Function;
 
 public abstract class PreParser implements Function<String, String> {
@@ -9,5 +11,5 @@ public abstract class PreParser implements Function<String, String> {
         this.parser = parser;
     }
 
-    public abstract String getRegex();
+    public abstract @NotNull String getRegex();
 }

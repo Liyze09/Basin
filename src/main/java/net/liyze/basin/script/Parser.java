@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static net.liyze.basin.core.Main.*;
@@ -21,11 +22,13 @@ import static net.liyze.basin.core.Main.*;
  */
 @SuppressWarnings("unused")
 public class Parser {
+
     /**
      * All Parser.
      */
     public static final List<Parser> cs = new ArrayList<>();
-    public static final List<Class<? extends PreParser>> ps = new ArrayList<>();
+
+    public static final List<Class<PreParser>> ps = new ArrayList<>();
     /**
      * This Parser's vars.
      */
@@ -83,27 +86,21 @@ public class Parser {
                         }
                     }
                 }
+                AtomicReference<String> f = new AtomicReference<>();
+                ps.forEach(c -> {
+                    try {
+                        PreParser parser = c.getDeclaredConstructor(Parser.class).newInstance(this);
+                        if (f.get().matches(parser.getRegex())) {
+                            //TODO
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
             allArgs.add(areaArgs);
         }
         for (List<String> args : allArgs) {
-            //Pre-parse
-            for (int j = 0; j < args.size(); ++j) {
-                PreParser parser;
-                try {
-                    parser = ps.get(j).getDeclaredConstructor(Parser.class).newInstance(this);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                for (int i = 0; i < args.size(); ++i) {
-                    String s = args.get(i);
-                    if (s.matches(parser.getRegex())) {
-                        s = parser.apply(s);
-                        args.set(i, s);
-                        allArgs.set(j, args);
-                    }
-                }
-            }
             final String cmdName = args.get(0);
             final Logger LOGGER = LoggerFactory.getLogger(cmdName);
             //Var Define Apply

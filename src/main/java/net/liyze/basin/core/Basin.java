@@ -17,7 +17,7 @@ import static net.liyze.basin.script.Parser.cs;
 /**
  * Basin's data class.
  */
-@ComponentScan("net.liyze.basin.script.commands")
+@ComponentScan({"net.liyze.basin.script.commands", "net.liyze.basin.script.preparser"})
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     /**

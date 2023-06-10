@@ -5,6 +5,7 @@ import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
 import net.liyze.basin.script.Parser;
+import net.liyze.basin.script.PreParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.jar.JarFile;
+
+import static net.liyze.basin.script.Parser.ps;
 
 /**
  * Basin start class
@@ -67,6 +70,8 @@ public final class Main {
         new Thread(() -> {
             app = new AnnotationConfigApplicationContext(Basin.class);
             app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
+            //noinspection unchecked
+            app.findBeanDefinitions(PreParser.class).forEach(def -> ps.add((Class<PreParser>) def.getBeanClass()));
             Parser parser = new Parser();
             regCommands();
             if (cfg.enableRemote && !cfg.accessToken.isBlank()) {

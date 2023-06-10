@@ -90,7 +90,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
 
         defs.forEach(def -> {
             // 如果Bean未被创建(可能在其他Bean的构造方法注入前被创建):
-            if (def.getInstance() == null) {
+            if (def.getInstance() == null && !def.getBeanClass().isAnnotationPresent(WithoutInstance.class)) {
                 // 创建Bean:
                 createBeanAsEarlySingleton(def);
             }
@@ -101,7 +101,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
      * 创建一个Bean，然后使用BeanPostProcessor处理，但不进行字段和方法级别的注入。如果创建的Bean不是Configuration或BeanPostProcessor，则在构造方法中注入的依赖Bean会自动创建。
      */
     @Override
-    public Object createBeanAsEarlySingleton(BeanDefinition def) {
+    public Object createBeanAsEarlySingleton(@NotNull BeanDefinition def) {
         logger.atDebug().log("Try create bean '{}' as early singleton: {}", def.getName(), def.getBeanClass().getName());
         if (!this.creatingBeanNames.add(def.getName())) {
             throw new UnsatisfiedDependencyException(String.format("Circular dependency detected when create bean '%s'", def.getName()));
