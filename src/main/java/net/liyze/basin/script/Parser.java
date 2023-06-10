@@ -73,12 +73,12 @@ public class Parser {
                 AtomicReference<String> s = new AtomicReference<>(null);
                 ps.forEach(c -> {
                     try {
-                        PreParser parser = c.getDeclaredConstructor(Parser.class).newInstance(this);
+                        PreParser parser = c.getConstructor(Parser.class).newInstance(this);
                         if (s.get() == null && f.get().matches(parser.getRegex())) {
                             s.set(parser.apply(f.get()));
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        LOGGER.info(e.toString());
                     }
                 });
                 if (s.get() != null) {
@@ -104,7 +104,7 @@ public class Parser {
             //Run command method
             if (!(run == null)) {
                 try {
-                    LOGGER.debug(cmdName + "started.");
+                    LOGGER.debug(cmdName + " started.");
                     run.run(args);
                     return true;
                 } catch (IndexOutOfBoundsException e) {

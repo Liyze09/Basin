@@ -30,7 +30,7 @@ public class ServerCommand implements Command {
                 server = new HttpServer(name, port);
                 HttpServer.runningServer.put(name, server.start());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                Main.LOGGER.error(e.toString());
             }
         }
     }

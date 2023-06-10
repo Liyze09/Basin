@@ -42,7 +42,7 @@ public final class Main {
     public static Config cfg = Config.initConfig();
     private static String command;
     public static ConfigurableApplicationContext app;
-
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         LOGGER.info("----------------------------------------------\nBasin started.");
         taskPool.submit(new Thread(() -> {
@@ -70,7 +70,6 @@ public final class Main {
         new Thread(() -> {
             app = new AnnotationConfigApplicationContext(Basin.class);
             app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
-            //noinspection unchecked
             app.findBeanDefinitions(PreParser.class).forEach(def -> ps.add((Class<PreParser>) def.getBeanClass()));
             Parser parser = new Parser();
             regCommands();
@@ -82,22 +81,23 @@ public final class Main {
                 }
             }
             if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
-            Scanner scanner = new Scanner(System.in);
-            while (true) {
-                command = scanner.nextLine();
-                if (cfg.enableParallel) {
-                    taskPool.submit(new Thread(() -> {
+            try (Scanner scanner = new Scanner(System.in)) {
+                while (true) {
+                    command = scanner.nextLine();
+                    if (cfg.enableParallel) {
+                        taskPool.submit(new Thread(() -> {
+                            try {
+                                parser.sync().parse(command);
+                            } catch (Exception e) {
+                                LOGGER.error(e.toString());
+                            }
+                        }));
+                    } else {
                         try {
                             parser.sync().parse(command);
                         } catch (Exception e) {
                             LOGGER.error(e.toString());
                         }
-                    }));
-                } else {
-                    try {
-                        parser.sync().parse(command);
-                    } catch (Exception e) {
-                        LOGGER.error(e.toString());
                     }
                 }
             }
