@@ -69,12 +69,12 @@ public class Parser {
                     areaArgs.clear();
                     continue;
                 }
-                AtomicReference<String> f = new AtomicReference<>();
+                AtomicReference<String> f = new AtomicReference<>(i);
                 AtomicReference<String> s = new AtomicReference<>(null);
                 ps.forEach(c -> {
                     try {
                         PreParser parser = c.getDeclaredConstructor(Parser.class).newInstance(this);
-                        if (f.get().matches(parser.getRegex()) && s.get() == null) {
+                        if (s.get() == null && f.get().matches(parser.getRegex())) {
                             s.set(parser.apply(f.get()));
                         }
                     } catch (Exception e) {
