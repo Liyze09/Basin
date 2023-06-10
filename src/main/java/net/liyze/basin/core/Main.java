@@ -2,6 +2,7 @@ package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
 import net.liyze.basin.context.AnnotationConfigApplicationContext;
+import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
 import net.liyze.basin.script.Parser;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +38,7 @@ public final class Main {
     public static Map<String, Object> envMap;
     public static Config cfg = Config.initConfig();
     private static String command;
-    public static AnnotationConfigApplicationContext app;
+    public static ConfigurableApplicationContext app;
 
     public static void main(String[] args) {
         LOGGER.info("----------------------------------------------\nBasin started.");

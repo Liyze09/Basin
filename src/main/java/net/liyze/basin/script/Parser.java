@@ -6,21 +6,26 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static net.liyze.basin.core.Main.*;
 
 /**
  * Basin Command Parser
  */
+@SuppressWarnings("unused")
 public class Parser {
     /**
      * All Parser.
      */
     public static final List<Parser> cs = new ArrayList<>();
+    public static final List<Class<? extends PreParser>> ps = new ArrayList<>();
     /**
      * This Parser's vars.
      */
@@ -54,7 +59,6 @@ public class Parser {
         final List<List<String>> allArgs = new ArrayList<>();
         {
             final List<String> areaArgs = new ArrayList<>();
-            //Pre-parse
             for (String i : alc) {
                 //Multi Command Apply
                 if (i.equals("&")) {
@@ -83,6 +87,23 @@ public class Parser {
             allArgs.add(areaArgs);
         }
         for (List<String> args : allArgs) {
+            //Pre-parse
+            for (int j = 0; j < args.size(); ++j) {
+                PreParser parser;
+                try {
+                    parser = ps.get(j).getDeclaredConstructor(Parser.class).newInstance(this);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                for (int i = 0; i < args.size(); ++i) {
+                    String s = args.get(i);
+                    if (s.matches(parser.getRegex())) {
+                        s = parser.apply(s);
+                        args.set(i, s);
+                        allArgs.set(j, args);
+                    }
+                }
+            }
             final String cmdName = args.get(0);
             final Logger LOGGER = LoggerFactory.getLogger(cmdName);
             //Var Define Apply
@@ -110,4 +131,19 @@ public class Parser {
         return false;
     }
 
+    public void parseScript(@NotNull BufferedReader script) throws IOException {
+        Stream<String> lines = script.lines();
+        lines.forEach(i -> {
+            if (!(i).isEmpty()) this.parse(i);
+        });
+        script.close();
+    }
+
+    public void syncTo(@NotNull Parser parser) {
+        parser.vars.putAll(this.vars);
+    }
+
+    public void syncFrom(@NotNull Parser parser) {
+        this.vars.putAll(parser.vars);
+    }
 }

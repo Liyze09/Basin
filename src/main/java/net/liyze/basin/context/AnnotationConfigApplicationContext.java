@@ -5,6 +5,7 @@ import net.liyze.basin.context.exception.*;
 import net.liyze.basin.context.io.PropertyResolver;
 import net.liyze.basin.context.io.ResourceResolver;
 import net.liyze.basin.context.utils.ClassUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,7 +233,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     /**
      * 根据扫描的ClassName创建BeanDefinition
      */
-    Map<String, BeanDefinition> createBeanDefinitions(Set<String> classNameSet) {
+    Map<String, BeanDefinition> createBeanDefinitions(@NotNull Set<String> classNameSet) {
         //noinspection SpellCheckingInspection
         Map<String, BeanDefinition> defs = new HashMap<>();
         for (String className : classNameSet) {
@@ -320,7 +321,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     /**
      * 注入属性
      */
-    void injectProperties(BeanDefinition def, Class<?> clazz, Object bean) throws ReflectiveOperationException {
+    void injectProperties(BeanDefinition def, @NotNull Class<?> clazz, Object bean) throws ReflectiveOperationException {
         // 在当前类查找Field和Method并注入:
         for (Field f : clazz.getDeclaredFields()) {
             tryInjectProperties(def, clazz, bean, f);
@@ -338,7 +339,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     /**
      * 注入单个属性
      */
-    void tryInjectProperties(BeanDefinition def, Class<?> clazz, Object bean, AccessibleObject acc) throws ReflectiveOperationException {
+    void tryInjectProperties(BeanDefinition def, Class<?> clazz, Object bean, @NotNull AccessibleObject acc) throws ReflectiveOperationException {
         Value value = acc.getAnnotation(Value.class);
         Autowired autowired = acc.getAnnotation(Autowired.class);
         if (value == null && autowired == null) {
@@ -411,7 +412,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
         }
     }
 
-    void checkFieldOrMethod(Member m) {
+    void checkFieldOrMethod(@NotNull Member m) {
         int mod = m.getModifiers();
         if (Modifier.isStatic(mod)) {
             throw new BeanDefinitionException("Cannot inject static field: " + m);
@@ -430,7 +431,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     /**
      * Get public constructor or non-public constructor as fallback.
      */
-    Constructor<?> getSuitableConstructor(Class<?> clazz) {
+    Constructor<?> getSuitableConstructor(@NotNull Class<?> clazz) {
         Constructor<?>[] cons = clazz.getConstructors();
         if (cons.length == 0) {
             cons = clazz.getDeclaredConstructors();
@@ -457,7 +458,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
      * }
      * </code>
      */
-    void scanFactoryMethods(String factoryBeanName, Class<?> clazz, Map<String, BeanDefinition> defs) {
+    void scanFactoryMethods(String factoryBeanName, @NotNull Class<?> clazz, Map<String, BeanDefinition> defs) {
         for (Method method : clazz.getDeclaredMethods()) {
             Bean bean = method.getAnnotation(Bean.class);
             if (bean != null) {
@@ -526,7 +527,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
      * }
      * </code>
      */
-    int getOrder(Method method) {
+    int getOrder(@NotNull Method method) {
         Order order = method.getAnnotation(Order.class);
         return order == null ? Integer.MAX_VALUE : order.value();
     }
@@ -574,11 +575,11 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
         return classNameSet;
     }
 
-    boolean isConfigurationDefinition(BeanDefinition def) {
+    boolean isConfigurationDefinition(@NotNull BeanDefinition def) {
         return ClassUtils.findAnnotation(def.getBeanClass(), Configuration.class) != null;
     }
 
-    boolean isBeanPostProcessorDefinition(BeanDefinition def) {
+    boolean isBeanPostProcessorDefinition(@NotNull BeanDefinition def) {
         return BeanPostProcessor.class.isAssignableFrom(def.getBeanClass());
     }
 
@@ -748,7 +749,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
         ApplicationContextUtils.setApplicationContext(null);
     }
 
-    private Object getProxiedInstance(BeanDefinition def) {
+    private Object getProxiedInstance(@NotNull BeanDefinition def) {
         Object beanInstance = def.getInstance();
         // 如果Proxy改变了原始Bean，又希望注入到原始Bean，则由BeanPostProcessor指定原始Bean:
         List<BeanPostProcessor> reversedBeanPostProcessors = new ArrayList<>(this.beanPostProcessors);

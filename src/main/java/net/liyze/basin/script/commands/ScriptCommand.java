@@ -11,7 +11,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Stream;
+
+import static net.liyze.basin.core.Main.LOGGER;
 
 /**
  * Load a script like
@@ -29,16 +30,12 @@ import java.util.stream.Stream;
 public class ScriptCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
-        try (
-                BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8))
-        ) {
-            Parser parser = new Parser().sync();
-            Stream<String> lines = script.lines();
-            lines.forEach(i -> {
-                if (!(i).isEmpty()) parser.parse(i);
-            });
+        try {
+            BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8));
+            Parser parser = new Parser();
+            parser.sync().parseScript(script);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            LOGGER.info(e.toString());
         }
     }
 
