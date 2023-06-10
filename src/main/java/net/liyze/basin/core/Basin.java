@@ -1,20 +1,23 @@
 package net.liyze.basin.core;
 
+import net.liyze.basin.context.annotation.ComponentScan;
 import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
+import net.liyze.basin.script.Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
 
-import static net.liyze.basin.core.Conversation.cs;
 import static net.liyze.basin.core.Main.*;
 import static net.liyze.basin.http.HttpServer.runningServer;
 import static net.liyze.basin.remote.RemoteServer.servers;
+import static net.liyze.basin.script.Parser.cs;
 
 /**
  * Basin's data class.
  */
+@ComponentScan("net.liyze.basin.script.commands")
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     /**
@@ -131,10 +134,10 @@ public final class Basin {
             LOGGER.error(e.toString());
         }
         regCommands();
-        if (!cfg.startCommand.isBlank()) CONSOLE_CONVERSATION.parse(cfg.startCommand);
+        if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
         if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
             try {
-                new RemoteServer(cfg.accessToken, cfg.remotePort, new Conversation()).start();
+                new RemoteServer(cfg.accessToken, cfg.remotePort, new Parser()).start();
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }

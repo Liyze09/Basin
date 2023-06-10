@@ -1,5 +1,6 @@
-package net.liyze.basin.core.commands;
+package net.liyze.basin.script.commands;
 
+import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import net.liyze.basin.core.Main;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +13,7 @@ import java.util.List;
  *
  * @author Liyze09
  */
+@Component
 public class BenchCommand implements Command {
     @SuppressWarnings("unused")
     @Override

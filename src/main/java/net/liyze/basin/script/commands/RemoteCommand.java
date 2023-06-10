@@ -1,13 +1,16 @@
-package net.liyze.basin.core.commands;
+package net.liyze.basin.script.commands;
 
+import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import net.liyze.basin.remote.Client;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Main.envMap;
 
+@Component
 public class RemoteCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {

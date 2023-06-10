@@ -24,7 +24,7 @@ public interface Command {
 
     @ApiStatus.Experimental
     @SuppressWarnings("unused")
-    default @Nullable Object returns() {
+    default @Nullable String returns() {
         return null;
     }
 }

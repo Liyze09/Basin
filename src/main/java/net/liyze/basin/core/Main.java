@@ -2,8 +2,8 @@ package net.liyze.basin.core;
 
 import com.moandjiezana.toml.Toml;
 import net.liyze.basin.context.AnnotationConfigApplicationContext;
-import net.liyze.basin.core.commands.*;
 import net.liyze.basin.remote.RemoteServer;
+import net.liyze.basin.script.Parser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public final class Main {
     public static final File userHome = new File("data" + File.separator + "home");
     public final static File config = new File("data" + File.separator + "cfg.json");
     public final static List<Class<?>> BootClasses = new ArrayList<>();
-    public static final Conversation CONSOLE_CONVERSATION = new Conversation();
+    public static final Parser CONSOLE_PARSER = new Parser();
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
     static final File jars = new File("data" + File.separator + "jars");
@@ -37,6 +37,7 @@ public final class Main {
     public static Map<String, Object> envMap;
     public static Config cfg = Config.initConfig();
     private static String command;
+    public static AnnotationConfigApplicationContext app;
 
     public static void main(String[] args) {
         LOGGER.info("----------------------------------------------\nBasin started.");
@@ -63,30 +64,32 @@ public final class Main {
             }
         }));
         new Thread(() -> {
-            Conversation conversation = new Conversation();
+            app = new AnnotationConfigApplicationContext(Basin.class);
+            app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
+            Parser parser = new Parser();
             regCommands();
             if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
                 try {
-                    new RemoteServer(cfg.accessToken, cfg.remotePort, new Conversation()).start();
+                    new RemoteServer(cfg.accessToken, cfg.remotePort, new Parser()).start();
                 } catch (Exception e) {
                     LOGGER.error(e.toString());
                 }
             }
-            if (!cfg.startCommand.isBlank()) CONSOLE_CONVERSATION.parse(cfg.startCommand);
+            if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 command = scanner.nextLine();
                 if (cfg.enableParallel) {
                     taskPool.submit(new Thread(() -> {
                         try {
-                            conversation.sync().parse(command);
+                            parser.sync().parse(command);
                         } catch (Exception e) {
                             LOGGER.error(e.toString());
                         }
                     }));
                 } else {
                     try {
-                        conversation.sync().parse(command);
+                        parser.sync().parse(command);
                     } catch (Exception e) {
                         LOGGER.error(e.toString());
                     }
@@ -155,7 +158,8 @@ public final class Main {
             }
         }
     }
-    public static void regCommands() {
+
+    public static void regCommands() {/*
         register(new ForceStopCommand());
         register(new StopCommand());
         register(new EquationCommand());
@@ -167,7 +171,7 @@ public final class Main {
         register(new RestartCommand());
         register(new PublicCommand());
         register(new RemoteCommand());
-        if (cfg.enableShellCommand) register(new ShellCommand());
+        if (cfg.enableShellCommand) register(new ShellCommand());*/
     }
 
     public static void register(Command cmd) {

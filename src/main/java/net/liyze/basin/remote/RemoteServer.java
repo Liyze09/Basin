@@ -1,7 +1,7 @@
 package net.liyze.basin.remote;
 
-import net.liyze.basin.core.Conversation;
 import net.liyze.basin.core.Server;
+import net.liyze.basin.script.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.protocol.ByteArrayProtocol;
@@ -22,17 +22,17 @@ public class RemoteServer implements Server {
     public static final List<net.liyze.basin.core.Server> servers = new ArrayList<>();
     private final String token;
     private final int port;
-    private final Conversation REMOTE_CONVERSATION;
+    private final Parser REMOTE_Parser;
     public AioQuickServer server = null;
 
     /**
-     * Init remote server at{@code <port>} with {@code <token>} and use {@code <remoteConversation>} to parse remote command.
+     * Init remote server at{@code <port>} with {@code <token>} and use {@code <remoteParser>} to parse remote command.
      */
-    public RemoteServer(@NotNull String token, int port, Conversation remoteConversation) {
+    public RemoteServer(@NotNull String token, int port, Parser remoteParser) {
         servers.add(this);
         this.token = token;
         this.port = port;
-        REMOTE_CONVERSATION = remoteConversation;
+        REMOTE_Parser = remoteParser;
     }
 
     /**
@@ -74,7 +74,7 @@ public class RemoteServer implements Server {
                 }
                 return;
             }
-            if (!REMOTE_CONVERSATION.sync().parse(msg.substring(4))) {
+            if (!REMOTE_Parser.sync().parse(msg.substring(4))) {
                 try {
                     byte[] bytes = "Failed to run the command.".getBytes(StandardCharsets.UTF_8);
                     outputStream.writeInt(bytes.length);

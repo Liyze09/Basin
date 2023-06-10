@@ -1,5 +1,6 @@
-package net.liyze.basin.core;
+package net.liyze.basin.script;
 
+import net.liyze.basin.core.Command;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -15,24 +16,24 @@ import static net.liyze.basin.core.Main.*;
 /**
  * Basin Command Parser
  */
-public class Conversation {
+public class Parser {
     /**
-     * All inited Conversation.
+     * All Parser.
      */
-    public static final List<Conversation> cs = new ArrayList<>();
+    public static final List<Parser> cs = new ArrayList<>();
     /**
-     * This Conversation's vars.
+     * This Parser's vars.
      */
     public final Map<String, String> vars = new ConcurrentHashMap<>();
 
-    public Conversation() {
+    public Parser() {
         cs.add(this);
     }
 
     /**
      * Sync variables to the public environment.
      */
-    public Conversation sync() {
+    public Parser sync() {
         vars.putAll(publicVars);
         return this;
     }

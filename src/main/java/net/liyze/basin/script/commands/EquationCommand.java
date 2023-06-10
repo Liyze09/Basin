@@ -1,5 +1,6 @@
-package net.liyze.basin.core.commands;
+package net.liyze.basin.script.commands;
 
+import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+@Component
 public class EquationCommand implements Command {
     static HashMap<String, Double> leftUnknowns = new HashMap<>();
     static HashMap<String, Double> rightUnknowns = new HashMap<>();
