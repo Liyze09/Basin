@@ -28,7 +28,7 @@ public class Parser {
      */
     public static final List<Parser> cs = new ArrayList<>();
 
-    public static final List<Class<PreParser>> ps = new ArrayList<>();
+    public static final List<Class<AbstractPreParser>> ps = new ArrayList<>();
     /**
      * This Parser's vars.
      */
@@ -73,7 +73,7 @@ public class Parser {
                 AtomicReference<String> s = new AtomicReference<>(null);
                 ps.forEach(c -> {
                     try {
-                        PreParser parser = c.getConstructor(Parser.class).newInstance(this);
+                        AbstractPreParser parser = c.getConstructor(Parser.class).newInstance(this);
                         if (s.get() == null && f.get().matches(parser.getRegex())) {
                             s.set(parser.apply(f.get()));
                         }

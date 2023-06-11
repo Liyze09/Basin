@@ -5,7 +5,7 @@ import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
 import net.liyze.basin.script.Parser;
-import net.liyze.basin.script.PreParser;
+import net.liyze.basin.script.AbstractPreParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ public final class Main {
         new Thread(() -> {
             app = new AnnotationConfigApplicationContext(Basin.class);
             app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
-            app.findBeanDefinitions(PreParser.class).forEach(def -> ps.add((Class<PreParser>) def.getBeanClass()));
+            app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
             Parser parser = new Parser();
             regCommands();
             if (cfg.enableRemote && !cfg.accessToken.isBlank()) {

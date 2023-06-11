@@ -2,26 +2,26 @@ package net.liyze.basin.script.preparser;
 
 import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.context.annotation.WithoutInstance;
-import net.liyze.basin.script.Parser;
 import net.liyze.basin.script.AbstractPreParser;
+import net.liyze.basin.script.Parser;
 import org.jetbrains.annotations.NotNull;
 
-import static java.lang.System.out;
 @Component
 @WithoutInstance
-public class Var extends AbstractPreParser {
-    public Var(Parser parser) {
+public class GreateEqual extends AbstractPreParser {
+
+    public GreateEqual(Parser parser) {
         super(parser);
     }
 
     @Override
     public @NotNull String getRegex() {
-        return "\\$\\w+";
+        return ".+>=.+";
     }
 
     @Override
     public String apply(String s) {
-        out.println(parser.vars.get(s.substring(1)));
-        return parser.vars.get(s.substring(1));
+        String[] min = s.split(">=");
+        return String.valueOf((Double.parseDouble(min[0])>=Double.parseDouble(min[1])));
     }
 }

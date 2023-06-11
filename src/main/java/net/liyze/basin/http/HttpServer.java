@@ -115,12 +115,18 @@ public class HttpServer implements Server {
                     }
                     File file = new File(root + File.separator + uri.replace('/', File.separatorChar));
                     if (!file.exists()) {
+                        if (this.getClass().getResource(File.separator+uri.replace('/', File.separatorChar)) != null) {
+                            try {
+                                file = new File(this.getClass().getResource(File.separator+uri.replace('/', File.separatorChar)).toURI());
+                            } catch (URISyntaxException e) {
+                                LOGGER.error(e.toString());
+                            }
+                        }
                         if (this.getClass().getResource("/static/" + root + uri) == null && (this.getClass().getResource("/static/" + uri) == null)) {
                             file = new File(root + File.separator + "404.html");
                             response.setHttpStatus(HttpStatus.NOT_FOUND);
                             if (!file.exists()) {
                                 try {
-                                    //noinspection DataFlowIssue
                                     file = new File(this.getClass().getResource("/static/404.html").toURI());
                                 } catch (URISyntaxException e) {
                                     LOGGER.error(e.toString());
