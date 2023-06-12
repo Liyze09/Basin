@@ -1,8 +1,10 @@
 package net.liyze.basin.core;
 
+import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.annotation.ComponentScan;
 import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
+import net.liyze.basin.script.AbstractPreParser;
 import net.liyze.basin.script.Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +15,7 @@ import static net.liyze.basin.core.Main.*;
 import static net.liyze.basin.http.HttpServer.runningServer;
 import static net.liyze.basin.remote.RemoteServer.servers;
 import static net.liyze.basin.script.Parser.cs;
+import static net.liyze.basin.script.Parser.ps;
 
 /**
  * Basin's data class.
@@ -94,6 +97,7 @@ public final class Basin {
     /**
      * Restart basin.
      */
+    @SuppressWarnings("unchecked")
     public void restart() {
         BootClasses.forEach((i) -> {
             try {
@@ -111,10 +115,15 @@ public final class Basin {
         runningServer.values().forEach(HttpServer::stop);
         runningServer.clear();
         commands.clear();
+        ps.clear();
         BootClasses.clear();
         publicVars.clear();
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
         servicePool = Executors.newCachedThreadPool();
+        app.close();
+        app = new AnnotationConfigApplicationContext(Basin.class);
+        app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
+        app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
         try {
             init();
         } catch (Exception e) {
@@ -133,7 +142,6 @@ public final class Basin {
         } catch (Exception e) {
             LOGGER.error(e.toString());
         }
-        regCommands();
         if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
         if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
             try {

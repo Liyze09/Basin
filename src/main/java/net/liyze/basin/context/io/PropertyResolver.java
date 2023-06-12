@@ -25,9 +25,10 @@ public class PropertyResolver {
         if (logger.isDebugEnabled()) {
             List<String> keys = new ArrayList<>(this.properties.keySet());
             Collections.sort(keys);
-            for (String key : keys) {
-                logger.debug("PropertyResolver: {} = {}", key, this.properties.get(key));
-            }
+            if (logger.isDebugEnabled())
+                for (String key : keys) {
+                    logger.debug("PropertyResolver: {} = {}", key, this.properties.get(key));
+                }
         }
     }
 

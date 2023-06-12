@@ -4,8 +4,8 @@ import com.moandjiezana.toml.Toml;
 import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
-import net.liyze.basin.script.Parser;
 import net.liyze.basin.script.AbstractPreParser;
+import net.liyze.basin.script.Parser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,43 +58,41 @@ public final class Main {
                             BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
                             in.afterStart();
                         } catch (Exception e) {
-                            LOGGER.error(e.toString());
+                            LOGGER.error(e.getMessage());
                         }
                     })));
                     LOGGER.info("Startup method are finished.");
+                    app = new AnnotationConfigApplicationContext(Basin.class);
+                    app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
+                    app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
+                    if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
+                    if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
+                        try {
+                            new RemoteServer(cfg.accessToken, cfg.remotePort, new Parser()).start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             } catch (Exception e) {
-                LOGGER.error(e.toString());
+                e.printStackTrace();
             }
         }));
         new Thread(() -> {
-            app = new AnnotationConfigApplicationContext(Basin.class);
-            app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
-            app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
-            Parser parser = new Parser();
-            regCommands();
-            if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
-                try {
-                    new RemoteServer(cfg.accessToken, cfg.remotePort, new Parser()).start();
-                } catch (Exception e) {
-                    LOGGER.error(e.toString());
-                }
-            }
-            if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
             try (Scanner scanner = new Scanner(System.in)) {
                 while (true) {
                     command = scanner.nextLine();
                     if (cfg.enableParallel) {
                         taskPool.submit(new Thread(() -> {
                             try {
-                                parser.sync().parse(command);
+                                CONSOLE_PARSER.sync().parse(command);
                             } catch (Exception e) {
                                 LOGGER.error(e.toString());
                             }
                         }));
                     } else {
                         try {
-                            parser.sync().parse(command);
+                            CONSOLE_PARSER.sync().parse(command);
                         } catch (Exception e) {
                             LOGGER.error(e.toString());
                         }
@@ -164,22 +162,6 @@ public final class Main {
             }
         }
     }
-
-    public static void regCommands() {/*
-        register(new ForceStopCommand());
-        register(new StopCommand());
-        register(new EquationCommand());
-        register(new ListCommand());
-        register(new BenchCommand());
-        register(new ExecuteCommand());
-        register(new ScriptCommand());
-        register(new ServerCommand());
-        register(new RestartCommand());
-        register(new PublicCommand());
-        register(new RemoteCommand());
-        if (cfg.enableShellCommand) register(new ShellCommand());*/
-    }
-
     public static void register(Command cmd) {
         commands.put(cmd.Name(), cmd);
     }

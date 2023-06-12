@@ -74,8 +74,14 @@ public class ResourceResolver {
         return cl;
     }
 
-    Path jarUriToPath(String basePackagePath, URI jarUri) throws IOException {
-        return FileSystems.newFileSystem(jarUri, Map.of()).getPath(basePackagePath);
+    Path jarUriToPath(String basePackagePath, URI jarUri) {
+        Path path;
+        try {
+            path = FileSystems.newFileSystem(jarUri, Map.of()).getPath(basePackagePath);
+        } catch (Exception e) {
+            path = FileSystems.getFileSystem(jarUri).getPath(basePackagePath);
+        }
+        return path;
     }
 
     @SuppressWarnings("resource")

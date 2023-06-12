@@ -1,12 +1,10 @@
 //file:noinspection GroovyAssignabilityCheck
 plugins {
-    id 'maven-publish'
-    id 'signing'
     id 'java'
 }
 
 group = 'io.github.liyze09'
-version = '1.1'
+version = '1.2'
 
 repositories {
     maven {
@@ -51,13 +49,23 @@ jar{
     manifest {
         attributes 'Manifest-Version': '1.0'
         attributes 'Main-Class': 'net.liyze.basin.core.Main'
-        attributes 'Class-Path': 'data/jars'
+        attributes 'Class-Path': './data/jars'
         attributes 'Created-By': 'Gradle 8'
         attributes 'Built-By': 'Liyze09'
         attributes 'Build-Jdk': Runtime.version().toString()
         attributes 'Export-Command': 'net.liyze.basin.core.InternalPluginDemo'
         attributes 'Boot-Class': 'net.liyze.basin.core.InternalPluginDemo'
     }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude 'META-INF/versions/**'
+    exclude 'META-INF/LICENSE.txt'
+    exclude 'META-INF/NOTICE.txt'
+    exclude 'META-INF/INDEX.LIST'
+    exclude 'module-info.class'
 }
 tasks.register('copyJar', Copy) {
     from configurations.runtimeClasspath
@@ -71,51 +79,4 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-}
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = 'Basin'
-            pom {
-                name = 'basin'
-                description = 'Basin'
-                url = 'hjttps://github.com/Liyze09/Basin'
-                licenses {
-                    license {
-                        name = 'GPLv3'
-                        url = ''
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'Liyze09'
-                        name = 'Yuze Li'
-                        email = 'a52990419@outlook.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/Liyze09/Basin.git'
-                    developerConnection = 'scm:git:ssh://github.com/Liyze09/Basin.git'
-                    url = 'https://github.com/Liyze09/Basin'
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = "OSSRH"
-            if (project.version.toString().endsWith("-SNAPSHOT")) {
-                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
-            } else {
-                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            }
-            credentials {
-                username = findProperty("OSSRH_USERNAME") ?: System.getenv("OSSRH_USERNAME")
-                password = findProperty("OSSEH_PASSWORD") ?: System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-}
-signing {
-    sign(publishing.publications.mavenJava)
 }
