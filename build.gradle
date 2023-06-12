@@ -37,6 +37,8 @@ dependencies {
     implementation 'net.bytebuddy:byte-buddy:1.14.5'
     //https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation 'com.zaxxer:HikariCP:5.0.1'
+    //https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
+    implementation 'org.apache.commons:commons-collections4:4.4'
 }
 test {
 
