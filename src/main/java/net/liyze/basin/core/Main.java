@@ -42,12 +42,14 @@ public final class Main {
     public static Config cfg = Config.initConfig();
     private static String command;
     public static ConfigurableApplicationContext app;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored"})
     public static void main(String[] args) {
         LOGGER.info("----------------------------------------------\nBasin started.");
         taskPool.submit(new Thread(() -> {
             try {
-                init();
+                userHome.mkdirs();
+                jars.mkdirs();
+                loadEnv();
                 envMap.forEach((key, value) -> publicVars.put(key, value.toString()));
                 LOGGER.info("Init method are finished.");
                 if (cfg.doLoadJars) {
@@ -104,9 +106,7 @@ public final class Main {
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
-    public static void init() throws IOException {
-        userHome.mkdirs();
-        jars.mkdirs();
+    public static void loadEnv() throws IOException {
         File envFile = new File("data" + File.separator + "env.toml");
         if (!envFile.exists()) {
             try {
@@ -143,7 +143,7 @@ public final class Main {
                                 new Thread(() -> ((BasinBoot) boot).onStart()).start();
                                 BootClasses.add(cls);
                             } else {
-                                LOGGER.warn("App {} is unsupported", jar.getName());
+                                LOGGER.warn("App-BootClass {} is unsupported", jar.getName());
                             }
                         }
                     }
@@ -154,7 +154,7 @@ public final class Main {
                             if (command instanceof Command) {
                                 register((Command) command);
                             } else {
-                                LOGGER.warn("Plugin {} is unsupported", jar.getName());
+                                LOGGER.warn("Command-Class {} is unsupported", jar.getName());
                             }
                         }
                     }

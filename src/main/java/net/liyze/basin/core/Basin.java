@@ -125,7 +125,7 @@ public final class Basin {
         app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
         app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
         try {
-            init();
+            loadEnv();
         } catch (Exception e) {
             LOGGER.error(e.toString());
         }
