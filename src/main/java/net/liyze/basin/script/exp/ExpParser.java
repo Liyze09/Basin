@@ -1,6 +1,8 @@
 package net.liyze.basin.script.exp;
 
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -13,14 +15,15 @@ import static net.liyze.basin.script.exp.Patterns.*;
 
 @SuppressWarnings("unused")
 public class ExpParser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExpParser.class);
     public String name;
-    protected Queue<List<Token>> queue = new ConcurrentLinkedQueue<>();
+    protected Queue<Task> queue = new ConcurrentLinkedQueue<>();
     public static Map<String, Keywords> keywords;
     public static Map<String, Patterns> patterns;
     public Map<String, Function<List<String>, List<String>>> annotations = new HashMap<>();
     protected boolean enableCheck = true;
     protected Map<String, Integer> intVars = new HashMap<>();
-    protected Map<String, Double> doubleVars = new HashMap<>();
+    protected Map<String, Double> floatVars = new HashMap<>();
     protected Map<String, String> stringVars = new HashMap<>();
     protected Map<String, Boolean> booleanVars = new HashMap<>();
 
@@ -53,7 +56,7 @@ public class ExpParser {
     public static @NotNull ExpParser loadFrom(InputStream s) throws IOException, ClassNotFoundException {
         ExpParser parser = new ExpParser();
         ObjectInputStream stream = new ObjectInputStream(s);
-        parser.queue = (Queue<List<Token>>) stream.readObject();
+        parser.queue = (Queue<Task>) stream.readObject();
         return parser;
     }
 
@@ -92,6 +95,7 @@ public class ExpParser {
     protected List<Token> generateTokenStream(@NotNull String code) {
         List<Token> tokens = new ArrayList<>();
         var builder = new StringBuilder();
+        boolean isEnd = true;
         // def func(string str):  ->  [k.DEF, "func", p.LK, k.STRING, "str", p.RK, p.MH]
         for (Character c : code.toCharArray()) {
             if (words.contains(c) && !builder.toString().isBlank()) {
@@ -114,10 +118,11 @@ public class ExpParser {
                 }
             }
         }
+        if (tokens.contains(new Pattern(":"))) tokens.add(new End());
         return tokens;
     }
 
-    protected void processTokens(@NotNull List<Token> tokens) {
+    protected void checkTokens(@NotNull List<Token> tokens) {
         int in1 = 0;
         int in2 = 0;
         int in3 = 0;
@@ -139,16 +144,38 @@ public class ExpParser {
                     in3--;
                 }
             } else if (token instanceof Keyword) {
-                if (((Keyword) token).keyword == STRING) {
-                    String value = tokens.get(i + 2).name;
-                    if (value.startsWith("\"") && value.endsWith("\"")) value = value.substring(1, value.length() - 1);
-                    stringVars.put(tokens.get(i + 1).name, value);
-                } else if (((Keyword) token).keyword == INT) {
-
-                } else if (((Keyword) token).keyword == FLOAT) {
-
-                } else if (((Keyword) token).keyword == BOOLEAN) {
-
+                if (((Pattern) tokens.get(i+2)).pattern==FZ) {
+                    if (((Keyword) token).keyword == STRING) {
+                        String value = tokens.get(i + 3).name;
+                        if (value.startsWith("\"") && value.endsWith("\"")) {
+                            value = value.substring(1, value.length() - 1);
+                            //
+                        } else LOGGER.error("Invalid String: {} on {}", value, i+1);
+                    } else if (((Keyword) token).keyword == INT) {
+                        Token sign = tokens.get(i+1);
+                        String value = tokens.get(i+1).name;
+                        int integer;
+                        if (value.matches("\\w*")) {
+                            integer = Integer.parseInt(value);
+                            //
+                        } else LOGGER.error("Invalid Integer: {} on {}", value, i+1);
+                    } else if (((Keyword) token).keyword == FLOAT) {
+                        Token sign = tokens.get(i+1);
+                        String value = tokens.get(i+1).name;
+                        double num;
+                        if (value.matches("\\w*")) {
+                            num = Double.parseDouble(value);
+                            //
+                        } else LOGGER.error("Invalid Float: {} on {}", value, i+1);
+                    } else if (((Keyword) token).keyword == BOOLEAN) {
+                        Token sign = tokens.get(i+1);
+                        String value = tokens.get(i+1).name;
+                        boolean bool;
+                        if (value.matches("true|false")) {
+                            bool = Boolean.parseBoolean(value);
+                            //
+                        } else LOGGER.error("Invalid Boolean: {} on {}", value, i+1);
+                    }
                 }
             } else if (token instanceof Name) {
 
