@@ -1,8 +1,6 @@
 package net.liyze.basin.script.exp;
 
 public enum Keywords {
-    IF("if");
-
-    Keywords(String s) {
-    }
+    IF, LOOP, DEF, RETURN,
+    INT, FLOAT, STRING, BOOLEAN
 }
