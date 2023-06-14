@@ -80,28 +80,32 @@ public final class Main {
                 e.printStackTrace();
             }
         }));
-        new Thread(() -> {
-            try (Scanner scanner = new Scanner(System.in)) {
-                while (true) {
-                    command = scanner.nextLine();
-                    if (cfg.enableParallel) {
-                        taskPool.submit(new Thread(() -> {
+        try {
+            new Thread(() -> {
+                try (Scanner scanner = new Scanner(System.in)) {
+                    while (true) {
+                        command = scanner.nextLine();
+                        if (cfg.enableParallel) {
+                            taskPool.submit(new Thread(() -> {
+                                try {
+                                    CONSOLE_PARSER.sync().parse(command);
+                                } catch (Exception e) {
+                                    LOGGER.error(e.toString());
+                                }
+                            }));
+                        } else {
                             try {
                                 CONSOLE_PARSER.sync().parse(command);
                             } catch (Exception e) {
                                 LOGGER.error(e.toString());
                             }
-                        }));
-                    } else {
-                        try {
-                            CONSOLE_PARSER.sync().parse(command);
-                        } catch (Exception e) {
-                            LOGGER.error(e.toString());
                         }
                     }
                 }
-            }
-        }).start();
+            }).start();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
         System.out.println(Basin.getBasin().banner);
     }
 

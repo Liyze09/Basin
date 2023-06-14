@@ -21,6 +21,8 @@ public class ExpParser {
     public static Map<String, Keywords> keywords;
     public static Map<String, Patterns> patterns;
     public Map<String, Function<List<String>, List<String>>> annotations = new HashMap<>();
+    protected Thread compileThread;
+    protected Thread runtimeThread;
 
     static {
         Map<String, Keywords> rt1 = new HashMap<>();
@@ -100,7 +102,12 @@ public class ExpParser {
                 builder = new StringBuilder();
             }
             if (c == '\"') {
+                tokens.add(new Name(builder.toString()));
+                builder = new StringBuilder();
                 inString = !inString;
+            } else if (c.equals(' ')) {
+                tokens.add(new Name(builder.toString()));
+                builder = new StringBuilder();
             }
             builder.append(c);
             //Search for keywords.
@@ -122,13 +129,25 @@ public class ExpParser {
         return tokens;
     }
 
-    public ExpParser prepareRuntimeQueue(Reader r) throws IOException {
+    public ExpParser compile(Reader r) throws IOException {
         final List<String> lines = this.preProcess(this.getLines(r));
-        new Thread(() -> {
+        compileThread = new Thread(() -> {
             for (String line : lines) {
                 queue.add((ArrayList<Token>) this.generateTokenStream(line));
             }
         });
+        compileThread.start();
+        return this;
+    }
+
+    public ExpParser run() {
+        runtimeThread = new Thread(() -> {
+            List<Token> code;
+            do {
+                code = queue.poll();
+            } while (code != null);
+        });
+        runtimeThread.start();
         return this;
     }
 }
