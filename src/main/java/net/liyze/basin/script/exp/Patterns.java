@@ -29,6 +29,7 @@ public enum Patterns {
     OR("||"),
     NT("!"),
     MH(":"),
+    YH("\""),
     SJ("\t");
     public static final List<Character> words = new UnmodifiableList<>(List.of('(', ')', '[', ']', '{', '}', ',', '=', '<', '>', '+', '-', '*', '/', '%', '^', '&', '|', '!', ':', ' ', '\t'));
 

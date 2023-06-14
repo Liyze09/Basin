@@ -1,6 +1,7 @@
 package net.liyze.basin.script.exp;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,8 +11,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
-import static net.liyze.basin.script.exp.Keywords.*;
-import static net.liyze.basin.script.exp.Patterns.*;
+import static net.liyze.basin.script.exp.Patterns.words;
 
 @SuppressWarnings("unused")
 public class ExpParser {
@@ -21,11 +21,6 @@ public class ExpParser {
     public static Map<String, Keywords> keywords;
     public static Map<String, Patterns> patterns;
     public Map<String, Function<List<String>, List<String>>> annotations = new HashMap<>();
-    protected boolean enableCheck = true;
-    protected Map<String, Integer> intVars = new HashMap<>();
-    protected Map<String, Double> floatVars = new HashMap<>();
-    protected Map<String, String> stringVars = new HashMap<>();
-    protected Map<String, Boolean> booleanVars = new HashMap<>();
 
     static {
         Map<String, Keywords> rt1 = new HashMap<>();
@@ -39,16 +34,19 @@ public class ExpParser {
     public ExpParser() {
     }
 
-    public boolean serialize() {
+    public byte @Nullable [] serialize() {
         try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("data" + File.separator + "out" + File.separator + this.name + ".bsc"));
-            outputStream.writeObject(queue);
-            outputStream.flush();
-            outputStream.close();
-            return true;
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
+            objectStream.writeObject(queue);
+            objectStream.flush();
+            byte[] bytes = byteStream.toByteArray();
+            byteStream.close();
+            objectStream.close();
+            return bytes;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
@@ -76,9 +74,7 @@ public class ExpParser {
                 if (line.isBlank() || line.startsWith("#")) {
                     lines.remove(i);
                 } else if (line.startsWith("@")) {
-                    if (line.startsWith("@NonCheck")) {
-                        this.enableCheck = false;
-                    } else if (line.startsWith("@Include")) {
+                    if (line.startsWith("@Include")) {
                         lines.addAll(i, this.getLines(new FileReader(
                                 "data" + File.separator + "home" + line.substring(9).strip(),
                                 StandardCharsets.UTF_8)));
@@ -96,11 +92,15 @@ public class ExpParser {
         List<Token> tokens = new ArrayList<>();
         var builder = new StringBuilder();
         boolean isEnd = true;
+        boolean inString = false;
         // def func(string str):  ->  [k.DEF, "func", p.LK, k.STRING, "str", p.RK, p.MH]
         for (Character c : code.toCharArray()) {
-            if (words.contains(c) && !builder.toString().isBlank()) {
+            if (words.contains(c) && !builder.toString().isBlank() && !inString) {
                 tokens.add(new Name(builder.toString()));
                 builder = new StringBuilder();
+            }
+            if (c == '\"') {
+                inString = !inString;
             }
             builder.append(c);
             //Search for keywords.
@@ -118,68 +118,7 @@ public class ExpParser {
                 }
             }
         }
-        if (tokens.contains(new Pattern(":"))) tokens.add(new End());
+        if (!tokens.contains(new Pattern(":"))) tokens.add(new End());
         return tokens;
-    }
-
-    protected void checkTokens(@NotNull List<Token> tokens) {
-        int in1 = 0;
-        int in2 = 0;
-        int in3 = 0;
-        Token token;
-        for (int i = 0; i < tokens.size(); ++i) {
-            token = tokens.get(i);
-            if (token instanceof Pattern) {
-                if (((Pattern) token).pattern == LK) {
-                    in1++;
-                } else if (((Pattern) token).pattern == RK) {
-                    in1--;
-                } else if (((Pattern) token).pattern == LD) {
-                    in2++;
-                } else if (((Pattern) token).pattern == RD) {
-                    in2--;
-                } else if (((Pattern) token).pattern == LZ) {
-                    in3++;
-                } else if (((Pattern) token).pattern == RZ) {
-                    in3--;
-                }
-            } else if (token instanceof Keyword) {
-                if (((Pattern) tokens.get(i+2)).pattern==FZ) {
-                    if (((Keyword) token).keyword == STRING) {
-                        String value = tokens.get(i + 3).name;
-                        if (value.startsWith("\"") && value.endsWith("\"")) {
-                            value = value.substring(1, value.length() - 1);
-                            //
-                        } else LOGGER.error("Invalid String: {} on {}", value, i+1);
-                    } else if (((Keyword) token).keyword == INT) {
-                        Token sign = tokens.get(i+1);
-                        String value = tokens.get(i+1).name;
-                        int integer;
-                        if (value.matches("\\w*")) {
-                            integer = Integer.parseInt(value);
-                            //
-                        } else LOGGER.error("Invalid Integer: {} on {}", value, i+1);
-                    } else if (((Keyword) token).keyword == FLOAT) {
-                        Token sign = tokens.get(i+1);
-                        String value = tokens.get(i+1).name;
-                        double num;
-                        if (value.matches("\\w*")) {
-                            num = Double.parseDouble(value);
-                            //
-                        } else LOGGER.error("Invalid Float: {} on {}", value, i+1);
-                    } else if (((Keyword) token).keyword == BOOLEAN) {
-                        Token sign = tokens.get(i+1);
-                        String value = tokens.get(i+1).name;
-                        boolean bool;
-                        if (value.matches("true|false")) {
-                            bool = Boolean.parseBoolean(value);
-                            //
-                        } else LOGGER.error("Invalid Boolean: {} on {}", value, i+1);
-                    }
-                }
-            } else if (token instanceof Name) {
-
-            }
-        }
     }
 }
