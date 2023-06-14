@@ -4,8 +4,7 @@ import com.moandjiezana.toml.Toml;
 import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
-import net.liyze.basin.script.AbstractPreParser;
-import net.liyze.basin.script.Parser;
+import net.liyze.basin.script.CommandParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.jar.JarFile;
 
-import static net.liyze.basin.script.Parser.ps;
-
 /**
  * Basin start class
  */
@@ -31,7 +28,7 @@ public final class Main {
     public static final File userHome = new File("data" + File.separator + "home");
     public final static File config = new File("data" + File.separator + "cfg.json");
     public final static List<Class<?>> BootClasses = new ArrayList<>();
-    public static final Parser CONSOLE_PARSER = new Parser();
+    public static final CommandParser CONSOLE_COMMAND_PARSER = new CommandParser();
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
     static final File jars = new File("data" + File.separator + "jars");
@@ -42,7 +39,8 @@ public final class Main {
     public static Config cfg = Config.initConfig();
     private static String command;
     public static ConfigurableApplicationContext app;
-    @SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored"})
+
+    @SuppressWarnings({"ResultOfMethodCallIgnored"})
     public static void main(String[] args) {
         LOGGER.info("----------------------------------------------\nBasin started.");
         taskPool.submit(new Thread(() -> {
@@ -66,11 +64,11 @@ public final class Main {
                     LOGGER.info("Startup method are finished.");
                     app = new AnnotationConfigApplicationContext(Basin.class);
                     app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
-                    app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
-                    if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
+
+                    if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
                     if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
                         try {
-                            new RemoteServer(cfg.accessToken, cfg.remotePort, new Parser()).start();
+                            new RemoteServer(cfg.accessToken, cfg.remotePort, new CommandParser()).start();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -88,14 +86,14 @@ public final class Main {
                         if (cfg.enableParallel) {
                             taskPool.submit(new Thread(() -> {
                                 try {
-                                    CONSOLE_PARSER.sync().parse(command);
+                                    CONSOLE_COMMAND_PARSER.sync().parse(command);
                                 } catch (Exception e) {
                                     LOGGER.error(e.toString());
                                 }
                             }));
                         } else {
                             try {
-                                CONSOLE_PARSER.sync().parse(command);
+                                CONSOLE_COMMAND_PARSER.sync().parse(command);
                             } catch (Exception e) {
                                 LOGGER.error(e.toString());
                             }

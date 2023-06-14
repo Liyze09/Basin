@@ -4,8 +4,7 @@ import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.annotation.ComponentScan;
 import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
-import net.liyze.basin.script.AbstractPreParser;
-import net.liyze.basin.script.Parser;
+import net.liyze.basin.script.CommandParser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,13 +13,12 @@ import java.util.concurrent.Executors;
 import static net.liyze.basin.core.Main.*;
 import static net.liyze.basin.http.HttpServer.runningServer;
 import static net.liyze.basin.remote.RemoteServer.servers;
-import static net.liyze.basin.script.Parser.cs;
-import static net.liyze.basin.script.Parser.ps;
+import static net.liyze.basin.script.CommandParser.cs;
 
 /**
  * Basin's data class.
  */
-@ComponentScan({"net.liyze.basin.script.commands", "net.liyze.basin.script.preparser"})
+@ComponentScan("net.liyze.basin.script.commands")
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     /**
@@ -97,7 +95,7 @@ public final class Basin {
     /**
      * Restart basin.
      */
-    @SuppressWarnings("unchecked")
+
     public void restart() {
         BootClasses.forEach((i) -> {
             try {
@@ -115,7 +113,6 @@ public final class Basin {
         runningServer.values().forEach(HttpServer::stop);
         runningServer.clear();
         commands.clear();
-        ps.clear();
         BootClasses.clear();
         publicVars.clear();
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
@@ -123,7 +120,6 @@ public final class Basin {
         app.close();
         app = new AnnotationConfigApplicationContext(Basin.class);
         app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
-        app.findBeanDefinitions(AbstractPreParser.class).forEach(def -> ps.add((Class<AbstractPreParser>) def.getBeanClass()));
         try {
             loadEnv();
         } catch (Exception e) {
@@ -142,10 +138,10 @@ public final class Basin {
         } catch (Exception e) {
             LOGGER.error(e.toString());
         }
-        if (!cfg.startCommand.isBlank()) CONSOLE_PARSER.parse(cfg.startCommand);
+        if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
         if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
             try {
-                new RemoteServer(cfg.accessToken, cfg.remotePort, new Parser()).start();
+                new RemoteServer(cfg.accessToken, cfg.remotePort, new CommandParser()).start();
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }

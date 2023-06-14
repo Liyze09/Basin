@@ -3,7 +3,7 @@ package net.liyze.basin.script.commands;
 import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import net.liyze.basin.core.Main;
-import net.liyze.basin.script.Parser;
+import net.liyze.basin.script.CommandParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -32,7 +32,7 @@ public class ScriptCommand implements Command {
     public void run(@NotNull List<String> args) {
         try {
             BufferedReader script = new BufferedReader(new FileReader(Main.userHome + args.get(0), StandardCharsets.UTF_8));
-            Parser parser = new Parser();
+            CommandParser parser = new CommandParser();
             parser.sync().parseScript(script);
         } catch (IOException e) {
             LOGGER.info(e.toString());

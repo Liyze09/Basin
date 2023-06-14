@@ -1,6 +1,7 @@
 package net.liyze.basin.script;
 
 import net.liyze.basin.core.Command;
+import net.liyze.basin.script.exp.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -21,29 +22,35 @@ import static net.liyze.basin.core.Main.*;
  * Basin Command Parser
  */
 @SuppressWarnings("unused")
-public class Parser {
+public class CommandParser {
 
     /**
      * All Parser.
      */
-    public static final List<Parser> cs = new ArrayList<>();
+    public static final List<CommandParser> cs = new ArrayList<>();
 
-    public static final List<Class<AbstractPreParser>> ps = new ArrayList<>();
     /**
      * This Parser's vars.
      */
     public final Map<String, String> vars = new ConcurrentHashMap<>();
 
-    public Parser() {
+    public CommandParser() {
         cs.add(this);
     }
 
     /**
      * Sync variables to the public environment.
      */
-    public Parser sync() {
+    public CommandParser sync() {
         vars.putAll(publicVars);
         return this;
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
+    public boolean parset(@NotNull List<Token> alc) {
+        List<String> als = new ArrayList<>();
+        alc.forEach(token -> als.add(token.getName()));
+        return parse(als);
     }
 
     /**
@@ -71,16 +78,6 @@ public class Parser {
                 }
                 AtomicReference<String> f = new AtomicReference<>(i);
                 AtomicReference<String> s = new AtomicReference<>(null);
-                ps.forEach(c -> {
-                    try {
-                        AbstractPreParser parser = c.getConstructor(Parser.class).newInstance(this);
-                        if (s.get() == null && f.get().matches(parser.getRegex())) {
-                            s.set(parser.apply(f.get()));
-                        }
-                    } catch (Exception e) {
-                        LOGGER.info(e.toString());
-                    }
-                });
                 if (s.get() != null) {
                     areaArgs.add(s.get());
                 } else {
@@ -125,11 +122,11 @@ public class Parser {
         script.close();
     }
 
-    public void syncTo(@NotNull Parser parser) {
+    public void syncTo(@NotNull CommandParser parser) {
         parser.vars.putAll(this.vars);
     }
 
-    public void syncFrom(@NotNull Parser parser) {
+    public void syncFrom(@NotNull CommandParser parser) {
         this.vars.putAll(parser.vars);
     }
 }

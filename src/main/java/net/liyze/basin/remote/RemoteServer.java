@@ -1,7 +1,7 @@
 package net.liyze.basin.remote;
 
 import net.liyze.basin.core.Server;
-import net.liyze.basin.script.Parser;
+import net.liyze.basin.script.CommandParser;
 import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.protocol.ByteArrayProtocol;
@@ -22,13 +22,13 @@ public class RemoteServer implements Server {
     public static final List<net.liyze.basin.core.Server> servers = new ArrayList<>();
     private final String token;
     private final int port;
-    private final Parser REMOTE_Parser;
+    private final CommandParser REMOTE_Parser;
     public AioQuickServer server = null;
 
     /**
      * Init remote server at{@code <port>} with {@code <token>} and use {@code <remoteParser>} to parse remote command.
      */
-    public RemoteServer(@NotNull String token, int port, Parser remoteParser) {
+    public RemoteServer(@NotNull String token, int port, CommandParser remoteParser) {
         servers.add(this);
         this.token = token;
         this.port = port;
