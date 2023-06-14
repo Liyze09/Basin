@@ -17,7 +17,7 @@ import static net.liyze.basin.script.exp.Patterns.words;
 public class ExpParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExpParser.class);
     public String name;
-    protected Queue<Task> queue = new ConcurrentLinkedQueue<>();
+    protected Queue<ArrayList<Token>> queue = new ConcurrentLinkedQueue<>();
     public static Map<String, Keywords> keywords;
     public static Map<String, Patterns> patterns;
     public Map<String, Function<List<String>, List<String>>> annotations = new HashMap<>();
@@ -54,11 +54,11 @@ public class ExpParser {
     public static @NotNull ExpParser loadFrom(InputStream s) throws IOException, ClassNotFoundException {
         ExpParser parser = new ExpParser();
         ObjectInputStream stream = new ObjectInputStream(s);
-        parser.queue = (Queue<Task>) stream.readObject();
+        parser.queue = (Queue<ArrayList<Token>>) stream.readObject();
         return parser;
     }
 
-    public List<String> getLines(Reader r) throws IOException {
+    protected List<String> getLines(Reader r) throws IOException {
         BufferedReader reader = new BufferedReader(r);
         List<String> lines = reader.lines().toList();
         reader.close();
@@ -120,5 +120,15 @@ public class ExpParser {
         }
         if (!tokens.contains(new Pattern(":"))) tokens.add(new End());
         return tokens;
+    }
+
+    public ExpParser prepareRuntimeQueue(Reader r) throws IOException {
+        final List<String> lines = this.preProcess(this.getLines(r));
+        new Thread(() -> {
+            for (String line : lines) {
+                queue.add((ArrayList<Token>) this.generateTokenStream(line));
+            }
+        });
+        return this;
     }
 }
