@@ -1,6 +1,7 @@
 package net.liyze.basin.script.exp;
 
 import net.liyze.basin.script.CommandParser;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -9,7 +10,11 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static net.liyze.basin.core.Main.commands;
@@ -20,24 +25,26 @@ public class ExpParser implements Serializable {
     @Serial
     private static final long serialVersionUID = 1024L;
     private static final Logger LOGGER = LoggerFactory.getLogger(ExpParser.class);
-    public String name;
     protected Queue<ArrayList<Token>> queue = new ConcurrentLinkedQueue<>();
     public static final Map<String, Keywords> keywords;
     public static final Map<String, Patterns> patterns;
     public static final Map<String, Types> types;
     public static Map<String, Function<List<String>, List<String>>> annotations = new HashMap<>();
     protected transient Thread compileThread;
-    protected boolean compiled = false;
+    protected transient boolean compiled = false;
+    protected transient boolean inCodeBlock = false;
+    protected transient ExecutorService runtimeThreadPool = Executors.newCachedThreadPool();
     protected transient Thread runtimeThread;
     //Var
-    protected final transient Map<String, String> stringVars = new HashMap<>();
-    protected final transient Map<String, Character> charVars = new HashMap<>();
-    protected final transient Map<String, Integer> intVars = new HashMap<>();
-    protected final transient Map<String, Long> longVars = new HashMap<>();
-    protected final transient Map<String, Short> shortVars = new HashMap<>();
-    protected final transient Map<String, Float> floatVars = new HashMap<>();
-    protected final transient Map<String, Boolean> boolVars = new HashMap<>();
-    protected final transient Map<String, List<List<Token>>> methods = new HashMap<>();
+    protected final transient Map<String, String> stringVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Character> charVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Integer> intVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Long> longVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Short> shortVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Float> floatVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Double> doubleVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, Boolean> boolVars = new ConcurrentHashMap<>();
+    protected final transient Map<String, CodeBlock> methods = new ConcurrentHashMap<>();
 
     static {
         Map<String, Keywords> rt1 = new HashMap<>();
@@ -71,7 +78,6 @@ public class ExpParser implements Serializable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static @NotNull ExpParser loadFrom(InputStream s) throws IOException, ClassNotFoundException {
         ObjectInputStream stream = new ObjectInputStream(s);
         ExpParser parser = (ExpParser) stream.readObject();
@@ -115,12 +121,8 @@ public class ExpParser implements Serializable {
         var builder = new StringBuilder();
         boolean isEnd = true;
         boolean inString = false;
-        // def func(string str):  ->  [k.DEF, "func", p.LK, k.STRING, "str", p.RK, p.MH]
+        // def func(string str, int int):  ->  [k.DEF, "func", p.LK, k.STRING, "str", p.DH, k.INT, "int", p.RK, p.MH]
         for (Character c : code.toCharArray()) {
-            if (words.contains(c) && !builder.toString().isBlank() && !inString) {
-                tokens.add(new Name(builder.toString()));
-                builder = new StringBuilder();
-            }
             if (c == '\"') {
                 tokens.add(new Name(builder.toString()));
                 builder = new StringBuilder();
@@ -129,8 +131,17 @@ public class ExpParser implements Serializable {
                 tokens.add(new Name(builder.toString()));
                 builder = new StringBuilder();
             }
-
-            builder.append(c);
+            if (!words.contains(c)) {
+                builder.append(c);
+            } else if (!inString) {
+                for (String k : patterns.keySet()) {
+                    if (c.toString().equalsIgnoreCase(k)) {
+                        tokens.add(new Pattern(c.toString()));
+                        builder = new StringBuilder();
+                    }
+                }
+            }
+            LOGGER.trace(builder.toString());
             //Search for keywords.
             for (String k : keywords.keySet()) {
                 if (builder.toString().equalsIgnoreCase(k)) {
@@ -154,6 +165,7 @@ public class ExpParser implements Serializable {
             }
         }
         if (!tokens.contains(new Pattern(":"))) tokens.add(new End());
+        LOGGER.debug(tokens.toString());
         return tokens;
     }
 
@@ -180,24 +192,46 @@ public class ExpParser implements Serializable {
         return this;
     }
 
-    protected void runMethod(Queue<ArrayList<Token>> tokens) {
-        List<Token> code = tokens.poll();
-        while (code != null && compiled) {
-            if (code.get(0) instanceof Name) {
-                String string = code.get(0).name;
-                if (commands.containsKey(string)) {
-                    new CommandParser().parset(code);
-                } else if (methods.get(string) != null) {
-
-
-                }
-            }
+    @Contract()
+    @SuppressWarnings({"IdempotentLoopBody", "UnusedReturnValue", "StatementWithEmptyBody"})
+    protected Value runMethod(Queue<ArrayList<Token>> tokens) {
+        List<Token> code = null;
+        AtomicReference<Value> returnValue = new AtomicReference<>(null);
+        while (code == null) {
+            code = tokens.peek();
         }
+        code = tokens.poll();
+        while (!compiled) {
+            if (code == null) break;
+            String string = code.get(0).name;
+            List<Token> finalCode = code;
+            Runnable method = () -> {
+                if (finalCode.get(0) instanceof Name) {
+                    if (commands.get(string) != null) {
+                        new CommandParser().parset(finalCode);
+                    } else if (methods.get(string) != null) {
+                        runMethod(methods.get(string).code);
+                    }
+                } else if (finalCode.get(0) instanceof Keyword) {
+                    if ((((Keyword) finalCode.get(0)).keyword) == Keywords.RETURN && finalCode.get(1) instanceof Value) {
+                        returnValue.set((Value) finalCode.get(1));
+                    }
+                }
+            };
+            if (returnValue.get() != null) return returnValue.get();
+            runtimeThreadPool.submit(method);
+            runtimeThreadPool.shutdown();
+            while (!runtimeThreadPool.isTerminated()) ;
+            code = tokens.poll();
+        }
+        return null;
     }
 
-    public ExpParser parse(Reader reader) throws IOException {
+    public void parse(Reader reader) throws IOException {
         compile(reader);
+        LOGGER.debug("Queue: " + queue.toString());
         run();
-        return this;
     }
+
+
 }

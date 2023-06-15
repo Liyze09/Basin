@@ -19,7 +19,7 @@
         </rollingPolicy>
     </appender>
 
-    <root level="INFO">
+    <root level="TRACE">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>

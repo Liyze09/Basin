@@ -1,7 +1,7 @@
 package net.liyze.basin.script.commands;
 
 import net.liyze.basin.context.annotation.Component;
-import net.liyze.basin.core.Command;
+import net.liyze.basin.script.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

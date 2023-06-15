@@ -1,8 +1,6 @@
-package net.liyze.basin.core;
+package net.liyze.basin.script;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -21,10 +19,4 @@ public interface Command {
      * The Name of the command
      */
     @NotNull String Name();
-
-    @ApiStatus.Experimental
-    @SuppressWarnings("unused")
-    default @Nullable String returns() {
-        return null;
-    }
 }

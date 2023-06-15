@@ -4,6 +4,7 @@ import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.annotation.ComponentScan;
 import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
+import net.liyze.basin.script.Command;
 import net.liyze.basin.script.CommandParser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
