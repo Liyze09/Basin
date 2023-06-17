@@ -1,6 +1,7 @@
 package net.liyze.basin.script.exp;
 
 import net.liyze.basin.script.exp.exception.ByteCodeLoadingException;
+import net.liyze.basin.script.exp.nodes.Tree;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -12,11 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("unused")
 @ApiStatus.Experimental
@@ -24,7 +22,7 @@ public class BScript implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BScript.class);
     @Serial
     private static final long serialVersionUID = 1024L;
-    public static List<String> keywords = new UnmodifiableList<>(List.of("(", ")", ":", "\t", " ", "\""));
+    public static List<String> keywords = new UnmodifiableList<>(List.of("(", ")", ":", "\t", " ", "\"", ">", "<", "="));
     public static final int bcv = 0;
     private static final ThreadLocal<FSTConfiguration> conf = ThreadLocal.withInitial(() -> {
         FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
@@ -36,8 +34,8 @@ public class BScript implements Serializable {
     public String source;
     private boolean withSource = false;
     public transient List<List<String>> tokenStream;
-    public Queue<Node> syntaxTree = new ConcurrentLinkedDeque<>();
-    //Constructor----------------------------------------------------------------------------------------------
+    public Tree syntaxTree = new Tree();
+    //Static-Factories----------------------------------------------------------------------------------------------
     private BScript() {
     }
     @Contract(pure = true)
@@ -87,10 +85,11 @@ public class BScript implements Serializable {
     @Contract(pure = true)
     protected List<String> preProcess(@NotNull Reader r, Path path) throws IOException {
         BufferedReader reader = new BufferedReader(r);
-        List<String> rawLines = reader.lines().toList();
+        List<String> lines = new ArrayList<>(reader.lines().toList());
+        lines.add("ignored");
         reader.close();
+        //Part 1 -- process Notes and Annotations.
         {
-            List<String> lines = new java.util.ArrayList<>(rawLines);
             String line;
             for (int i = 0; i < lines.size(); ++i) {
                 line = lines.get(i);
@@ -106,8 +105,70 @@ public class BScript implements Serializable {
                     }
                 }
             }
-            return lines;
         }
+        //Part 2 -- process tabs.
+        {
+            int in = 0;
+            List<Integer> indexes = new ArrayList<>();
+            boolean added = false;
+            for (int i=0;i< lines.size();++i) {
+                String line = lines.get(i);
+                if (line.startsWith("\t") && !added) {
+                    indexes.add(i);
+                    added = true;
+                } else if (!line.startsWith("\t")){
+                    added = false;
+                }
+            }
+            for (int i : indexes) {
+                List<String> inLines = new ArrayList<>();
+                for (int j = i;;++j) {
+                    String line = lines.get(j);
+                    if (!line.startsWith("\t")) {
+                        break;
+                    } else {
+                        inLines.add(line);
+                    }
+                }
+                lines.removeAll(inLines);
+                lines.addAll(i, injectEndl(inLines));
+            }
+        }
+        return lines;
+    }
+    @Contract(pure = true)
+    private @NotNull List<String> injectEndl(@NotNull List<String> l) {
+        List<String> lines = new ArrayList<>();
+        for (String line : l){
+            lines.add(line.substring(1));
+        }
+        lines.add("endl");
+        int in = 0;
+        List<Integer> indexes = new ArrayList<>();
+        boolean added = false;
+        for (int i=0;i < lines.size();++i) {
+            String line = lines.get(i);
+            if (line.startsWith("\t") && !added) {
+                indexes.add(i);
+                added = true;
+            } else if (!line.startsWith("\t")){
+                added = false;
+            }
+        }
+        for (int i : indexes) {
+            List<String> inLines = new ArrayList<>();
+            for (int j = i;;++j) {
+                String line = lines.get(j);
+                if (!line.startsWith("\t")) {
+                    break;
+                } else {
+                    inLines.add(line);
+                }
+            }
+            lines.removeAll(inLines);
+            lines.addAll(i, injectEndl(inLines));
+        }
+        return lines;
     }
     @Contract(pure = true)
     private @NotNull List<String> generateTokenStream(@NotNull String line) {
@@ -138,19 +199,26 @@ public class BScript implements Serializable {
     }
 
     public void compile() {
-        new Thread(()->{
             try {
-                generateTokenStream(preProcess(new StringReader(source),Path.of("data/home")));
+                generateTokenStream(preProcess(new StringReader(source), Path.of("data/home")));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             generateSyntaxTree();
-        });
     }
-    private final ExecutorService compilePool = Executors.newCachedThreadPool();
     public void generateSyntaxTree() {
-        for (List<String> line : tokenStream) {
+        List<String> rt = new ArrayList<>();
+        Deque<String> nested = new ArrayDeque<>();
+        for (List<String> line:tokenStream) {
+            String m = line.get(0);
+            if (m.equals("if")) {
+                rt = line.subList(2, line.lastIndexOf(")"));
+                nested.addLast(m);
+            }
+            if (m.equals("endl")) {
+                String last = nested.getLast();
 
+            }
         }
     }
     //Runtime-----------------------------------------------------------------------------------------
@@ -162,12 +230,23 @@ public class BScript implements Serializable {
     protected final transient Map<String, Float> floatVars = new ConcurrentHashMap<>();
     protected final transient Map<String, Double> doubleVars = new ConcurrentHashMap<>();
     protected final transient Map<String, Boolean> boolVars = new ConcurrentHashMap<>();
-    //Override-----------------------------------------------------------------------------------------
+    //Overrides-----------------------------------------------------------------------------------------
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof BScript)) return false;
-        if (obj==this) return true;
-        return this.source.equals(((BScript) obj).source) || this.syntaxTree.equals(((BScript) obj).syntaxTree);
+        boolean result;
+        if (!(obj instanceof BScript)) {
+            result = false;
+        } else if (obj == this) {
+            result = true;
+        } else {
+            result = this.source.equals(((BScript) obj).source) || this.syntaxTree.equals(((BScript) obj).syntaxTree);
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode(){
+        return Arrays.hashCode(toByteCode());
     }
     //Bean-Methods---------------------------------------------------------------------------------------
     public int getByteCodeVersion() {

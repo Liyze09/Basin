@@ -4,12 +4,10 @@ import net.liyze.basin.script.exp.BScript;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 @DisplayName("ST1")
 public final class ScriptTest{
     @Test
-    public void scriptTest() throws IOException {
+    public void scriptTest() {
         var bs = BScript.fromSource(
                 """
                    def test(int i):
