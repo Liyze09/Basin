@@ -1,8 +1,9 @@
 //file:noinspection GroovyAssignabilityCheck
+//file:noinspection DependencyNotationArgument
 plugins {
-    id 'java'
     id 'maven-publish'
     id 'signing'
+    id 'java-library'
 }
 
 group = 'io.github.liyze09'
@@ -26,27 +27,27 @@ dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation 'org.slf4j:slf4j-api:2.0.7'
+    api 'org.slf4j:slf4j-api:2.0.7'
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation 'ch.qos.logback:logback-classic:1.4.7'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.4.7'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    api 'org.apache.commons:commons-lang3:3.12.0'
     // https://mvnrepository.com/artifact/org.smartboot.http/smart-http-server
-    implementation 'org.smartboot.http:smart-http-server:1.2.1'
+    api 'org.smartboot.http:smart-http-server:1.2.1'
     // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
-    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
+    api 'com.moandjiezana.toml:toml4j:0.7.2'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation 'com.google.code.gson:gson:2.10.1'
+    api 'com.google.code.gson:gson:2.10.1'
     // https://mvnrepository.com/artifact/org.smartboot.socket/aio-pro
-    implementation 'org.smartboot.socket:aio-pro:1.5.29'
+    api 'org.smartboot.socket:aio-pro:1.5.29'
     // https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy
-    implementation 'net.bytebuddy:byte-buddy:1.14.5'
+    api 'net.bytebuddy:byte-buddy:1.14.5'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
-    implementation 'com.zaxxer:HikariCP:5.0.1'
+    api 'com.zaxxer:HikariCP:5.0.1'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
-    implementation 'org.apache.commons:commons-collections4:4.4'
+    api 'org.apache.commons:commons-collections4:4.4'
     // https://mvnrepository.com/artifact/de.ruedigermoeller/fst
-    implementation 'de.ruedigermoeller:fst:2.57'
+    api 'de.ruedigermoeller:fst:2.57'
 }
 test {
     useJUnitPlatform()

@@ -22,36 +22,43 @@ public class BScript implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BScript.class);
     @Serial
     private static final long serialVersionUID = 1024L;
-    @SuppressWarnings("ConstantValue")
-    public static BScript fromByteCode(byte[] bytes) throws ByteCodeLoadingException {
-        var conf = FSTConfiguration.createDefaultConfiguration();
-        var bs = (BScript) conf.asObject(bytes);
-        if (bs.byteCodeVersion > bcv) {
-            throw new ByteCodeLoadingException("Bytecode version is too high!");
-        }
-        return bs;
-    }
-
     public static List<String> keywords = new UnmodifiableList<>(List.of("(", ")", ":", "\t", " ", "\""));
     public static final int bcv = 0;
+    private static final ThreadLocal<FSTConfiguration> conf = ThreadLocal.withInitial(() -> {
+        FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
+        conf.registerClass(BScript.class);
+        return conf;
+    });
     //Fields-------------------------------------------------------------------------------------------------
-    public final int byteCodeVersion = bcv;
+    private int byteCodeVersion = bcv;
     public String source;
-    public boolean withSource = true;
+    private boolean withSource = false;
     public transient List<List<String>> tokenStream;
     public Queue<Node> syntaxTree = new ConcurrentLinkedDeque<>();
     //Constructor----------------------------------------------------------------------------------------------
-    public BScript() {
+    private BScript() {
     }
-    public BScript(String s){
-        this.source=s;
+    @Contract(pure = true)
+    public static @NotNull BScript fromByteCode(byte[] bytes) throws ByteCodeLoadingException {
+        var bs = (BScript) conf.get().asObject(bytes);
+        if (bs.getByteCodeVersion() > bcv) {
+            throw new ByteCodeLoadingException("Bytecode version is too high! Please use higher BScript");
+        }
+        return bs;
+    }
+    @Contract(pure = true)
+    public static @NotNull BScript fromSource(String source) {
+        var bs = new BScript();
+        bs.source=source;
+        return bs;
     }
     //Compile--------------------------------------------------------------------------------------------------
+    @Contract(pure = true)
     public byte @NotNull [] toByteCode() {
-        var conf = FSTConfiguration.createDefaultConfiguration();
-        return conf.asByteArray(this);
+        if (!isWithSource()) this.source = "#";
+        return conf.get().asByteArray(this);
     }
-
+    @Contract(pure = true)
     protected List<String> preProcess(@NotNull Reader r, Path path) throws IOException {
         BufferedReader reader = new BufferedReader(r);
         List<String> rawLines = reader.lines().toList();
@@ -123,5 +130,21 @@ public class BScript implements Serializable {
         if (!(obj instanceof BScript)) return false;
         if (obj==this) return true;
         return this.source.equals(((BScript) obj).source) || this.syntaxTree.equals(((BScript) obj).syntaxTree);
+    }
+    //Bean-Methods---------------------------------------------------------------------------------------
+    public int getByteCodeVersion() {
+        return byteCodeVersion;
+    }
+
+    public void setByteCodeVersion(int byteCodeVersion) {
+        this.byteCodeVersion = byteCodeVersion;
+    }
+
+    public boolean isWithSource() {
+        return withSource;
+    }
+
+    public void setWithSource(boolean withSource) {
+        this.withSource = withSource;
     }
 }

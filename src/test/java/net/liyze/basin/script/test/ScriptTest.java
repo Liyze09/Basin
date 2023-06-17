@@ -10,7 +10,7 @@ import java.io.IOException;
 public final class ScriptTest{
     @Test
     public void scriptTest() throws IOException {
-        var bs = new BScript(
+        var bs = BScript.fromSource(
                 """
                    def test(int i):
                    \tloop:
