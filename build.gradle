@@ -1,10 +1,12 @@
 //file:noinspection GroovyAssignabilityCheck
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group = 'io.github.liyze09'
-version = '1.2'
+version = '1.3'
 
 repositories {
     maven {
@@ -77,10 +79,6 @@ jar{
     exclude 'META-INF/INDEX.LIST'
     exclude 'module-info.class'
 }
-tasks.register('copyJar', Copy) {
-    from configurations.runtimeClasspath
-    into('build/libs/data/jars')
-}
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -89,4 +87,51 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'Basin'
+            pom {
+                name = 'basin'
+                description = 'Basin'
+                url = 'hjttps://github.com/Liyze09/Basin'
+                licenses {
+                    license {
+                        name = 'GPLv3'
+                        url = ''
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'Liyze09'
+                        name = 'Yuze Li'
+                        email = 'a52990419@outlook.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/Liyze09/Basin.git'
+                    developerConnection = 'scm:git:ssh://github.com/Liyze09/Basin.git'
+                    url = 'https://github.com/Liyze09/Basin'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            if (project.version.toString().endsWith("-SNAPSHOT")) {
+                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+            credentials {
+                username = findProperty("OSSRH_USERNAME") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("OSSEH_PASSWORD") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+signing {
+    sign(publishing.publications.mavenJava)
 }
