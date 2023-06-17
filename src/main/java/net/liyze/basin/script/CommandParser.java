@@ -1,7 +1,5 @@
 package net.liyze.basin.script;
 
-import net.liyze.basin.script.exp.Name;
-import net.liyze.basin.script.exp.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -44,19 +42,6 @@ public class CommandParser {
     public CommandParser sync() {
         vars.putAll(publicVars);
         return this;
-    }
-
-    @SuppressWarnings("SpellCheckingInspection")
-    public void parset(@NotNull List<Token> alc) {
-        List<String> als = new ArrayList<>();
-        alc.stream().filter(token -> token instanceof Name).forEach(token -> {
-            if (token.getName().startsWith("\"")) {
-                als.add(token.getName());
-            } else {
-                als.add(token.getName().substring(1, token.getName().length() - 1));
-            }
-        });
-        parse(als);
     }
 
     /**

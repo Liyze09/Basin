@@ -17,31 +17,37 @@ repositories {
 }
 
 dependencies {
-    //https://mvnrepository.com/artifact/org.jetbrains/annotations
+    // https://mvnrepository.com/artifact/org.jetbrains/annotations
     compileOnly 'org.jetbrains:annotations:24.0.1'
-    //https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation 'org.slf4j:slf4j-api:2.0.7'
-    //https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation 'ch.qos.logback:logback-classic:1.4.7'
-    //https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.12.0'
-    //https://mvnrepository.com/artifact/org.smartboot.http/smart-http-server
+    // https://mvnrepository.com/artifact/org.smartboot.http/smart-http-server
     implementation 'org.smartboot.http:smart-http-server:1.2.1'
-    //https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
+    // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
-    //https://mvnrepository.com/artifact/com.google.code.gson/gson
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation 'com.google.code.gson:gson:2.10.1'
-    //https://mvnrepository.com/artifact/org.smartboot.socket/aio-pro
+    // https://mvnrepository.com/artifact/org.smartboot.socket/aio-pro
     implementation 'org.smartboot.socket:aio-pro:1.5.29'
-    //https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy
+    // https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy
     implementation 'net.bytebuddy:byte-buddy:1.14.5'
-    //https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation 'com.zaxxer:HikariCP:5.0.1'
-    //https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
     implementation 'org.apache.commons:commons-collections4:4.4'
+    // https://mvnrepository.com/artifact/de.ruedigermoeller/fst
+    implementation 'de.ruedigermoeller:fst:2.57'
 }
 test {
-
+    useJUnitPlatform()
 }
 sourceSets{
     java
@@ -63,7 +69,9 @@ jar{
             it.isDirectory() ? it : zipTree(it)
         }
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude 'META-INF/versions/**'
+    exclude 'META-INF/LICENSE'
     exclude 'META-INF/LICENSE.txt'
     exclude 'META-INF/NOTICE.txt'
     exclude 'META-INF/INDEX.LIST'
