@@ -2,6 +2,7 @@ package net.liyze.basin.script.exp;
 
 import net.liyze.basin.script.exp.exception.ByteCodeLoadingException;
 import org.apache.commons.collections4.list.UnmodifiableList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.nustaq.serialization.FSTConfiguration;
@@ -15,9 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.*;
 
+@SuppressWarnings("unused")
+@ApiStatus.Experimental
 public class BScript implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BScript.class);
     @Serial
@@ -44,18 +46,42 @@ public class BScript implements Serializable {
         if (bs.getByteCodeVersion() > bcv) {
             throw new ByteCodeLoadingException("Bytecode version is too high! Please use higher BScript");
         }
+        LOGGER.info("Generated a new BS handler with bytecode.");
+        return bs;
+    }
+    @Contract(pure = true)
+    public static @NotNull BScript fromInputStream(@NotNull InputStream stream) throws ByteCodeLoadingException, IOException {
+        byte[] bytes = stream.readAllBytes();
+        var bs = (BScript) conf.get().asObject(bytes);
+        if (bs.getByteCodeVersion() > bcv) {
+            throw new ByteCodeLoadingException("Bytecode version is too high! Please use higher BScript");
+        }
+        LOGGER.info("Generated a new BS handler with bytecode stream.");
         return bs;
     }
     @Contract(pure = true)
     public static @NotNull BScript fromSource(String source) {
         var bs = new BScript();
         bs.source=source;
+        LOGGER.info("Generated a new BS handler with source string.");
+        return bs;
+    }
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Contract(pure = true)
+    public static @NotNull BScript fromReader(@NotNull Reader reader) throws IOException {
+        var bs = new BScript();
+        char[] chars = new char[0];
+        reader.read(chars);
+        bs.source=new String(chars);
+        LOGGER.info("Generated a new BS handler with source reader.");
+        reader.close();
         return bs;
     }
     //Compile--------------------------------------------------------------------------------------------------
     @Contract(pure = true)
     public byte @NotNull [] toByteCode() {
         if (!isWithSource()) this.source = "#";
+        LOGGER.info("Saving bytecode.");
         return conf.get().asByteArray(this);
     }
     @Contract(pure = true)
@@ -111,10 +137,22 @@ public class BScript implements Serializable {
         }
     }
 
-    public void compile() throws IOException {
-        generateTokenStream(preProcess(new StringReader(source),Path.of("data/home")));
+    public void compile() {
+        new Thread(()->{
+            try {
+                generateTokenStream(preProcess(new StringReader(source),Path.of("data/home")));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            generateSyntaxTree();
+        });
     }
+    private final ExecutorService compilePool = Executors.newCachedThreadPool();
+    public void generateSyntaxTree() {
+        for (List<String> line : tokenStream) {
 
+        }
+    }
     //Runtime-----------------------------------------------------------------------------------------
     protected final transient Map<String, String> stringVars = new ConcurrentHashMap<>();
     protected final transient Map<String, Character> charVars = new ConcurrentHashMap<>();
