@@ -198,14 +198,6 @@ public class BScript implements Serializable {
         }
     }
 
-    public void compile() {
-            try {
-                generateTokenStream(preProcess(new StringReader(source), Path.of("data/home")));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            generateSyntaxTree();
-    }
     public void generateSyntaxTree() {
         List<String> rt = new ArrayList<>();
         Deque<String> nested = new ArrayDeque<>();
@@ -230,6 +222,15 @@ public class BScript implements Serializable {
     protected final transient Map<String, Float> floatVars = new ConcurrentHashMap<>();
     protected final transient Map<String, Double> doubleVars = new ConcurrentHashMap<>();
     protected final transient Map<String, Boolean> boolVars = new ConcurrentHashMap<>();
+    //Utils---------------------------------------------------------------------------------------------
+    public void compile() {
+        try {
+            generateTokenStream(preProcess(new StringReader(source), Path.of("data/home")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        generateSyntaxTree();
+    }
     //Overrides-----------------------------------------------------------------------------------------
     @Override
     public boolean equals(Object obj) {
