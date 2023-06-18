@@ -18,7 +18,7 @@ import java.util.*;
 @SuppressWarnings("unused")
 @ApiStatus.Experimental
 public final class DefaultBScriptHandler extends BScriptHandler {
-    public static List<String> keywords = new UnmodifiableList<>(List.of("(", ")", ":", "\t", " ", "\"", ">", "<", "="));
+    public static final List<String> keywords = new UnmodifiableList<>(List.of("(", ")", ":", "\t", " ", "\"", ">", "<", "="));
     static final ThreadLocal<FSTConfiguration> conf = ThreadLocal.withInitial(() -> {
         FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
         conf.registerClass(DefaultBScriptHandler.class);
@@ -167,7 +167,10 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         for (List<String> line : tokenStream) {
             syntaxTree.tree.put(id++,fn);
             String m = line.get(0);
-
+            if (m.equals("if")) {
+                nested.push(m);
+                rts.push(line.subList(2, line.lastIndexOf(")")));
+            }
         }
     }
     //Runtime-----------------------------------------------------------------------------------------
