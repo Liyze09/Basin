@@ -4,8 +4,6 @@ import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.annotation.ComponentScan;
 import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
-import net.liyze.basin.script.Command;
-import net.liyze.basin.script.CommandParser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +12,7 @@ import java.util.concurrent.Executors;
 import static net.liyze.basin.core.Main.*;
 import static net.liyze.basin.http.HttpServer.runningServer;
 import static net.liyze.basin.remote.RemoteServer.servers;
-import static net.liyze.basin.script.CommandParser.cs;
+import static net.liyze.basin.core.CommandParser.cs;
 
 /**
  * Basin's data class.

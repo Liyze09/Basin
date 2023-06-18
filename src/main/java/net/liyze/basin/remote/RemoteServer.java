@@ -1,7 +1,7 @@
 package net.liyze.basin.remote;
 
 import net.liyze.basin.core.Server;
-import net.liyze.basin.script.CommandParser;
+import net.liyze.basin.core.CommandParser;
 import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.protocol.ByteArrayProtocol;

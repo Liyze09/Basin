@@ -1,21 +1,23 @@
-package net.liyze.basin.script.commands;
+package net.liyze.basin.core.commands;
 
 import net.liyze.basin.context.annotation.Component;
-import net.liyze.basin.script.Command;
+import net.liyze.basin.core.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+import static net.liyze.basin.core.Main.LOGGER;
+
 @Component
-public class ForceStopCommand implements Command {
+public class FullGCCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
-        System.exit(0);
+        System.gc();
+        LOGGER.info("Full GC");
     }
 
-    @SuppressWarnings("SpellCheckingInspection")
     @Override
     public @NotNull String Name() {
-        return "forcestop";
+        return "fgc";
     }
 }

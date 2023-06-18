@@ -1,14 +1,14 @@
 package net.liyze.basin.script.test;
 
-import net.liyze.basin.script.exp.BScript;
+import bscript.DefaultBScriptHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("ST1")
+@DisplayName("BScript Test 1")
 public final class ScriptTest{
     @Test
     public void scriptTest() {
-        var bs = BScript.fromSource(
+        var bs = DefaultBScriptHandler.fromSource(
                 """
                    def test(int i):
                    \tloop:

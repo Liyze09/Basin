@@ -1,4 +1,4 @@
-package net.liyze.basin.script;
+package net.liyze.basin.core;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

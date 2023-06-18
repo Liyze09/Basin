@@ -1,10 +1,11 @@
-package net.liyze.basin.script.exp.nodes;
+package bscript.nodes;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class Tree extends Element {
-    public Queue<Element> tree = new ConcurrentLinkedQueue<>();
+public class Tree extends Element implements Serializable {
+    public Map<Integer, Element> tree = new ConcurrentHashMap<>();
     @Override
     public int hashCode(){
         return tree.hashCode();

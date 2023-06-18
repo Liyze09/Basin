@@ -1,21 +1,26 @@
-package net.liyze.basin.script.commands;
+package net.liyze.basin.core.commands;
 
 import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.core.Basin;
-import net.liyze.basin.script.Command;
+import net.liyze.basin.core.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * Stop basin after all task finished.
+ *
+ * @author Liyze09
+ */
 @Component
-public class RestartCommand implements Command {
+public class StopCommand implements Command {
     @Override
     public void run(@NotNull List<String> args) {
-        Basin.getBasin().restart();
+        Basin.getBasin().shutdown();
     }
 
     @Override
     public @NotNull String Name() {
-        return "restart";
+        return "stop";
     }
 }

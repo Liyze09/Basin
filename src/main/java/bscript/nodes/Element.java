@@ -1,10 +1,11 @@
-package net.liyze.basin.script.exp.nodes;
+package bscript.nodes;
 
-public class Node extends Element {
+public abstract class Element {
+    public Element f;
     @Override
     public boolean equals(Object obj) {
         if (obj==this) return true;
         if (!(obj instanceof Node)) return false;
-        return this.next.equals(((Node) obj).next);
+        return this.f.equals(((Element) obj).f);
     }
 }
