@@ -30,8 +30,8 @@ dependencies {
     api 'org.slf4j:slf4j-api:2.0.7'
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     runtimeOnly 'ch.qos.logback:logback-classic:1.4.7'
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    api 'org.apache.commons:commons-lang3:3.12.0'
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    api 'com.google.guava:guava:32.0.1-jre'
     // https://mvnrepository.com/artifact/org.smartboot.http/smart-http-server
     api 'org.smartboot.http:smart-http-server:1.2.1'
     // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
@@ -44,8 +44,6 @@ dependencies {
     api 'net.bytebuddy:byte-buddy:1.14.5'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     api 'com.zaxxer:HikariCP:5.0.1'
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
-    api 'org.apache.commons:commons-collections4:4.4'
     // https://mvnrepository.com/artifact/de.ruedigermoeller/fst
     api 'de.ruedigermoeller:fst:2.57'
 }

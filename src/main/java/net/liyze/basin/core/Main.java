@@ -1,10 +1,10 @@
 package net.liyze.basin.core;
 
+import com.google.common.base.Splitter;
 import com.moandjiezana.toml.Toml;
 import net.liyze.basin.context.AnnotationConfigApplicationContext;
 import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,16 +126,17 @@ public final class Main {
     public static void loadJars() throws Exception {
         File[] children = jars.listFiles((file, s) -> s.matches(".*\\.jar"));
         String b, c;
-        String[] bl, cl;
+        Iterable<String> bl, cl;
         if (children == null) {
             LOGGER.error("Jars file isn't exist!");
         } else {
             for (File jar : children) {
                 try (JarFile jarFile = new JarFile(jar)) {
                     b = jarFile.getManifest().getMainAttributes().getValue("Boot-Class");
-                    bl = StringUtils.split(b, ' ');
+                    Splitter sp = Splitter.on(" ").trimResults();
+                    bl = sp.split(b);
                     c = jarFile.getManifest().getMainAttributes().getValue("Export-Command");
-                    cl = StringUtils.split(c, ' ');
+                    cl = sp.split(c);
                     for (String i : bl) {
                         if (!b.isBlank()) {
                             Class<?> cls = Class.forName(i);

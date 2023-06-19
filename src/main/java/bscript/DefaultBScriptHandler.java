@@ -1,7 +1,8 @@
 package bscript;
 
-import bscript.nodes.*;
-import org.apache.commons.collections4.list.UnmodifiableList;
+import bscript.nodes.Element;
+import bscript.nodes.EntryNode;
+import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,7 @@ import java.util.*;
 @SuppressWarnings("unused")
 @ApiStatus.Experimental
 public final class DefaultBScriptHandler extends BScriptHandler {
-    public static final List<String> keywords = new UnmodifiableList<>(List.of("(", ")", ":", "\t", " ", "\"", ">", "<", "="));
+    public static final List<String> keywords = ImmutableList.of("(", ")", ":", "\t", " ", "\"", ">", "<", "=");
     static final ThreadLocal<FSTConfiguration> conf = ThreadLocal.withInitial(() -> {
         FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
         conf.registerClass(DefaultBScriptHandler.class);

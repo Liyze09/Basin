@@ -1,6 +1,7 @@
 package net.liyze.basin.core;
 
-import org.apache.commons.lang3.StringUtils;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,8 @@ public class CommandParser {
     public boolean parse(@NotNull String ac) {
         if (ac.isBlank() || ac.startsWith("#")) return true;
         LOGGER.info(ac);
-        return parse(new ArrayList<>(List.of(StringUtils.split(ac.strip().replace("/", ""), ' '))));
+        Splitter sp = Splitter.on(" ").trimResults();
+        return parse(Lists.newArrayList(sp.split(ac)));
     }
 
     /**
@@ -82,8 +84,9 @@ public class CommandParser {
             final Logger LOGGER = LoggerFactory.getLogger(cmdName);
             //Var Define Apply
             if (cmdName.matches(".*=.*")) {
-                String[] var = StringUtils.split(cmdName, "=");
-                vars.put(var[0].strip(), var[1].strip());
+                Splitter sp = Splitter.on("=").trimResults();
+                List<String> var = Lists.newArrayList(sp.split(cmdName));
+                vars.put(var.get(0).strip(), var.get(1).strip());
                 LOGGER.info(cmdName);
                 return true;
             }
@@ -111,13 +114,5 @@ public class CommandParser {
             if (!(i).isEmpty()) this.parse(i);
         });
         script.close();
-    }
-
-    public void syncTo(@NotNull CommandParser parser) {
-        parser.vars.putAll(this.vars);
-    }
-
-    public void syncFrom(@NotNull CommandParser parser) {
-        this.vars.putAll(parser.vars);
     }
 }
