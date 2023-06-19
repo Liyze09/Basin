@@ -6,8 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Tree extends Element implements Serializable {
     public Map<Integer, Element> tree = new ConcurrentHashMap<>();
+
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return tree.hashCode();
     }
 

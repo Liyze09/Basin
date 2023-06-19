@@ -1,4 +1,4 @@
-package net.liyze.basin.script.test;
+package bscript.test;
 
 import bscript.DefaultBScriptHandler;
 import org.junit.jupiter.api.DisplayName;
@@ -10,13 +10,13 @@ public final class ScriptTest{
     public void scriptTest() {
         var bs = DefaultBScriptHandler.fromSource(
                 """
-                   def test(int i):
-                   \tloop:
-                   \t\ti=i+1
-                   \t\tif(i>10):
-                   \t\t\tbreak
-                   """);
+                        loop:
+                        \ti=i+1
+                        \tif(i>10):
+                        \t\tbreak
+                        """);
         bs.compile();
-        System.out.println(bs.tokenStream);
+        bs.printTokenStream();
+        bs.printSyntaxTree();
     }
 }

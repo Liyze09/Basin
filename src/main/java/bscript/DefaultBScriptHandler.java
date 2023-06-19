@@ -1,12 +1,10 @@
 package bscript;
 
-import bscript.nodes.Element;
-import bscript.nodes.EntryNode;
+import bscript.nodes.*;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.nustaq.serialization.FSTConfiguration;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,17 +12,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 @SuppressWarnings("unused")
 @ApiStatus.Experimental
 public final class DefaultBScriptHandler extends BScriptHandler {
     public static final List<String> keywords = ImmutableList.of("(", ")", ":", "\t", " ", "\"", ">", "<", "=");
-    static final ThreadLocal<FSTConfiguration> conf = ThreadLocal.withInitial(() -> {
-        FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
-        conf.registerClass(DefaultBScriptHandler.class);
-        return conf;
-    });
+
 
     DefaultBScriptHandler() {
     }
@@ -35,7 +32,7 @@ public final class DefaultBScriptHandler extends BScriptHandler {
     @Contract(pure = true)
     protected @NotNull List<String> preProcess(@NotNull Reader r, Path path) {
         List<String> lines;
-        try(BufferedReader reader = new BufferedReader(r)) {
+        try (BufferedReader reader = new BufferedReader(r)) {
             lines = new ArrayList<>(reader.lines().toList());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -59,7 +56,7 @@ public final class DefaultBScriptHandler extends BScriptHandler {
                             throw new RuntimeException(e);
                         }
                         lines.addAll(0, nl);
-                        i+=nl.size();
+                        i += nl.size();
                     }
                 }
             }
@@ -69,18 +66,18 @@ public final class DefaultBScriptHandler extends BScriptHandler {
             int in = 0;
             List<Integer> indexes = new ArrayList<>();
             boolean added = false;
-            for (int i=0;i< lines.size();++i) {
+            for (int i = 0; i < lines.size(); ++i) {
                 String line = lines.get(i);
                 if (line.startsWith("\t") && !added) {
                     indexes.add(i);
                     added = true;
-                } else if (!line.startsWith("\t")){
+                } else if (!line.startsWith("\t")) {
                     added = false;
                 }
             }
             for (int i : indexes) {
                 List<String> inLines = new ArrayList<>();
-                for (int j = i;;++j) {
+                for (int j = i; ; ++j) {
                     String line = lines.get(j);
                     if (!line.startsWith("\t")) {
                         break;
@@ -94,28 +91,29 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         }
         return lines;
     }
+
     @Contract(pure = true)
     private @NotNull List<String> injectEndl(@NotNull List<String> l) {
         List<String> lines = new ArrayList<>();
-        for (String line : l){
+        for (String line : l) {
             lines.add(line.substring(1));
         }
         lines.add("endl");
         int in = 0;
         List<Integer> indexes = new ArrayList<>();
         boolean added = false;
-        for (int i=0;i < lines.size();++i) {
+        for (int i = 0; i < lines.size(); ++i) {
             String line = lines.get(i);
             if (line.startsWith("\t") && !added) {
                 indexes.add(i);
                 added = true;
-            } else if (!line.startsWith("\t")){
+            } else if (!line.startsWith("\t")) {
                 added = false;
             }
         }
         for (int i : indexes) {
             List<String> inLines = new ArrayList<>();
-            for (int j = i;;++j) {
+            for (int j = i; ; ++j) {
                 String line = lines.get(j);
                 if (!line.startsWith("\t")) {
                     break;
@@ -128,6 +126,7 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         }
         return lines;
     }
+
     @Contract(pure = true)
     private @NotNull List<String> generateTokenStream(@NotNull String line) {
         List<String> tokens = new ArrayList<>();
@@ -138,14 +137,14 @@ public final class DefaultBScriptHandler extends BScriptHandler {
                 inStr = !inStr;
             }
             if (keywords.contains(String.valueOf(c)) && !inStr) {
-                if (!builder.toString().isBlank())tokens.add(builder.toString().strip());
+                if (!builder.toString().isBlank()) tokens.add(builder.toString().strip());
                 builder = new StringBuilder();
                 if (c != ' ') tokens.add(String.valueOf(c));
                 continue;
             }
             builder.append(c);
         }
-        if (builder.length()!=0) tokens.add(builder.toString().strip());
+        if (builder.length() != 0) tokens.add(builder.toString().strip());
         return tokens;
     }
 
@@ -160,17 +159,39 @@ public final class DefaultBScriptHandler extends BScriptHandler {
     @Override
     protected void generateSyntaxTree() {
         Deque<String> nested = new ArrayDeque<>();
+        Deque<Integer> nested0 = new ArrayDeque<>();
         Deque<Element> nested1 = new ArrayDeque<>();
         Deque<List<String>> rts = new ArrayDeque<>();
         Element fn = new EntryNode();
         int dnd = 0;
         int id = 0;
         for (List<String> line : tokenStream) {
-            syntaxTree.tree.put(id++,fn);
+            fn.f = id++;
+            syntaxTree.tree.put(id, fn);
             String m = line.get(0);
-            if (m.equals("if")) {
-                nested.push(m);
-                rts.push(line.subList(2, line.lastIndexOf(")")));
+            switch (m) {
+                case "if" -> {
+                    nested.push(m);
+                    nested0.push(id + 1);
+                    rts.push(line.subList(2, line.lastIndexOf(")")));
+                }
+                case "loop" -> {
+                    nested.push(m);
+                    nested0.push(id + 1);
+                }
+                case "endl" -> {
+                    m = nested.pop();
+                    switch (m) {
+                        case "if" -> fn = new ConditionNode(rts.pop(), nested0.pop());
+
+                        case "loop" -> fn = new LoopNode(nested0.pop());
+                        default -> throw new IllegalStateException("Unexpected value: " + m);
+                    }
+                }
+                default -> {
+                    if (line.size() == 1) fn = new DefaultNode(m, null);
+                    else fn = new DefaultNode(m, line.subList(1, line.size()));
+                }
             }
         }
     }
@@ -190,8 +211,4 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         return result;
     }
 
-    @Override
-    public int hashCode(){
-        return Arrays.hashCode(toByteCode());
-    }
 }

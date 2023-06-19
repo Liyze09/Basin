@@ -12,4 +12,9 @@ public class DefaultNode extends Node {
         this.head = head;
         this.body = body;
     }
+
+    @Override
+    public String toString() {
+        return head + " " + body;
+    }
 }

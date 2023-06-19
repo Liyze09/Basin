@@ -44,8 +44,6 @@ dependencies {
     api 'net.bytebuddy:byte-buddy:1.14.5'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     api 'com.zaxxer:HikariCP:5.0.1'
-    // https://mvnrepository.com/artifact/de.ruedigermoeller/fst
-    api 'de.ruedigermoeller:fst:2.57'
 }
 test {
     useJUnitPlatform()

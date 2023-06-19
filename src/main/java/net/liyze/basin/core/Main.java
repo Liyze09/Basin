@@ -36,8 +36,8 @@ public final class Main {
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
     public static Config cfg = Config.initConfig();
-    private static String command;
     public static ConfigurableApplicationContext app;
+    private static String command;
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
     public static void main(String[] args) {
@@ -164,6 +164,7 @@ public final class Main {
             }
         }
     }
+
     public static void register(Command cmd) {
         commands.put(cmd.Name(), cmd);
     }

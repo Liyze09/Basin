@@ -8,7 +8,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Main.config;
 
 /**
  * Basin Config Bean

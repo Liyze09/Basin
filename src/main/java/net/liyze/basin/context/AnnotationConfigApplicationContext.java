@@ -27,6 +27,7 @@ public class AnnotationConfigApplicationContext implements ConfigurableApplicati
     protected final Map<String, BeanDefinition> beans;
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
     private final Set<String> creatingBeanNames;
+
     public AnnotationConfigApplicationContext(Class<?> configClass) {
         contexts.add(this);
         PropertyResolver propertyResolver = new PropertyResolver();

@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Main.contexts;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class HttpServer implements Server {
@@ -115,9 +116,9 @@ public class HttpServer implements Server {
                     }
                     File file = new File(root + File.separator + uri.replace('/', File.separatorChar));
                     if (!file.exists()) {
-                        if (this.getClass().getResource(File.separator+uri.replace('/', File.separatorChar)) != null) {
+                        if (this.getClass().getResource(File.separator + uri.replace('/', File.separatorChar)) != null) {
                             try {
-                                file = new File(this.getClass().getResource(File.separator+uri.replace('/', File.separatorChar)).toURI());
+                                file = new File(this.getClass().getResource(File.separator + uri.replace('/', File.separatorChar)).toURI());
                             } catch (URISyntaxException e) {
                                 LOGGER.error(e.toString());
                             }

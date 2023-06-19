@@ -1,9 +1,9 @@
 package net.liyze.basin.core.commands;
 
 import net.liyze.basin.context.annotation.Component;
+import net.liyze.basin.core.Command;
 import net.liyze.basin.core.Main;
 import net.liyze.basin.http.HttpServer;
-import net.liyze.basin.core.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
