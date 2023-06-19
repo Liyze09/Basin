@@ -8,6 +8,10 @@ import org.junit.jupiter.api.Test;
 public final class ScriptTest{
     @Test
     public void scriptTest() {
+        main(null);
+    }
+
+    public static void main(String[] args) {
         var bs = DefaultBScriptHandler.fromSource(
                 """
                         loop:

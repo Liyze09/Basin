@@ -160,34 +160,41 @@ public final class DefaultBScriptHandler extends BScriptHandler {
     protected void generateSyntaxTree() {
         Deque<String> nested = new ArrayDeque<>();
         Deque<Integer> nested0 = new ArrayDeque<>();
-        Deque<Element> nested1 = new ArrayDeque<>();
         Deque<List<String>> rts = new ArrayDeque<>();
         Element fn = new EntryNode();
         int dnd = 0;
         int id = 0;
         for (List<String> line : tokenStream) {
-            fn.f = id++;
-            syntaxTree.tree.put(id, fn);
+            LOGGER.info(line.toString());
+            if (fn != null) {
+                fn.f = id++;
+                syntaxTree.tree.put(id, fn);
+            }
             String m = line.get(0);
             switch (m) {
                 case "if" -> {
                     nested.push(m);
-                    nested0.push(id + 1);
+                    nested0.push(id + 2);
                     rts.push(line.subList(2, line.lastIndexOf(")")));
+                    fn = null;
                 }
                 case "loop" -> {
                     nested.push(m);
-                    nested0.push(id + 1);
+                    nested0.push(id + 2);
+                    fn = null;
                 }
                 case "endl" -> {
                     m = nested.pop();
                     switch (m) {
-                        case "if" -> fn = new ConditionNode(rts.pop(), nested0.pop());
-
-                        case "loop" -> fn = new LoopNode(nested0.pop());
-                        default -> throw new IllegalStateException("Unexpected value: " + m);
+                        case "if" ->
+                                fn = new ConditionNode(rts.pop(), nested0.pop());
+                        case "loop" ->
+                                fn = new LoopNode(nested0.pop());
+                        default ->
+                                throw new IllegalStateException("Unexpected value: " + m);
                     }
                 }
+                case "ignored" -> fn = null;
                 default -> {
                     if (line.size() == 1) fn = new DefaultNode(m, null);
                     else fn = new DefaultNode(m, line.subList(1, line.size()));
