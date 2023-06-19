@@ -9,15 +9,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
 
+import static net.liyze.basin.core.CommandParser.cs;
 import static net.liyze.basin.core.Main.*;
 import static net.liyze.basin.http.HttpServer.runningServer;
 import static net.liyze.basin.remote.RemoteServer.servers;
-import static net.liyze.basin.core.CommandParser.cs;
 
 /**
  * Basin's data class.
  */
-@ComponentScan("net.liyze.basin.script.commands")
+@ComponentScan("net.liyze.basin.core.commands")
 @SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     /**
