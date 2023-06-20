@@ -186,12 +186,15 @@ public final class DefaultBScriptHandler extends BScriptHandler {
                 case "endl" -> {
                     m = nested.pop();
                     switch (m) {
-                        case "if" ->
-                                fn = new ConditionNode(rts.pop(), nested0.pop());
-                        case "loop" ->
-                                fn = new LoopNode(nested0.pop());
-                        default ->
-                                throw new IllegalStateException("Unexpected value: " + m);
+                        case "if" -> {
+                            fn = null;
+                            syntaxTree.tree.put(nested0.peekFirst() - 1, new ConditionNode(rts.pop(), nested0.pop()));
+                        }
+                        case "loop" -> {
+                            fn = null;
+                            syntaxTree.tree.put(nested0.peekFirst() - 1, new LoopNode(nested0.pop()));
+                        }
+                        default -> throw new IllegalStateException("Unexpected value: " + m);
                     }
                 }
                 case "ignored" -> fn = null;
