@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import static net.liyze.basin.core.Main.cfg;
+
 public abstract class BScriptHandler {
     public static final int bcv = 0;
     static final Logger LOGGER = LoggerFactory.getLogger(BScriptHandler.class);
@@ -35,7 +37,12 @@ public abstract class BScriptHandler {
     // Factories
     @Contract(pure = true)
     public static @NotNull BScriptHandler fromSource(String source) {
-        var bs = new DefaultBScriptHandler();
+        BScriptHandler bs;
+        try {
+            bs = (BScriptHandler) Class.forName(cfg.defaultBScriptHandler).getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         bs.source = source;
         LOGGER.info("Generated a new BS handler with source string.");
         return bs;
