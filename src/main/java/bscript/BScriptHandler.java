@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
@@ -39,18 +38,6 @@ public abstract class BScriptHandler {
         var bs = new DefaultBScriptHandler();
         bs.source = source;
         LOGGER.info("Generated a new BS handler with source string.");
-        return bs;
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Contract(pure = true)
-    public static @NotNull BScriptHandler fromReader(@NotNull Reader reader) throws IOException {
-        var bs = new DefaultBScriptHandler();
-        char[] chars = new char[0];
-        reader.read(chars);
-        bs.source = new String(chars);
-        LOGGER.info("Generated a new BS handler with source reader.");
-        reader.close();
         return bs;
     }
 
