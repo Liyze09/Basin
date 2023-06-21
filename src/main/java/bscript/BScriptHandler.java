@@ -107,7 +107,7 @@ public abstract class BScriptHandler {
         return withSource;
     }
 
-    public void setWithSource(boolean withSource) {
+    public void setSource(boolean withSource) {
         this.withSource = withSource;
     }
 }
