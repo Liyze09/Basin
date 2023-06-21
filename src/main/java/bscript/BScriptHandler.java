@@ -2,6 +2,9 @@ package bscript;
 
 import bscript.nodes.Element;
 import bscript.nodes.Tree;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.util.Pool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -22,8 +25,15 @@ public abstract class BScriptHandler {
     public Tree syntaxTree = new Tree();
     protected int byteCodeVersion = bcv;
     protected boolean withSource = false;
+    public final Pool<Kryo> kryo = new Pool<>(true, true) {
+        protected @NotNull Kryo create() {
+            Kryo kryo = new Kryo();
+            kryo.register(Bytecode.class, 1);
+            return kryo;
+        }
+    };
 
-
+    // Factories
     @Contract(pure = true)
     public static @NotNull BScriptHandler fromSource(String source) {
         var bs = new DefaultBScriptHandler();
@@ -42,6 +52,22 @@ public abstract class BScriptHandler {
         LOGGER.info("Generated a new BS handler with source reader.");
         reader.close();
         return bs;
+    }
+
+    public Bytecode toBytecodeObject() {
+        if (!withSource) {
+            this.source = "#\nignored";
+        }
+        return new Bytecode(this.byteCodeVersion, this.syntaxTree, this.source);
+    }
+
+    public byte[] toBytecode() {
+        try (Output output = new Output()) {
+            Kryo k = kryo.obtain();
+            k.writeObject(output, this.toBytecodeObject());
+            kryo.free(k);
+            return output.toBytes();
+        }
     }
 
     protected abstract List<String> preProcess(@NotNull Reader r, Path path);
@@ -63,7 +89,7 @@ public abstract class BScriptHandler {
     public final void printSyntaxTree() {
         System.out.println(this + " SyntaxTree:\n");
         for (Map.Entry<Integer, Element> i : this.syntaxTree.tree.entrySet()) {
-            System.out.print(i.getKey());
+            System.out.print(i.getKey() + " ");
             System.out.println(i.getValue().toString());
         }
     }

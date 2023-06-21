@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Tree extends Element implements Serializable {
+public class Tree implements Serializable {
     public Map<Integer, Element> tree = new ConcurrentHashMap<>();
 
     @Override

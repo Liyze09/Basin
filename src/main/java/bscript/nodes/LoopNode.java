@@ -6,6 +6,6 @@ public class LoopNode extends UncertainNode {
     }
 
     public String toString() {
-        return "Loop A: " + ANode;
+        return "loop A: " + ANode;
     }
 }

@@ -156,6 +156,7 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         }
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
     protected void generateSyntaxTree() {
         Deque<String> nested = new ArrayDeque<>();
@@ -175,12 +176,14 @@ public final class DefaultBScriptHandler extends BScriptHandler {
                 case "if" -> {
                     nested.push(m);
                     nested0.push(id + 2);
+                    id++;
                     rts.push(line.subList(2, line.lastIndexOf(")")));
                     fn = null;
                 }
                 case "loop" -> {
                     nested.push(m);
                     nested0.push(id + 2);
+                    id++;
                     fn = null;
                 }
                 case "endl" -> {
