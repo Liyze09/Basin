@@ -156,7 +156,6 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         }
     }
 
-    @SuppressWarnings("DataFlowIssue")
     @Override
     protected void generateSyntaxTree() {
         Deque<String> nested = new ArrayDeque<>();
@@ -168,7 +167,7 @@ public final class DefaultBScriptHandler extends BScriptHandler {
         for (List<String> line : tokenStream) {
             LOGGER.info(line.toString());
             if (fn != null) {
-                fn.f = id++;
+                fn.next = id++;
                 syntaxTree.tree.put(id, fn);
             }
             String m = line.get(0);
@@ -191,15 +190,18 @@ public final class DefaultBScriptHandler extends BScriptHandler {
                     switch (m) {
                         case "if" -> {
                             fn = null;
-                            syntaxTree.tree.put(nested0.peekFirst() - 1, new ConditionNode(rts.pop(), nested0.pop()));
+                            syntaxTree.tree.put(nested0.pop() - 1, new ConditionNode(rts.pop(), id + 1));
+                            syntaxTree.tree.put(++id, new OperationNode(Operation.ENDL));
                         }
                         case "loop" -> {
                             fn = null;
-                            syntaxTree.tree.put(nested0.peekFirst() - 1, new LoopNode(nested0.pop()));
+                            syntaxTree.tree.put(nested0.pop() - 1, new LoopNode(id + 1));
+                            syntaxTree.tree.put(++id, new OperationNode(Operation.ENDL));
                         }
                         default -> throw new IllegalStateException("Unexpected value: " + m);
                     }
                 }
+                case "break" -> fn = new OperationNode(Operation.BREAK);
                 case "ignored" -> fn = null;
                 default -> {
                     if (line.size() == 1) fn = new DefaultNode(m, null);
