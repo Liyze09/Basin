@@ -1,4 +1,6 @@
-package bscript.nodes;
+package bscript;
+
+import bscript.nodes.Element;
 
 import java.io.Serializable;
 import java.util.Map;

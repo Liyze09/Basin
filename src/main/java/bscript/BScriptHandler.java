@@ -1,7 +1,6 @@
 package bscript;
 
 import bscript.nodes.Element;
-import bscript.nodes.Tree;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.Pool;
