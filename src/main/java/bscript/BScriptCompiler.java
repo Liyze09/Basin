@@ -17,28 +17,28 @@ import java.util.Map;
 
 import static net.liyze.basin.core.Main.cfg;
 
-public abstract class BScriptHandler {
+public abstract class BScriptCompiler {
     public static final int bcv = 0;
-    static final Logger LOGGER = LoggerFactory.getLogger(BScriptHandler.class);
-    public String source;
-    public transient List<List<String>> tokenStream;
-    public Tree syntaxTree = new Tree();
-    protected int byteCodeVersion = bcv;
-    protected boolean withSource = false;
-    public final Pool<Kryo> kryo = new Pool<>(true, true) {
+    public static final Pool<Kryo> KRYO_POOL = new Pool<>(true, true) {
         protected @NotNull Kryo create() {
             Kryo kryo = new Kryo();
             kryo.register(Bytecode.class, 1);
             return kryo;
         }
     };
+    public String source;
+    static final Logger LOGGER = LoggerFactory.getLogger(BScriptCompiler.class);
+    public Tree syntaxTree = new Tree();
+    protected int byteCodeVersion = bcv;
+    protected boolean withSource = false;
+    public List<List<String>> tokenStream;
 
     // Factories
     @Contract(pure = true)
-    public static @NotNull BScriptHandler fromSource(String source) {
-        BScriptHandler bs;
+    public static @NotNull BScriptCompiler fromSource(String source) {
+        BScriptCompiler bs;
         try {
-            bs = (BScriptHandler) Class.forName(cfg.defaultBScriptHandler).getDeclaredConstructor().newInstance();
+            bs = (BScriptCompiler) Class.forName(cfg.defaultBScriptHandler).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -56,9 +56,9 @@ public abstract class BScriptHandler {
 
     public byte[] toBytecode() {
         try (Output output = new Output()) {
-            Kryo k = kryo.obtain();
+            Kryo k = KRYO_POOL.obtain();
             k.writeObject(output, this.toBytecodeObject());
-            kryo.free(k);
+            KRYO_POOL.free(k);
             return output.toBytes();
         }
     }

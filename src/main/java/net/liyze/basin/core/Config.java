@@ -8,8 +8,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.core.Main.config;
+import static net.liyze.basin.core.Main.*;
 
 /**
  * Basin Config Bean
@@ -23,7 +22,7 @@ public final class Config {
     public String accessToken = "";
     public int remotePort = 32768;
     public boolean enableParallel = true;
-    public String defaultBScriptHandler = "bscript.DefaultBScriptHandler";
+    public String defaultBScriptHandler = "bscript.DefaultBScriptCompiler";
 
     /**
      * Load the config {@code cfg.json}

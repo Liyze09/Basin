@@ -1,6 +1,6 @@
 package bscript.test;
 
-import bscript.DefaultBScriptHandler;
+import bscript.DefaultBScriptCompiler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -8,14 +8,10 @@ import org.junit.jupiter.api.Test;
 public final class ScriptTest{
     @Test
     public void scriptTest() {
-        main(null);
-    }
-
-    public static void main(String[] args) {
-        var bs = DefaultBScriptHandler.fromSource(
-
+        var bs = DefaultBScriptCompiler.fromSource(
                 """
                         print("start")
+                        var i=0
                         loop:
                         \ti=i+1
                         \tprint(i)

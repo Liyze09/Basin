@@ -19,11 +19,11 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 @ApiStatus.Experimental
-public final class DefaultBScriptHandler extends BScriptHandler {
+public final class DefaultBScriptCompiler extends BScriptCompiler {
     public static final List<String> keywords = ImmutableList.of("(", ")", ":", "\t", " ", "\"", ">", "<", "=");
 
 
-    DefaultBScriptHandler() {
+    DefaultBScriptCompiler() {
     }
 
     //Compile--------------------------------------------------------------------------------------------------
@@ -210,18 +210,17 @@ public final class DefaultBScriptHandler extends BScriptHandler {
             }
         }
     }
-    //Runtime-----------------------------------------------------------------------------------------
 
     //Overrides-----------------------------------------------------------------------------------------
     @Override
     public boolean equals(Object obj) {
         boolean result;
-        if (!(obj instanceof DefaultBScriptHandler)) {
+        if (!(obj instanceof DefaultBScriptCompiler)) {
             result = false;
         } else if (obj == this) {
             result = true;
         } else {
-            result = this.source.equals(((DefaultBScriptHandler) obj).source) || this.syntaxTree.equals(((DefaultBScriptHandler) obj).syntaxTree);
+            result = this.source.equals(((DefaultBScriptCompiler) obj).source) || this.syntaxTree.equals(((DefaultBScriptCompiler) obj).syntaxTree);
         }
         return result;
     }
