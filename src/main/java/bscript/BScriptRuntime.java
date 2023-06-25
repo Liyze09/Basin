@@ -1,6 +1,6 @@
 package bscript;
 
-import bscript.mem.MemoryManager;
+import bscript.mem.HeapManager;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,7 @@ import static bscript.BScriptCompiler.KRYO_POOL;
 
 public class BScriptRuntime {
     public Tree syntaxTree = new Tree();
-    public MemoryManager heap = new MemoryManager(512);
+    public HeapManager heap = new HeapManager(512);
 
     private BScriptRuntime() {
 
