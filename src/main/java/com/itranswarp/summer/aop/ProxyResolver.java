@@ -4,6 +4,7 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class ProxyResolver {
     }
 
     @SuppressWarnings({"unchecked", "resource"})
-    public <T> T createProxy(T bean, InvocationHandler handler) {
+    public <T> T createProxy(@NotNull T bean, InvocationHandler handler) {
         Class<?> targetClass = bean.getClass();
         logger.atDebug().log("create proxy for bean {} @{}", targetClass.getName(), Integer.toHexString(bean.hashCode()));
         Class<?> proxyClass = this.byteBuddy

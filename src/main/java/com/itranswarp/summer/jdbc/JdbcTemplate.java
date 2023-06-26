@@ -2,6 +2,8 @@ package com.itranswarp.summer.jdbc;
 
 import com.itranswarp.summer.jdbc.exception.DataAccessException;
 import com.itranswarp.summer.jdbc.tx.TransactionalUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -140,7 +142,8 @@ public class JdbcTemplate {
         }
     }
 
-    private PreparedStatementCreator preparedStatementCreator(String sql, Object... args) {
+    @Contract(pure = true)
+    private @NotNull PreparedStatementCreator preparedStatementCreator(String sql, Object... args) {
         return (Connection con) -> {
             var ps = con.prepareStatement(sql);
             bindArgs(ps, args);
@@ -148,7 +151,7 @@ public class JdbcTemplate {
         };
     }
 
-    private void bindArgs(PreparedStatement ps, Object... args) throws SQLException {
+    private void bindArgs(PreparedStatement ps, Object @NotNull ... args) throws SQLException {
         for (int i = 0; i < args.length; i++) {
             ps.setObject(i + 1, args[i]);
         }
@@ -160,7 +163,7 @@ class StringRowMapper implements RowMapper<String> {
     static StringRowMapper instance = new StringRowMapper();
 
     @Override
-    public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public String mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
         return rs.getString(1);
     }
 }
@@ -170,7 +173,7 @@ class BooleanRowMapper implements RowMapper<Boolean> {
     static BooleanRowMapper instance = new BooleanRowMapper();
 
     @Override
-    public Boolean mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public Boolean mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
         return rs.getBoolean(1);
     }
 }
@@ -180,7 +183,7 @@ class NumberRowMapper implements RowMapper<Number> {
     static NumberRowMapper instance = new NumberRowMapper();
 
     @Override
-    public Number mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public Number mapRow(@NotNull ResultSet rs, int rowNum) throws SQLException {
         return (Number) rs.getObject(1);
     }
 }

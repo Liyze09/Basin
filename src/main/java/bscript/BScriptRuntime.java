@@ -1,5 +1,6 @@
 package bscript;
 
+import bscript.exception.ByteCodeLoadingException;
 import bscript.heap.HeapManager;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -22,11 +23,15 @@ public class BScriptRuntime {
     }
 
     public static @NotNull BScriptRuntime fromBytecode(byte[] bytes) {
+        Kryo k = KRYO_POOL.obtain();
         try (Input input = new Input()) {
-            Kryo k = KRYO_POOL.obtain();
             Bytecode bytecode = k.readObject(input, Bytecode.class);
-            KRYO_POOL.free(k);
             return fromBytecodeObject(bytecode);
+        } catch (Exception e) {
+            throw new ByteCodeLoadingException(e.getMessage());
+        } finally {
+            KRYO_POOL.free(k);
         }
     }
+
 }

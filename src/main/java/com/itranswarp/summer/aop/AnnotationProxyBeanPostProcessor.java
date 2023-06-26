@@ -6,6 +6,7 @@ import com.itranswarp.summer.context.ApplicationContextUtils;
 import com.itranswarp.summer.context.BeanDefinition;
 import com.itranswarp.summer.context.BeanPostProcessor;
 import com.itranswarp.summer.context.exception.BeansException;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -23,7 +24,7 @@ public abstract class AnnotationProxyBeanPostProcessor<A extends Annotation> imp
         this.annotationClass = getParameterizedType();
     }
 
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessBeforeInitialization(@NotNull Object bean, String beanName) throws BeansException {
         Class<?> beanClass = bean.getClass();
 
         // has class-level @Annotation?
@@ -69,7 +70,7 @@ public abstract class AnnotationProxyBeanPostProcessor<A extends Annotation> imp
     }
 
     @SuppressWarnings("unchecked")
-    private Class<A> getParameterizedType() {
+    private @NotNull Class<A> getParameterizedType() {
         Type type = getClass().getGenericSuperclass();
         if (!(type instanceof ParameterizedType pt)) {
             throw new IllegalArgumentException("Class " + getClass().getName() + " does not have parameterized type.");
