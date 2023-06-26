@@ -1,14 +1,13 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.context.annotation.Component;
+import com.itranswarp.summer.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.core.Main.cfg;
+import static net.liyze.basin.core.Main.*;
 
 @Component
 public class ShellCommand implements Command {

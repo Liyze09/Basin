@@ -1,15 +1,17 @@
 package bscript.test;
 
 import bscript.DefaultBScriptCompiler;
-import bscript.mem.HeapElement;
-import bscript.mem.HeapManager;
+import bscript.heap.HeapElement;
+import bscript.heap.HeapManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
+import static java.lang.System.out;
+
 @DisplayName("BScript Test 1")
-public final class ScriptTest{
+public final class ScriptTest {
     @Test
     public void compileTest() {
         var bs = DefaultBScriptCompiler.fromSource(
@@ -31,13 +33,14 @@ public final class ScriptTest{
 
     @Test
     public void heapTest() {
-        HeapManager heap = new HeapManager(4);
-        for (int i = 0; i < 4; i++) {
-            heap.put(new HeapElement());
-        }
+        HeapManager heap = new HeapManager(8);
         for (int i = 0; i < 8; i++) {
             heap.put(new HeapElement());
         }
-        System.out.println(Arrays.toString(heap.heap));
+        for (int i = 0; i < 32; i++) {
+            heap.put(new HeapElement());
+        }
+        out.println(heap.read(1));
+        out.println(Arrays.toString(heap.heap));
     }
 }

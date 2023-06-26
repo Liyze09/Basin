@@ -1,6 +1,6 @@
 package bscript;
 
-import bscript.mem.HeapManager;
+import bscript.heap.HeapManager;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import org.jetbrains.annotations.NotNull;

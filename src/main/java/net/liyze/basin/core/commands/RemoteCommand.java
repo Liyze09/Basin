@@ -1,14 +1,13 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.context.annotation.Component;
+import com.itranswarp.summer.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import net.liyze.basin.remote.Client;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.core.Main.envMap;
+import static net.liyze.basin.core.Main.*;
 
 @Component
 public class RemoteCommand implements Command {

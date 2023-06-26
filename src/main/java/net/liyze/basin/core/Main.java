@@ -1,9 +1,9 @@
 package net.liyze.basin.core;
 
 import com.google.common.base.Splitter;
+import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
+import com.itranswarp.summer.context.ApplicationContext;
 import com.moandjiezana.toml.Toml;
-import net.liyze.basin.context.AnnotationConfigApplicationContext;
-import net.liyze.basin.context.ConfigurableApplicationContext;
 import net.liyze.basin.remote.RemoteServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public final class Main {
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     public static Map<String, Object> envMap;
     public static Config cfg = Config.initConfig();
-    public static ConfigurableApplicationContext app;
+    public static ApplicationContext app;
     private static String command;
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})

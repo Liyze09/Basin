@@ -176,7 +176,7 @@ public final class DefaultBScriptCompiler extends BScriptCompiler {
                     nested.push(m);
                     nested0.push(id + 2);
                     id++;
-                    rts.push(line.subList(2, line.lastIndexOf(")")));
+                    rts.push(line.subList(1, line.lastIndexOf(":")));
                     fn = null;
                 }
                 case "loop" -> {

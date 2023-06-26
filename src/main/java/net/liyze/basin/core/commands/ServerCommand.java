@@ -1,6 +1,6 @@
 package net.liyze.basin.core.commands;
 
-import net.liyze.basin.context.annotation.Component;
+import com.itranswarp.summer.context.annotation.Component;
 import net.liyze.basin.core.Command;
 import net.liyze.basin.core.Main;
 import net.liyze.basin.http.HttpServer;

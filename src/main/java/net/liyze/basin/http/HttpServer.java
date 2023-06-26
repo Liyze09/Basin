@@ -1,6 +1,6 @@
 package net.liyze.basin.http;
 
-import net.liyze.basin.context.BeanDefinition;
+import com.itranswarp.summer.context.BeanDefinition;
 import net.liyze.basin.core.Server;
 import net.liyze.basin.http.annotation.GetMapping;
 import net.liyze.basin.http.annotation.Model;
@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static net.liyze.basin.core.Main.LOGGER;
-import static net.liyze.basin.core.Main.contexts;
+import static net.liyze.basin.core.Main.*;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class HttpServer implements Server {

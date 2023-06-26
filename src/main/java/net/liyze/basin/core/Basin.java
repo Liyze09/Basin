@@ -1,7 +1,7 @@
 package net.liyze.basin.core;
 
-import net.liyze.basin.context.AnnotationConfigApplicationContext;
-import net.liyze.basin.context.annotation.ComponentScan;
+import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
+import com.itranswarp.summer.context.annotation.ComponentScan;
 import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.Contract;
