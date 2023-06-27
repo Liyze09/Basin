@@ -20,7 +20,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 @ApiStatus.Experimental
 public final class DefaultBScriptCompiler extends BScriptCompiler {
-    public static final List<String> keywords = ImmutableList.of("(", ")", ":", "\t", " ", "\"", ">", "<", "=");
+    public static final List<String> keywords = ImmutableList.of("(", ")", ":", "\t", " ", ">", "<", "=");
 
 
     DefaultBScriptCompiler() {
@@ -173,7 +173,6 @@ public final class DefaultBScriptCompiler extends BScriptCompiler {
         int dnd = 0;
         int id = 0;
         for (List<String> line : tokenStream) {
-            LOGGER.info(line.toString());
             if (fn != null) {
                 fn.next = id++;
                 syntaxTree.tree.put(id, fn);
@@ -212,11 +211,24 @@ public final class DefaultBScriptCompiler extends BScriptCompiler {
                 case "break" -> fn = new OperationNode(Operation.BREAK);
                 case "ignored" -> fn = null;
                 default -> {
+                    for (int i = 0; i < line.size(); i++) {
+                        String token = line.get(i);
+                        if (token.matches("\".*\"")) {
+                            line.set(i, "str**" + token);
+                        } else if (token.matches("\\w+\\.\\w+")) {
+                            line.set(i, "float" + token);
+                        } else if (token.matches("\\w+")) {
+                            line.set(i, "int**" + token);
+                        } else if (token.matches("'.+'")) {
+                            line.set(i, "char*" + token);
+                        }
+                    }
                     if (line.size() == 1) fn = new DefaultNode(m, null);
                     else fn = new DefaultNode(m, line.subList(1, line.size()));
                 }
             }
         }
+        LOGGER.info("Compile done.");
     }
 
     //Overrides-----------------------------------------------------------------------------------------

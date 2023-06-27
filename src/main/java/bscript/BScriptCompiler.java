@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,16 +20,18 @@ import static net.liyze.basin.core.Main.cfg;
 
 public abstract class BScriptCompiler {
     public static final int bcv = 0;
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BScriptCompiler.class);
     public static final Pool<Kryo> KRYO_POOL = new Pool<>(true, true) {
         protected @NotNull Kryo create() {
             Kryo kryo = new Kryo();
             kryo.register(Bytecode.class, 1);
+            kryo.register(ArrayList.class);
             return kryo;
         }
     };
     public String source;
-    static final Logger LOGGER = LoggerFactory.getLogger(BScriptCompiler.class);
     public Tree syntaxTree = new Tree();
+    public List<String> args = new ArrayList<>();
     protected int byteCodeVersion = bcv;
     protected boolean withSource = false;
     public List<List<String>> tokenStream;
@@ -51,7 +54,7 @@ public abstract class BScriptCompiler {
         if (!withSource) {
             this.source = "#\nignored";
         }
-        return new Bytecode(this.byteCodeVersion, this.syntaxTree, this.source);
+        return new Bytecode(this.byteCodeVersion, this.syntaxTree, this.source, this.args);
     }
 
     public byte[] toBytecode() {

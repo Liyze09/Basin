@@ -6,19 +6,25 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import org.jetbrains.annotations.NotNull;
 
-import static bscript.BScriptCompiler.KRYO_POOL;
+import java.util.ArrayList;
+import java.util.List;
 
-public class BScriptRuntime {
+import static bscript.BScriptCompiler.*;
+
+public abstract class BScriptRuntime {
     public Tree syntaxTree = new Tree();
+    public List<String> args = new ArrayList<>();
     public HeapManager heap = new HeapManager(512);
 
-    private BScriptRuntime() {
+    protected BScriptRuntime() {
 
     }
 
     public static @NotNull BScriptRuntime fromBytecodeObject(@NotNull Bytecode bytecode) {
-        BScriptRuntime runtime = new BScriptRuntime();
+        BScriptRuntime runtime = new DefaultBScriptRuntime();
         runtime.syntaxTree = bytecode.syntax();
+        runtime.args = bytecode.args();
+        LOGGER.info("Start a new BScript VM");
         return runtime;
     }
 
@@ -34,4 +40,5 @@ public class BScriptRuntime {
         }
     }
 
+    public abstract void invoke();
 }

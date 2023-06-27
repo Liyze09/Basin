@@ -1,5 +1,7 @@
 package bscript.test;
 
+import bscript.BScriptCompiler;
+import bscript.BScriptRuntime;
 import bscript.DefaultBScriptCompiler;
 import bscript.heap.HeapElement;
 import bscript.heap.HeapManager;
@@ -42,5 +44,13 @@ public final class ScriptTest {
         }
         out.println(heap.read(1));
         out.println(Arrays.toString(heap.heap));
+    }
+
+    @Test
+    public void runtimeTest() {
+        var bs = BScriptCompiler.fromSource("print(\"Hello, World\")");
+        bs.compile();
+        var brt = BScriptRuntime.fromBytecodeObject(bs.toBytecodeObject());
+        brt.invoke();
     }
 }
