@@ -22,8 +22,8 @@ public abstract class BScriptRuntime {
 
     public static @NotNull BScriptRuntime fromBytecodeObject(@NotNull Bytecode bytecode) {
         BScriptRuntime runtime = new DefaultBScriptRuntime();
-        runtime.syntaxTree = bytecode.syntax();
-        runtime.args = bytecode.args();
+        runtime.syntaxTree = bytecode.syntax;
+        runtime.args = bytecode.args;
         LOGGER.info("Start a new BScript VM");
         return runtime;
     }
