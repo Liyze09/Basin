@@ -1,56 +1,35 @@
 package bscript.test;
 
+import bscript.BScriptClassLoader;
 import bscript.BScriptCompiler;
-import bscript.BScriptRuntime;
-import bscript.DefaultBScriptCompiler;
-import bscript.heap.HeapElement;
-import bscript.heap.HeapManager;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
-import static java.lang.System.out;
+import java.io.IOException;
+import java.io.StringReader;
 
 @DisplayName("BScript Test 1")
 public final class ScriptTest {
-    @Test
-    public void compileTest() {
-        var bs = DefaultBScriptCompiler.fromSource(
-                """
-                        print("start")
-                        var i=0
-                        loop:
-                        \ti=i+1
-                        \tprint(i)
-                        \tif(i>10):
-                        \t\tprint("stopping")
-                        \t\tbreak
-                        print("finished")
-                        """);
-        bs.compile();
-        bs.printTokenStream();
-        bs.printSyntaxTree();
-    }
 
     @Test
-    public void heapTest() {
-        HeapManager heap = new HeapManager(8);
-        for (int i = 0; i < 8; i++) {
-            heap.put(new HeapElement());
-        }
-        for (int i = 0; i < 32; i++) {
-            heap.put(new HeapElement());
-        }
-        out.println(heap.read(1));
-        out.println(Arrays.toString(heap.heap));
-    }
-
-    @Test
-    public void runtimeTest() {
-        var bs = BScriptCompiler.fromSource("print(\"Hello, World\")");
-        bs.compile();
-        var brt = BScriptRuntime.fromBytecodeObject(bs.toBytecodeObject());
-        brt.invoke();
+    public void bct() throws CannotCompileException, IOException, ClassNotFoundException {
+        var bs = new BScriptCompiler("Test");
+        var pool = ClassPool.getDefault();
+        bs.lines = bs.preProcess(new StringReader("""
+                handle main:
+                \tprint("start")
+                \tint i=0
+                \tloop:
+                \t\ti=i+1
+                \t\tprint(i)
+                \t\tif(i>10):
+                \t\t\tprint("stopping")
+                \t\t\tbreak
+                \tprint("finished")
+                """), null);
+        bs.toBytecode();
+        new BScriptClassLoader(bs.clazz.toBytecode()).loadClass("bscript.classes.Test");
     }
 }

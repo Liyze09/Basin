@@ -46,6 +46,8 @@ dependencies {
     api 'com.zaxxer:HikariCP:5.0.1'
     // https://mvnrepository.com/artifact/com.esotericsoftware/kryo
     api 'com.esotericsoftware:kryo:5.5.0'
+    // https://mvnrepository.com/artifact/org.javassist/javassist
+    api 'org.javassist:javassist:3.29.2-GA'
 
 }
 test {

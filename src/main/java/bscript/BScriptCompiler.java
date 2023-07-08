@@ -1,109 +1,170 @@
 package bscript;
 
-import bscript.nodes.Element;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.Pool;
+import javassist.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static net.liyze.basin.core.Main.cfg;
+import static javassist.CtClass.voidType;
 
-public abstract class BScriptCompiler {
-    public static final int bcv = 0;
-    protected static final Logger LOGGER = LoggerFactory.getLogger(BScriptCompiler.class);
-    public static final Pool<Kryo> KRYO_POOL = new Pool<>(true, true) {
-        protected @NotNull Kryo create() {
-            Kryo kryo = new Kryo();
-            kryo.register(Bytecode.class, 1);
-            kryo.register(ArrayList.class);
-            return kryo;
-        }
-    };
-    public String source;
-    public Tree syntaxTree = new Tree();
-    public List<String> args = new ArrayList<>();
-    protected int byteCodeVersion = bcv;
-    protected boolean withSource = false;
-    public List<List<String>> tokenStream;
+public final class BScriptCompiler {
+    public final String name;
+    public CtClass clazz;
+    public List<String> lines = new ArrayList<>();
 
-    // Factories
+    public BScriptCompiler(String name) {
+        this.name = name;
+    }
+
     @Contract(pure = true)
-    public static @NotNull BScriptCompiler fromSource(String source) {
-        BScriptCompiler bs;
-        try {
-            bs = (BScriptCompiler) Class.forName(cfg.defaultBScriptHandler).getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
+    public @NotNull List<String> preProcess(@NotNull Reader r, Path path) {
+        List<String> lines;
+        try (BufferedReader reader = new BufferedReader(r)) {
+            lines = new ArrayList<>(reader.lines().toList());
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        bs.source = source;
-        LOGGER.info("Generated a new BS handler with source string.");
-        return bs;
-    }
-
-    public Bytecode toBytecodeObject() {
-        if (!withSource) {
-            this.source = "#\nignored";
+        lines.add("ignored");
+        //Part 1 -- process Notes and Annotations.
+        {
+            String line;
+            for (int i = 0; i < lines.size(); ++i) {
+                line = lines.get(i);
+                if (line.isBlank() || line.startsWith("#")) {
+                    lines.remove(i);
+                    i--;
+                } else if (line.startsWith("@")) {
+                    if (line.startsWith("@Include")) {
+                        String lp = path + line.substring(9).strip();
+                        List<String> nl;
+                        try {
+                            nl = this.preProcess(new FileReader(lp, StandardCharsets.UTF_8), Path.of(lp));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        lines.addAll(0, nl);
+                        i += nl.size();
+                    }
+                }
+            }
         }
-        return new Bytecode(this.byteCodeVersion, this.syntaxTree, this.source, this.args);
-    }
-
-    public byte[] toBytecode() {
-        try (Output output = new Output()) {
-            Kryo k = KRYO_POOL.obtain();
-            k.writeObject(output, this.toBytecodeObject());
-            KRYO_POOL.free(k);
-            return output.toBytes();
+        //Part 2 -- process tabs.
+        {
+            int in = 0;
+            List<Integer> indexes = new ArrayList<>();
+            boolean added = false;
+            for (int i = 0; i < lines.size(); ++i) {
+                String line = lines.get(i);
+                if (line.startsWith("\t") && !added) {
+                    indexes.add(i);
+                    added = true;
+                } else if (!line.startsWith("\t")) {
+                    added = false;
+                }
+            }
+            for (int i : indexes) {
+                List<String> inLines = new ArrayList<>();
+                for (int j = i; ; ++j) {
+                    String line = lines.get(j);
+                    if (!line.startsWith("\t")) {
+                        break;
+                    } else {
+                        inLines.add(line);
+                    }
+                }
+                lines.removeAll(inLines);
+                lines.addAll(i, injectEndl(inLines));
+            }
         }
-    }
-
-    protected abstract List<String> preProcess(@NotNull Reader r, Path path);
-
-    protected abstract void generateTokenStream(@NotNull List<String> lines);
-
-    protected abstract void generateSyntaxTree();
-
-    public void compile() {
-        generateTokenStream(preProcess(new StringReader(source), Path.of("data/home")));
-        generateSyntaxTree();
-    }
-
-    //Developer-Utils------------------------------------------------------------------------------------
-    public final void printTokenStream() {
-        System.out.println(this + " TokenStream:\n" + tokenStream.toString());
-    }
-
-    public final void printSyntaxTree() {
-        System.out.println(this + " SyntaxTree:\n");
-        for (Map.Entry<Integer, Element> i : this.syntaxTree.tree.entrySet()) {
-            System.out.print(i.getKey() + " ");
-            System.out.println(i.getValue().toString());
+        //Part 3 -- to Java code
+        {
+            for (int i = 0; i < lines.size(); ++i) {
+                String line = lines.get(i).strip();
+                String nl;
+                if (line.matches("loop\\s*:.*")) nl = "while(true){";
+                else if (line.endsWith(":")) nl = line.substring(0, line.length() - 1) + "{";
+                else if (line.startsWith("print")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
+                else if (!line.equals("}")) nl = line + ";";
+                else nl = line;
+                lines.set(i, nl);
+            }
         }
+        return lines;
     }
 
-    //Bean-Methods---------------------------------------------------------------------------------------
-    public int getByteCodeVersion() {
-        return byteCodeVersion;
+    @Contract(pure = true)
+    private @NotNull List<String> injectEndl(@NotNull List<String> l) {
+        List<String> lines = new ArrayList<>();
+        for (String line : l) {
+            lines.add(line.substring(1));
+        }
+        lines.add("}");
+        int in = 0;
+        List<Integer> indexes = new ArrayList<>();
+        boolean added = false;
+        for (int i = 0; i < lines.size(); ++i) {
+            String line = lines.get(i);
+            if (line.startsWith("\t") && !added) {
+                indexes.add(i);
+                added = true;
+            } else if (!line.startsWith("\t")) {
+                added = false;
+            }
+        }
+        for (int i : indexes) {
+            List<String> inLines = new ArrayList<>();
+            for (int j = i; ; ++j) {
+                String line = lines.get(j);
+                if (!line.startsWith("\t")) {
+                    break;
+                } else {
+                    inLines.add(line);
+                }
+            }
+            lines.removeAll(inLines);
+            lines.addAll(i, injectEndl(inLines));
+        }
+        return lines;
     }
 
-    public void setByteCodeVersion(int byteCodeVersion) {
-        this.byteCodeVersion = byteCodeVersion;
-    }
-
-    public boolean isWithSource() {
-        return withSource;
-    }
-
-    public void setSource(boolean withSource) {
-        this.withSource = withSource;
+    public void toBytecode() throws CannotCompileException {
+        ClassPool pool = ClassPool.getDefault();
+        CtClass clazz = pool.makeClass("bscript.classes." + name);
+        try {
+            clazz.setSuperclass(pool.get("bscript.OutputBytecode"));
+        } catch (NotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String event = null;
+        StringBuilder body = new StringBuilder();
+        for (String line : lines) {
+            if (line.startsWith("handle")) {
+                if (!body.isEmpty()) {
+                    CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
+                    method.setBody("{" + body);
+                    clazz.addMethod(method);
+                }
+                event = line.substring(line.indexOf(" "), line.indexOf("{")).strip();
+                body = new StringBuilder();
+            } else if (line.equals("ignored;")) {
+                if (!body.isEmpty()) {
+                    CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
+                    method.setBody("{" + body);
+                    clazz.addMethod(method);
+                }
+            } else {
+                body.append(line);
+            }
+        }
+        this.clazz = clazz;
     }
 }
+
