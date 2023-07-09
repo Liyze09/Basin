@@ -14,16 +14,23 @@ public final class ScriptTest {
     public void bct() throws CannotCompileException, IOException {
         BScriptHelper.getInstance().compileAndRun("Test",
                 """
-                        handle main:
+                        handle main {
                         \tprint("start")
                         \tint i=0
-                        \tloop:
+                        \tloop{
                         \t\ti=i+1
                         \t\tprint(i)
-                        \t\tif(i>=10):
+                        \t\tif(i>=10){
                         \t\t\tprint("stopping")
                         \t\t\tbreak
+                        \t\t}
+                        \t}
                         \tprint("finished")
+                        \truntime.broadcast("test")
+                        }
+                        handle test{
+                        \tprint("Hello, World!")
+                        }
                         """);
     }
 }

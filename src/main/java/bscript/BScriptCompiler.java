@@ -5,13 +5,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static javassist.CtClass.voidType;
 
@@ -25,114 +24,58 @@ public final class BScriptCompiler {
     }
 
     @Contract(pure = true)
-    public @NotNull List<String> preProcess(@NotNull Reader r, Path path) {
+    public @NotNull List<String> preProcess(@NotNull Reader r) {
         List<String> lines;
         try (BufferedReader reader = new BufferedReader(r)) {
             lines = new ArrayList<>(reader.lines().toList());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lines.add("ignored");
-        //Part 1 -- process Notes and Annotations.
-        {
-            String line;
-            for (int i = 0; i < lines.size(); ++i) {
-                line = lines.get(i);
-                if (line.isBlank() || line.startsWith("#")) {
-                    lines.remove(i);
-                    i--;
-                } else if (line.startsWith("@")) {
-                    if (line.startsWith("@Include")) {
-                        String lp = path + line.substring(9).strip();
-                        List<String> nl;
-                        try {
-                            nl = this.preProcess(new FileReader(lp, StandardCharsets.UTF_8), Path.of(lp));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        lines.addAll(0, nl);
-                        i += nl.size();
-                    }
-                }
-            }
-        }
-        //Part 2 -- process tabs.
-        {
-            int in = 0;
-            List<Integer> indexes = new ArrayList<>();
-            boolean added = false;
-            for (int i = 0; i < lines.size(); ++i) {
-                String line = lines.get(i);
-                if (line.startsWith("\t") && !added) {
-                    indexes.add(i);
-                    added = true;
-                } else if (!line.startsWith("\t")) {
-                    added = false;
-                }
-            }
-            for (int i : indexes) {
-                List<String> inLines = new ArrayList<>();
-                for (int j = i; ; ++j) {
-                    String line = lines.get(j);
-                    if (!line.startsWith("\t")) {
-                        break;
-                    } else {
-                        inLines.add(line);
-                    }
-                }
-                lines.removeAll(inLines);
-                lines.addAll(i, injectEndl(inLines));
-            }
-        }
-        //Part 3 -- to Java code
-        {
-            for (int i = 0; i < lines.size(); ++i) {
-                String line = lines.get(i).strip();
-                String nl;
-                if (line.matches("loop\\s*:.*")) nl = "while(true){";
-                else if (line.endsWith(":")) nl = line.substring(0, line.length() - 1) + "{";
-                else if (line.startsWith("print")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
-                else if (!line.equals("}")) nl = line + ";";
-                else nl = line;
-                lines.set(i, nl);
-            }
-        }
+        lines.add("endl");
+        processComments(lines);
+        processSweets(lines);
+        processImports(lines);
         return lines;
     }
 
-    @Contract(pure = true)
-    private @NotNull List<String> injectEndl(@NotNull List<String> l) {
-        List<String> lines = new ArrayList<>();
-        for (String line : l) {
-            lines.add(line.substring(1));
+    private void processComments(@NotNull List<String> lines) {
+        String line;
+        for (int i = 0; i < lines.size(); ++i) {
+            line = lines.get(i);
+            if (line.isBlank() || line.startsWith("#")) {
+                lines.remove(i);
+                i--;
+            }
         }
-        lines.add("}");
-        int in = 0;
-        List<Integer> indexes = new ArrayList<>();
-        boolean added = false;
+    }
+
+    private void processSweets(@NotNull List<String> lines) {
+        for (int i = 0; i < lines.size(); ++i) {
+            String line = lines.get(i).strip();
+            String nl;
+            if (line.startsWith("loop")) nl = "while(true){";
+            else if (line.startsWith("print")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
+            else if (line.matches("System\\s*\\.\\s*exit.+")) nl = "return;";
+            else if (!line.equals("}")) nl = line + ";";
+            else nl = line;
+            lines.set(i, nl);
+        }
+    }
+
+    private void processImports(@NotNull List<String> lines) {
+        Map<String, String> imports = new HashMap<>();
         for (int i = 0; i < lines.size(); ++i) {
             String line = lines.get(i);
-            if (line.startsWith("\t") && !added) {
-                indexes.add(i);
-                added = true;
-            } else if (!line.startsWith("\t")) {
-                added = false;
+            if (line.startsWith("import")) {
+                String full = line.substring(6).strip();
+                imports.put(full.substring(full.lastIndexOf(".") + 1), full);
+                lines.remove(i);
+                i--;
+            } else if (!line.startsWith("handle")) {
+                int finalI = i;
+                imports.forEach((key, value) -> lines.set(finalI, line.replaceAll(key, value)));
             }
         }
-        for (int i : indexes) {
-            List<String> inLines = new ArrayList<>();
-            for (int j = i; ; ++j) {
-                String line = lines.get(j);
-                if (!line.startsWith("\t")) {
-                    break;
-                } else {
-                    inLines.add(line);
-                }
-            }
-            lines.removeAll(inLines);
-            lines.addAll(i, injectEndl(inLines));
-        }
-        return lines;
     }
 
     public void toBytecode() throws CannotCompileException {
@@ -143,28 +86,35 @@ public final class BScriptCompiler {
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
+        boolean inFunc = false;
         String event = null;
         StringBuilder body = new StringBuilder();
         for (String line : getLines()) {
             if (line.startsWith("handle")) {
-                if (!body.isEmpty()) {
-                    CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
-                    method.setBody("{" + body);
-                    clazz.addMethod(method);
-                }
+                inFunc = true;
+                addMethod(clazz, body.toString(), event);
                 event = line.substring(line.indexOf(" "), line.indexOf("{")).strip();
                 body = new StringBuilder();
-            } else if (line.equals("ignored;")) {
-                if (!body.isEmpty()) {
-                    CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
-                    method.setBody("{" + body);
-                    clazz.addMethod(method);
-                }
-            } else {
+            } else if (line.equals("endl;")) {
+                addMethod(clazz, body.toString(), event);
+                break;
+            } else if (line.startsWith("var")) {
+                inFunc = false;
+                addMethod(clazz, body.toString(), event);
+
+            } else if (inFunc) {
                 body.append(line);
             }
         }
         this.setClazz(clazz);
+    }
+
+    private void addMethod(CtClass clazz, @NotNull String body, String event) throws CannotCompileException {
+        if (!body.isEmpty()) {
+            CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
+            method.setBody("{" + body);
+            clazz.addMethod(method);
+        }
     }
 
     public String getName() {

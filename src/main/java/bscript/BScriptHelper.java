@@ -9,16 +9,16 @@ import java.io.StringReader;
 public final class BScriptHelper {
     private static final BScriptHelper singleton = new BScriptHelper();
 
+    private BScriptHelper() {
+    }
+
     public static BScriptHelper getInstance() {
         return singleton;
     }
 
-    private BScriptHelper() {
-    }
-
     public byte[] compile(String name, String source) throws CannotCompileException, IOException {
         var compiler = new BScriptCompiler(name);
-        compiler.setLines(compiler.preProcess(new StringReader(source), null));
+        compiler.setLines(compiler.preProcess(new StringReader(source)));
         compiler.toBytecode();
         return compiler.getClazz().toBytecode();
     }
