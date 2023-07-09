@@ -2,9 +2,10 @@ package bscript;
 
 import bscript.exception.LoadFailedException;
 import javassist.CannotCompileException;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public final class BScriptHelper {
     private static final BScriptHelper singleton = new BScriptHelper();
@@ -23,6 +24,20 @@ public final class BScriptHelper {
         return compiler.getClazz().toBytecode();
     }
 
+    public void compileToFile(String name, String source, String dir) throws CannotCompileException, IOException {
+        var compiler = new BScriptCompiler(name);
+        compiler.setLines(compiler.preProcess(new StringReader(source)));
+        compiler.toBytecode();
+        compiler.getClazz().writeFile(dir);
+    }
+
+    public void compileFile(@NotNull File source) throws CannotCompileException, IOException {
+        String name = source.getName();
+        try (InputStream inputStream = new FileInputStream(source)) {
+            compileToFile(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8), source.getParent());
+        }
+    }
+
     public void compileAndRun(String name, String source) throws CannotCompileException, IOException {
         execute(compile(name, source), name);
     }
@@ -35,5 +50,12 @@ public final class BScriptHelper {
             throw new LoadFailedException(e);
         }
         bytecode.runtime.run();
+    }
+
+    public void executeFile(@NotNull File clazz) throws IOException {
+        String name = clazz.getName();
+        try (InputStream stream = new FileInputStream(clazz)) {
+            execute(stream.readAllBytes(), name.substring(0, name.length() - 6));
+        }
     }
 }

@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class BScriptRuntime implements Runnable, AutoCloseable {
+public final class BScriptRuntime implements Runnable {
     private final Logger LOGGER = LoggerFactory.getLogger(BScriptRuntime.class);
     private final ExecutorService pool = Executors.newCachedThreadPool();
     private final Class<?> clazz;
@@ -43,16 +43,12 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
 
     public void broadcast(String event) {
         pool.submit(() -> {
-            Method method = handlers.get(event);
+            Method method = handlers.get(event + "Event");
             if (method != null && method.trySetAccessible()) try {
                 method.invoke(instance);
             } catch (InvocationTargetException | IllegalAccessException e) {
                 throw new BroadcastException();
             }
         });
-    }
-
-    public void close() {
-
     }
 }

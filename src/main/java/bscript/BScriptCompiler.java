@@ -7,10 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static javassist.CtClass.voidType;
 
@@ -20,7 +17,7 @@ public final class BScriptCompiler {
     private List<String> lines = new ArrayList<>();
 
     public BScriptCompiler(String name) {
-        this.name = name;
+        this.name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
     @Contract(pure = true)
@@ -53,7 +50,7 @@ public final class BScriptCompiler {
         for (int i = 0; i < lines.size(); ++i) {
             String line = lines.get(i).strip();
             String nl;
-            if (line.startsWith("loop")) nl = "while(true){";
+            if (line.startsWith("loop")) nl = "for(;;){";
             else if (line.startsWith("print")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
             else if (line.matches("System\\s*\\.\\s*exit.+")) nl = "return;";
             else if (!line.equals("}")) nl = line + ";";
@@ -67,12 +64,12 @@ public final class BScriptCompiler {
         for (int i = 0; i < lines.size(); ++i) {
             String line = lines.get(i);
             if (line.startsWith("import")) {
-                String full = line.substring(6).strip();
+                String full = line.substring(6, line.length() - 1).strip();
                 imports.put(full.substring(full.lastIndexOf(".") + 1), full);
                 lines.remove(i);
                 i--;
             } else if (!line.startsWith("handle")) {
-                int finalI = i;
+                final int finalI = i;
                 imports.forEach((key, value) -> lines.set(finalI, line.replaceAll(key, value)));
             }
         }
@@ -86,22 +83,30 @@ public final class BScriptCompiler {
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
+        boolean isFunc = false;
         boolean inFunc = false;
         String event = null;
         StringBuilder body = new StringBuilder();
         for (String line : getLines()) {
-            if (line.startsWith("handle")) {
+            if (line.startsWith("def")) {
                 inFunc = true;
-                addMethod(clazz, body.toString(), event);
+                addMethod(clazz, body.toString(), event, isFunc);
+                isFunc = true;
+                body = new StringBuilder().append("public ").append(line.substring(line.indexOf(" ")));
+            } else if (line.startsWith("handle")) {
+                inFunc = true;
+                addMethod(clazz, body.toString(), event, isFunc);
+                isFunc = false;
                 event = line.substring(line.indexOf(" "), line.indexOf("{")).strip();
                 body = new StringBuilder();
             } else if (line.equals("endl;")) {
-                addMethod(clazz, body.toString(), event);
+                addMethod(clazz, body.toString(), event, isFunc);
                 break;
             } else if (line.startsWith("var")) {
                 inFunc = false;
-                addMethod(clazz, body.toString(), event);
-
+                addMethod(clazz, body.toString(), event, isFunc);
+                CtField field = CtField.make(line.substring(4).strip(), clazz);
+                clazz.addField(field);
             } else if (inFunc) {
                 body.append(line);
             }
@@ -109,7 +114,20 @@ public final class BScriptCompiler {
         this.setClazz(clazz);
     }
 
-    private void addMethod(CtClass clazz, @NotNull String body, String event) throws CannotCompileException {
+    private void addMethod(CtClass clazz, @NotNull String body, String event, boolean func) throws CannotCompileException {
+        if (!func) {
+            event = event + "Event";
+            addHandler(clazz, body, event);
+        } else {
+            addFunc(clazz, body);
+        }
+    }
+
+    private void addFunc(@NotNull CtClass clazz, @NotNull String src) throws CannotCompileException {
+        clazz.addMethod(CtMethod.make(src, clazz));
+    }
+
+    private void addHandler(CtClass clazz, @NotNull String body, String event) throws CannotCompileException {
         if (!body.isEmpty()) {
             CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
             method.setBody("{" + body);
