@@ -16,9 +16,9 @@ import java.util.List;
 import static javassist.CtClass.voidType;
 
 public final class BScriptCompiler {
-    public final String name;
-    public CtClass clazz;
-    public List<String> lines = new ArrayList<>();
+    private final String name;
+    private CtClass clazz;
+    private List<String> lines = new ArrayList<>();
 
     public BScriptCompiler(String name) {
         this.name = name;
@@ -137,7 +137,7 @@ public final class BScriptCompiler {
 
     public void toBytecode() throws CannotCompileException {
         ClassPool pool = ClassPool.getDefault();
-        CtClass clazz = pool.makeClass("bscript.classes." + name);
+        CtClass clazz = pool.makeClass("bscript.classes." + getName());
         try {
             clazz.setSuperclass(pool.get("bscript.OutputBytecode"));
         } catch (NotFoundException e) {
@@ -145,7 +145,7 @@ public final class BScriptCompiler {
         }
         String event = null;
         StringBuilder body = new StringBuilder();
-        for (String line : lines) {
+        for (String line : getLines()) {
             if (line.startsWith("handle")) {
                 if (!body.isEmpty()) {
                     CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
@@ -164,7 +164,27 @@ public final class BScriptCompiler {
                 body.append(line);
             }
         }
+        this.setClazz(clazz);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public CtClass getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(CtClass clazz) {
         this.clazz = clazz;
+    }
+
+    public List<String> getLines() {
+        return lines;
+    }
+
+    public void setLines(List<String> lines) {
+        this.lines = lines;
     }
 }
 
