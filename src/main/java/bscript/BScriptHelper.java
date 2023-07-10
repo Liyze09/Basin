@@ -38,7 +38,14 @@ public final class BScriptHelper {
         }
     }
 
-    public void compileAndRun(String name, String source) throws CannotCompileException, IOException {
+    public void interpretFile(@NotNull File source) throws IOException, CannotCompileException {
+        String name = source.getName();
+        try (InputStream inputStream = new FileInputStream(source)) {
+            interpret(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+        }
+    }
+
+    public void interpret(String name, String source) throws CannotCompileException, IOException {
         execute(compile(name, source), name);
     }
 

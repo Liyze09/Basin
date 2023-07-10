@@ -1,10 +1,13 @@
 package net.liyze.basin.core;
 
+import bscript.BScriptHelper;
 import com.google.common.base.Splitter;
 import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.context.ApplicationContext;
 import com.moandjiezana.toml.Toml;
+import javassist.CannotCompileException;
 import net.liyze.basin.remote.RemoteServer;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +42,25 @@ public final class Main {
     public static ApplicationContext app;
     private static String command;
 
+
+    public static void main(String @NotNull [] args) throws CannotCompileException, IOException {
+        if (args.length > 0)
+            switch (args[0]) {
+                case "-compile" -> BScriptHelper.getInstance().compileFile(new File(args[1]));
+                case "-execute" -> BScriptHelper.getInstance().executeFile(new File(args[1]));
+                case "-interpret" -> BScriptHelper.getInstance().interpretFile(new File(args[1]));
+                default -> {
+                    LOGGER.warn("Bad arg input.");
+                    start();
+                }
+            }
+        else {
+            start();
+        }
+    }
+
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
-    public static void main(String[] args) {
+    public static void start() {
         LOGGER.info("----------------------------------------------\nBasin started.");
         taskPool.submit(new Thread(() -> {
             try {

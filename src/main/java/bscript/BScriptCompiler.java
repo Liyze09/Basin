@@ -75,6 +75,9 @@ public final class BScriptCompiler {
         }
     }
 
+    /**
+     *
+     */
     public void toBytecode() throws CannotCompileException {
         ClassPool pool = ClassPool.getDefault();
         CtClass clazz = pool.makeClass("bscript.classes." + getName());
