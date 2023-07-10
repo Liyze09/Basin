@@ -49,10 +49,7 @@ public final class Main {
                 case "-compile" -> BScriptHelper.getInstance().compileFile(new File(args[1]));
                 case "-execute" -> BScriptHelper.getInstance().executeFile(new File(args[1]));
                 case "-interpret" -> BScriptHelper.getInstance().interpretFile(new File(args[1]));
-                default -> {
-                    LOGGER.warn("Bad arg input.");
-                    start();
-                }
+                default -> LOGGER.warn("Bad arg input.");
             }
         else {
             start();

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static net.liyze.basin.core.CommandParser.cs;
 import static net.liyze.basin.core.Main.*;
@@ -18,7 +19,7 @@ import static net.liyze.basin.remote.RemoteServer.servers;
  * Basin's data class.
  */
 @ComponentScan("net.liyze.basin.core.commands")
-@SuppressWarnings({"SameReturnValue"})
+@SuppressWarnings({"SameReturnValue", "ResultOfMethodCallIgnored"})
 public final class Basin {
     /**
      * The singleton.
@@ -88,6 +89,11 @@ public final class Basin {
         });
         Main.taskPool.shutdown();
         Main.servicePool.shutdownNow();
+        try {
+            taskPool.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            System.exit(0);
+        }
         System.exit(0);
     }
 
@@ -114,6 +120,10 @@ public final class Basin {
         commands.clear();
         BootClasses.clear();
         publicVars.clear();
+        try {
+            taskPool.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException ignore) {
+        }
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
         servicePool = Executors.newCachedThreadPool();
         app.close();

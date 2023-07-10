@@ -11,12 +11,15 @@ import java.util.*;
 
 import static javassist.CtClass.voidType;
 
+/**
+ * BScript's default compiler
+ */
 public final class BScriptCompiler {
     private final String name;
     private CtClass clazz;
     private List<String> lines = new ArrayList<>();
 
-    public BScriptCompiler(String name) {
+    public BScriptCompiler(@NotNull String name) {
         this.name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
@@ -51,8 +54,8 @@ public final class BScriptCompiler {
             String line = lines.get(i).strip();
             String nl;
             if (line.startsWith("loop")) nl = "for(;;){";
-            else if (line.startsWith("print")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
-            else if (line.matches("System\\s*\\.\\s*exit.+")) nl = "return;";
+            else if (line.startsWith("print(")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
+            else if (line.matches("System\\s*\\.\\s*exit.+")) nl = "runtime.close();";
             else if (!line.equals("}")) nl = line + ";";
             else nl = line;
             lines.set(i, nl);
@@ -76,7 +79,7 @@ public final class BScriptCompiler {
     }
 
     /**
-     *
+     * Generate bytecode for the bean.
      */
     public void toBytecode() throws CannotCompileException {
         ClassPool pool = ClassPool.getDefault();
@@ -91,12 +94,12 @@ public final class BScriptCompiler {
         String event = null;
         StringBuilder body = new StringBuilder();
         for (String line : getLines()) {
-            if (line.startsWith("def")) {
+            if (line.startsWith("def ")) {
                 inFunc = true;
                 addMethod(clazz, body.toString(), event, isFunc);
                 isFunc = true;
                 body = new StringBuilder().append("public ").append(line.substring(line.indexOf(" ")));
-            } else if (line.startsWith("handle")) {
+            } else if (line.startsWith("handle ")) {
                 inFunc = true;
                 addMethod(clazz, body.toString(), event, isFunc);
                 isFunc = false;
@@ -105,7 +108,7 @@ public final class BScriptCompiler {
             } else if (line.equals("endl;")) {
                 addMethod(clazz, body.toString(), event, isFunc);
                 break;
-            } else if (line.startsWith("var")) {
+            } else if (line.startsWith("var ")) {
                 inFunc = false;
                 addMethod(clazz, body.toString(), event, isFunc);
                 CtField field = CtField.make(line.substring(4).strip(), clazz);
@@ -127,13 +130,25 @@ public final class BScriptCompiler {
     }
 
     private void addFunc(@NotNull CtClass clazz, @NotNull String src) throws CannotCompileException {
-        clazz.addMethod(CtMethod.make(src, clazz));
+        try {
+            clazz.addMethod(CtMethod.make(src, clazz));
+        } catch (CannotCompileException e) {
+            System.err.println(e.getMessage());
+            System.err.println(src);
+            throw new CannotCompileException(e);
+        }
     }
 
     private void addHandler(CtClass clazz, @NotNull String body, String event) throws CannotCompileException {
         if (!body.isEmpty()) {
             CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
-            method.setBody("{" + body);
+            try {
+                method.setBody("{" + body);
+            } catch (CannotCompileException e) {
+                System.err.println(e.getMessage());
+                System.err.println("{" + body);
+                throw new CannotCompileException(e);
+            }
             clazz.addMethod(method);
         }
     }

@@ -22,7 +22,6 @@ public final class Config {
     public String accessToken = "";
     public int remotePort = 32768;
     public boolean enableParallel = true;
-    public String defaultBScriptHandler = "bscript.DefaultBScriptCompiler";
 
     /**
      * Load the config {@code cfg.json}
