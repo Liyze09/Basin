@@ -18,6 +18,7 @@ public final class BScriptCompiler {
     private final String name;
     private CtClass clazz;
     private List<String> lines = new ArrayList<>();
+    private final ClassPool pool = ClassPool.getDefault();
 
     public BScriptCompiler(@NotNull String name) {
         this.name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
@@ -54,8 +55,11 @@ public final class BScriptCompiler {
             String line = lines.get(i).strip();
             String nl;
             if (line.startsWith("loop")) nl = "for(;;){";
-            else if (line.startsWith("print(")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
-            else if (line.matches("System\\s*\\.\\s*exit.+")) nl = "runtime.close();";
+            else if (line.matches("print.*\\(.+")) nl = "System.out.println" + line.substring(line.indexOf("(")) + ";";
+            else if (line.matches(".*System\\s*\\.\\s*exit.+")) nl = "runtime.close();";
+            else if (line.startsWith("throw ")) nl =
+                    "runtime.broadcast(\"exception\",new bscript.BScriptEvent(\"exception\","
+                            + line.substring(6).strip() + "));";
             else if (!line.equals("}")) nl = line + ";";
             else nl = line;
             lines.set(i, nl);
@@ -71,7 +75,7 @@ public final class BScriptCompiler {
                 imports.put(full.substring(full.lastIndexOf(".") + 1), full);
                 lines.remove(i);
                 i--;
-            } else if (!line.startsWith("handle")) {
+            } else if (!(line.startsWith("handle"))) {
                 final int finalI = i;
                 imports.forEach((key, value) -> lines.set(finalI, line.replaceAll(key, value)));
             }
@@ -81,8 +85,7 @@ public final class BScriptCompiler {
     /**
      * Generate bytecode for the bean.
      */
-    public void toBytecode() throws CannotCompileException {
-        ClassPool pool = ClassPool.getDefault();
+    public void toBytecode() throws CannotCompileException, NotFoundException {
         CtClass clazz = pool.makeClass("bscript.classes." + getName());
         try {
             clazz.setSuperclass(pool.get("bscript.OutputBytecode"));
@@ -120,10 +123,10 @@ public final class BScriptCompiler {
         this.setClazz(clazz);
     }
 
-    private void addMethod(CtClass clazz, @NotNull String body, String event, boolean func) throws CannotCompileException {
+    private void addMethod(CtClass clazz, @NotNull String body, String event, boolean func) throws CannotCompileException, NotFoundException {
         if (!func) {
             event = event + "Event";
-            addHandler(clazz, body, event);
+            addHandler(clazz, body.replaceAll("event", "$1"), event);
         } else {
             addFunc(clazz, body);
         }
@@ -139,9 +142,9 @@ public final class BScriptCompiler {
         }
     }
 
-    private void addHandler(CtClass clazz, @NotNull String body, String event) throws CannotCompileException {
+    private void addHandler(CtClass clazz, @NotNull String body, String event) throws CannotCompileException, NotFoundException {
         if (!body.isEmpty()) {
-            CtMethod method = new CtMethod(voidType, event, new CtClass[]{}, clazz);
+            CtMethod method = new CtMethod(voidType, event, new CtClass[]{pool.get("bscript.BScriptEvent")}, clazz);
             try {
                 method.setBody("{" + body);
             } catch (CannotCompileException e) {

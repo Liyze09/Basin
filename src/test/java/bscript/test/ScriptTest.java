@@ -2,6 +2,7 @@ package bscript.test;
 
 import bscript.BScriptHelper;
 import javassist.CannotCompileException;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,17 +11,17 @@ import java.io.IOException;
 @DisplayName("BScript Test 1")
 public final class ScriptTest {
     @Test
-    public void script() throws CannotCompileException, IOException {
+    public void script() throws CannotCompileException, IOException, NotFoundException {
         BScriptHelper.getInstance().interpret("Test", """
                 def void fun() {
-                 System.exit(0)
+                 print("f")
                 }
                 handle main {
-                 print("m")
                  fun()
+                 throw new RuntimeException()
                 }
-                handle before {
-                 print("b")
+                handle around {
+                 print("a")
                 }
                 """);
     }

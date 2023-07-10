@@ -2,6 +2,7 @@ package bscript;
 
 import bscript.exception.LoadFailedException;
 import javassist.CannotCompileException;
+import javassist.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -18,7 +19,6 @@ public final class BScriptHelper {
 
     /**
      * Get the singleton of BScriptHelper
-     *
      * @return The singleton of BScriptHelper
      */
     public static BScriptHelper getInstance() {
@@ -33,7 +33,7 @@ public final class BScriptHelper {
      * @return Outputted JVM bytecode
      * @throws CannotCompileException If the source can't compile
      */
-    public byte[] compile(String name, String source) throws CannotCompileException, IOException {
+    public byte[] compile(String name, String source) throws CannotCompileException, IOException, NotFoundException {
         var compiler = new BScriptCompiler(name);
         compiler.setLines(compiler.preProcess(new StringReader(source)));
         compiler.toBytecode();
@@ -48,7 +48,7 @@ public final class BScriptHelper {
      * @param dir    The directory of the .class file
      * @throws CannotCompileException If the source can't compile
      */
-    public void compileToFile(String name, String source, String dir) throws CannotCompileException, IOException {
+    public void compileToFile(String name, String source, String dir) throws CannotCompileException, IOException, NotFoundException {
         var compiler = new BScriptCompiler(name);
         compiler.setLines(compiler.preProcess(new StringReader(source)));
         compiler.toBytecode();
@@ -61,7 +61,7 @@ public final class BScriptHelper {
      * @param source The .bs file
      * @throws CannotCompileException If the source can't compile
      */
-    public void compileFile(@NotNull File source) throws CannotCompileException, IOException {
+    public void compileFile(@NotNull File source) throws CannotCompileException, IOException, NotFoundException {
         String name = source.getName();
         try (InputStream inputStream = new FileInputStream(source)) {
             compileToFile(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8), source.getParent());
@@ -74,7 +74,7 @@ public final class BScriptHelper {
      * @param source The .bs file
      * @throws CannotCompileException If the source can't compile
      */
-    public void interpretFile(@NotNull File source) throws IOException, CannotCompileException {
+    public void interpretFile(@NotNull File source) throws IOException, CannotCompileException, NotFoundException {
         String name = source.getName();
         try (InputStream inputStream = new FileInputStream(source)) {
             interpret(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
@@ -88,15 +88,14 @@ public final class BScriptHelper {
      * @param source Bean's all source
      * @throws CannotCompileException If the source can't compile
      */
-    public void interpret(String name, String source) throws CannotCompileException, IOException {
+    public void interpret(String name, String source) throws CannotCompileException, IOException, NotFoundException {
         execute(compile(name, source), name);
     }
 
     /**
      * Execute a compiled BScript Bean
-     *
      * @param bytes All data of the class
-     * @param name  The full name of the class
+     * @param name The full name of the class
      * @throws LoadFailedException If class can't load to JVM.
      */
     public void execute(byte[] bytes, String name) throws LoadFailedException {
@@ -108,10 +107,8 @@ public final class BScriptHelper {
         }
         bytecode.runtime.run();
     }
-
     /**
      * Execute a compiled BScript Bean
-     *
      * @param clazz Class file
      * @throws LoadFailedException If class can't load to JVM.
      */
