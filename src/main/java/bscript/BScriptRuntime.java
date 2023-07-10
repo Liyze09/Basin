@@ -1,5 +1,6 @@
 package bscript;
 
+import bscript.exception.BScriptException;
 import bscript.exception.BroadcastException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -54,10 +55,12 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
     }
 
     public void broadcast(String event, BScriptEvent body) {
-        LOGGER.debug("Event: {}", event);
-        boolean b = !event.equals("before") && !event.equals("around") && !event.equals("broadcast") && !event.equals("after") && !event.equals("exception");
-        if (b) broadcast("broadcast");
+        if (event.equals("exception") && handlers.get("exceptionEvent").size() == 0)
+            throw new BScriptException((Throwable) body.body());
         pool.submit(() -> handlers.get(event + "Event").forEach(method -> {
+            LOGGER.debug("Event: {}", event);
+            boolean b = !event.equals("before") && !event.equals("around") && !event.equals("broadcast") && !event.equals("after") && !event.equals("exception");
+            if (b) broadcast("broadcast");
             if (method.trySetAccessible()) try {
                 if (b) broadcast("before");
                 if (b) broadcast("around");
