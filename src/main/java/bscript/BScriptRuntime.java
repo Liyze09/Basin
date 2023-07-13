@@ -56,24 +56,28 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
     }
 
     public void broadcast(String event, BScriptEvent body) {
+        pool.submit(() -> directBroadcast(event, body));
+    }
+
+    private void directBroadcast(String event, BScriptEvent body) {
         if (event.equals("exception") && handlers.get("exceptionEvent").size() == 0)
             throw new BScriptException((Throwable) body.body());
-        pool.submit(() -> handlers.get(event + "Event").forEach(method -> {
+        handlers.get(event + "Event").forEach(method -> {
             LOGGER.debug("Event: {}", event);
             boolean b = !event.equals("before") && !event.equals("around") && !event.equals("broadcast") && !event.equals("after") && !event.equals("exception");
             if (b) broadcast("broadcast");
             if (method.trySetAccessible()) try {
-                if (b) broadcast("before");
-                if (b) broadcast("around");
+                if (b) directBroadcast("before", null);
+                if (b) directBroadcast("around", null);
                 method.invoke(instance, new BScriptEvent(event, body));
-                if (b) broadcast("around");
-                if (b) broadcast("after");
+                if (b) directBroadcast("around", null);
+                if (b) directBroadcast("after", null);
             } catch (IllegalAccessException e) {
                 throw new BroadcastException();
             } catch (InvocationTargetException e) {
                 broadcast("exception", new BScriptEvent("exception", e.getCause()));
             }
-        }));
+        });
     }
 
     public void load(@NotNull Class<?> clazz, @NotNull OutputBytecode instance) {

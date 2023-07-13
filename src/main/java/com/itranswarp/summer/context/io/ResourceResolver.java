@@ -8,6 +8,8 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +54,7 @@ public class ResourceResolver {
         while (en.hasMoreElements()) {
             URL url = en.nextElement();
             URI uri = url.toURI();
-            String uriStr = removeTrailingSlash(uri.toString());
+            String uriStr = removeTrailingSlash(URLDecoder.decode(uri.toString(), StandardCharsets.UTF_8));
             String uriBaseStr = uriStr.substring(0, uriStr.length() - basePackagePath.length());
             if (uriBaseStr.startsWith("file:")) {
                 uriBaseStr = uriBaseStr.substring(5);

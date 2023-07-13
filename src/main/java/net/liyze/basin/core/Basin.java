@@ -19,7 +19,7 @@ import static net.liyze.basin.remote.RemoteServer.servers;
  * Basin's data class.
  */
 @ComponentScan("net.liyze.basin.core.commands")
-@SuppressWarnings({"SameReturnValue", "ResultOfMethodCallIgnored"})
+@SuppressWarnings({"SameReturnValue"})
 public final class Basin {
     /**
      * The singleton.

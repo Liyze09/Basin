@@ -7,6 +7,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class JavaStringCompiler {
@@ -31,7 +32,7 @@ public class JavaStringCompiler {
     public Map<String, byte[]> compile(String className, String source) {
         try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
             JavaFileObject javaFileObject = manager.makeStringSource(className + ".java", source);
-            JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, null, null, Collections.singletonList(javaFileObject));
+            JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, List.of("--release", "17"), null, Collections.singletonList(javaFileObject));
             Boolean result = task.call();
             if (result == null || !result) {
                 throw new CompilationFailedException();

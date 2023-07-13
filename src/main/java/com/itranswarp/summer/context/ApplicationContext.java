@@ -2,13 +2,14 @@ package com.itranswarp.summer.context;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 
 
 /**
  * Used for BeanPostProcessor.
  */
-public interface ApplicationContext extends AutoCloseable {
+public interface ApplicationContext extends AutoCloseable, Cloneable {
     /**
      * 是否存在指定name的Bean？
      */
@@ -52,4 +53,6 @@ public interface ApplicationContext extends AutoCloseable {
     BeanDefinition findBeanDefinition(String name, Class<?> requiredType);
 
     Object createBeanAsEarlySingleton(BeanDefinition def);
+
+    Collection<BeanDefinition> getBeanDefinitions();
 }

@@ -24,7 +24,9 @@ public final class ScriptTest {
                 }
                 handle exception {
                 }
-                class Inner {}
+                class Inner {
+                 
+                }
                 """, "data/output".replace('/', File.separatorChar));
         BScriptHelper.getInstance().executeFile(new File("data/output/Test.class"));
     }

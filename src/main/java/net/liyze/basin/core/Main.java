@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.context.ApplicationContext;
 import com.moandjiezana.toml.Toml;
+import net.liyze.basin.mixin.MixinProcessor;
 import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -31,12 +32,12 @@ public final class Main {
     public final static List<Class<?>> BootClasses = new ArrayList<>();
     public static final CommandParser CONSOLE_COMMAND_PARSER = new CommandParser();
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
-    public static final List<AnnotationConfigApplicationContext> contexts = new ArrayList<>();
+    public static final List<ApplicationContext> contexts = new ArrayList<ApplicationContext>();
     static final File jars = new File("data" + File.separator + "jars");
     public static Toml env = new Toml();
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-    public static Map<String, Object> envMap;
+    public static Map<String, Object> envMap = new HashMap<>();
     public static Config cfg = Config.initConfig();
     public static ApplicationContext app;
     private static String command;
@@ -89,6 +90,7 @@ public final class Main {
                         }
                     }
                 }
+                new MixinProcessor(contexts).run();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -135,7 +137,7 @@ public final class Main {
                 writer.write("# Basin Environment Variables");
             }
         }
-        envMap = env.read(envFile).toMap();
+        envMap.putAll(env.read(envFile).toMap());
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
     }
 
