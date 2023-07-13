@@ -44,9 +44,6 @@ dependencies {
     api 'net.bytebuddy:byte-buddy:1.14.5'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     api 'com.zaxxer:HikariCP:5.0.1'
-    // https://mvnrepository.com/artifact/org.javassist/javassist
-    api 'org.javassist:javassist:3.29.2-GA'
-
 }
 test {
     useJUnitPlatform()

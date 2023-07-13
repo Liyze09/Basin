@@ -1,12 +1,12 @@
 package bscript;
 
 import bscript.exception.LoadFailedException;
-import javassist.CannotCompileException;
-import javassist.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * The util class of BScript
@@ -31,13 +31,12 @@ public final class BScriptHelper {
      * @param name   The name of the BScript Bean
      * @param source Bean's all source
      * @return Outputted JVM bytecode
-     * @throws CannotCompileException If the source can't compile
      */
-    public byte[] compile(String name, String source) throws CannotCompileException, IOException, NotFoundException {
+    public Map<String, byte[]> compile(String name, String source) {
         var compiler = new BScriptCompiler(name);
         compiler.setLines(compiler.preProcess(new StringReader(source)));
         compiler.toBytecode();
-        return compiler.getClazz().toBytecode();
+        return compiler.getCompiled();
     }
 
     /**
@@ -46,22 +45,28 @@ public final class BScriptHelper {
      * @param name   The name of the BScript Bean
      * @param source Bean's all source
      * @param dir    The directory of the .class file
-     * @throws CannotCompileException If the source can't compile
      */
-    public void compileToFile(String name, String source, String dir) throws CannotCompileException, IOException, NotFoundException {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void compileToFile(String name, String source, String dir) throws IOException {
         var compiler = new BScriptCompiler(name);
         compiler.setLines(compiler.preProcess(new StringReader(source)));
         compiler.toBytecode();
-        compiler.getClazz().writeFile(dir);
+        for (Map.Entry<String, byte[]> entry : compiler.getCompiled().entrySet()) {
+            var file = new File(dir + entry.getKey() + ".class");
+            file.mkdirs();
+            file.createNewFile();
+            try (var stream = new FileOutputStream(file)) {
+                stream.write(entry.getValue());
+            }
+        }
     }
 
     /**
      * Compile a .bs file to JVM bytecode and write into a .class file in the same directory
      *
      * @param source The .bs file
-     * @throws CannotCompileException If the source can't compile
      */
-    public void compileFile(@NotNull File source) throws CannotCompileException, IOException, NotFoundException {
+    public void compileFile(@NotNull File source) throws IOException {
         String name = source.getName();
         try (InputStream inputStream = new FileInputStream(source)) {
             compileToFile(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8), source.getParent());
@@ -72,9 +77,8 @@ public final class BScriptHelper {
      * Compile a .bs file to JVM bytecode and execute it
      *
      * @param source The .bs file
-     * @throws CannotCompileException If the source can't compile
      */
-    public void interpretFile(@NotNull File source) throws IOException, CannotCompileException, NotFoundException {
+    public void interpretFile(@NotNull File source) throws IOException {
         String name = source.getName();
         try (InputStream inputStream = new FileInputStream(source)) {
             interpret(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
@@ -86,27 +90,28 @@ public final class BScriptHelper {
      *
      * @param name   The name of the BScript Bean
      * @param source Bean's all source
-     * @throws CannotCompileException If the source can't compile
      */
-    public void interpret(String name, String source) throws CannotCompileException, IOException, NotFoundException {
+    public void interpret(String name, String source) {
         execute(compile(name, source), name);
     }
 
     /**
      * Execute a compiled BScript Bean
+     *
      * @param bytes All data of the class
-     * @param name The full name of the class
+     * @param name  The full name of the class
      * @throws LoadFailedException If class can't load to JVM.
      */
-    public void execute(byte[] bytes, String name) throws LoadFailedException {
+    public void execute(Map<String, byte[]> bytes, String name) throws LoadFailedException {
         OutputBytecode bytecode;
-        try {
-            bytecode = (OutputBytecode) new BScriptClassLoader(bytes).loadClass("bscript.classes." + name).getDeclaredConstructor().newInstance();
+        try (URLClassLoader loader = new BScriptClassLoader(bytes)) {
+            bytecode = (OutputBytecode) loader.loadClass("bscript.classes." + name).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new LoadFailedException(e);
         }
         bytecode.runtime.run();
     }
+
     /**
      * Execute a compiled BScript Bean
      * @param clazz Class file
@@ -115,7 +120,7 @@ public final class BScriptHelper {
     public void executeFile(@NotNull File clazz) throws IOException {
         String name = clazz.getName();
         try (InputStream stream = new FileInputStream(clazz)) {
-            execute(stream.readAllBytes(), name.substring(0, name.length() - 6));
+            execute(Map.of(name, stream.readAllBytes()), name.substring(0, name.length() - 6));
         }
     }
 }

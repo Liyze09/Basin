@@ -1,6 +1,6 @@
 package bscript;
 
-import javassist.*;
+import bscript.compiler.JavaStringCompiler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,16 +9,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
-import static javassist.CtClass.voidType;
-
 /**
  * BScript's default compiler
  */
 public final class BScriptCompiler {
     private final String name;
-    private CtClass clazz;
     private List<String> lines = new ArrayList<>();
-    private final ClassPool pool = ClassPool.getDefault();
+    private final List<String> imports = new ArrayList<>();
+    private final Map<String, byte[]> compiled = new HashMap<>();
 
     public BScriptCompiler(@NotNull String name) {
         this.name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
@@ -60,6 +58,7 @@ public final class BScriptCompiler {
             else if (line.startsWith("throw ")) nl =
                     "runtime.broadcast(\"exception\",new bscript.BScriptEvent(\"exception\","
                             + line.substring(6).strip() + "));";
+            else if (line.startsWith("run ")) nl = "runtime.pool.submit(()->" + line.substring(4).strip() + ");";
             else if (!line.equals("}")) nl = line + ";";
             else nl = line;
             lines.set(i, nl);
@@ -67,17 +66,12 @@ public final class BScriptCompiler {
     }
 
     private void processImports(@NotNull List<String> lines) {
-        Map<String, String> imports = new HashMap<>();
         for (int i = 0; i < lines.size(); ++i) {
             String line = lines.get(i);
             if (line.startsWith("import")) {
-                String full = line.substring(6, line.length() - 1).strip();
-                imports.put(full.substring(full.lastIndexOf(".") + 1), full);
+                imports.add(line.substring(6, line.length() - 1).strip());
                 lines.remove(i);
                 i--;
-            } else if (!(line.startsWith("handle"))) {
-                final int finalI = i;
-                imports.forEach((key, value) -> lines.set(finalI, line.replaceAll(key, value)));
             }
         }
     }
@@ -85,87 +79,44 @@ public final class BScriptCompiler {
     /**
      * Generate bytecode for the bean.
      */
-    public void toBytecode() throws CannotCompileException, NotFoundException {
-        CtClass clazz = pool.makeClass("bscript.classes." + getName());
-        try {
-            clazz.setSuperclass(pool.get("bscript.OutputBytecode"));
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e);
+    public void toBytecode() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("package bscript.classes;import bscript.BScriptEvent;import bscript.OutputBytecode;\n");
+        for (String imp : imports) {
+            builder.append("import ").append(imp).append(";");
         }
-        boolean isFunc = false;
-        boolean inFunc = false;
-        String event = null;
-        StringBuilder body = new StringBuilder();
+        builder.append("public final class ").append(name).append(" extends OutputBytecode {\n");
         for (String line : getLines()) {
             if (line.startsWith("def ")) {
-                inFunc = true;
-                addMethod(clazz, body.toString(), event, isFunc);
-                isFunc = true;
-                body = new StringBuilder().append("public ").append(line.substring(line.indexOf(" ")));
+                builder.append("public ")
+                        .append(line.substring(4).strip());
             } else if (line.startsWith("handle ")) {
-                inFunc = true;
-                addMethod(clazz, body.toString(), event, isFunc);
-                isFunc = false;
-                event = line.substring(line.indexOf(" "), line.indexOf("{")).strip();
-                body = new StringBuilder();
-            } else if (line.equals("endl;")) {
-                addMethod(clazz, body.toString(), event, isFunc);
-                break;
+                builder.append("public void ")
+                        .append(line.substring(7, line.lastIndexOf(" ")).strip())
+                        .append("Event(BScriptEvent event){");
             } else if (line.startsWith("var ")) {
-                inFunc = false;
-                addMethod(clazz, body.toString(), event, isFunc);
-                CtField field = CtField.make(line.substring(4).strip(), clazz);
-                clazz.addField(field);
-            } else if (inFunc) {
-                body.append(line);
+                builder.append("public ")
+                        .append(line.substring(4));
+            } else if (line.startsWith("class ")) {
+                builder.append("static ")
+                        .append(line);
+            } else if (line.equals("endl;")) {
+                break;
+            } else {
+                builder.append(line);
             }
         }
-        this.setClazz(clazz);
-    }
-
-    private void addMethod(CtClass clazz, @NotNull String body, String event, boolean func) throws CannotCompileException, NotFoundException {
-        if (!func) {
-            event = event + "Event";
-            addHandler(clazz, body.replaceAll("event", "$1"), event);
-        } else {
-            addFunc(clazz, body);
-        }
-    }
-
-    private void addFunc(@NotNull CtClass clazz, @NotNull String src) throws CannotCompileException {
-        try {
-            clazz.addMethod(CtMethod.make(src, clazz));
-        } catch (CannotCompileException e) {
-            System.err.println(e.getMessage());
-            System.err.println(src);
-            throw new CannotCompileException(e);
-        }
-    }
-
-    private void addHandler(CtClass clazz, @NotNull String body, String event) throws CannotCompileException, NotFoundException {
-        if (!body.isEmpty()) {
-            CtMethod method = new CtMethod(voidType, event, new CtClass[]{pool.get("bscript.BScriptEvent")}, clazz);
-            try {
-                method.setBody("{" + body);
-            } catch (CannotCompileException e) {
-                System.err.println(e.getMessage());
-                System.err.println("{" + body);
-                throw new CannotCompileException(e);
-            }
-            clazz.addMethod(method);
-        }
+        builder.append("}");
+        compiled.putAll(JavaStringCompiler.JAVAC.compile(name, builder.toString()));
     }
 
     public String getName() {
         return name;
     }
 
-    public CtClass getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(CtClass clazz) {
-        this.clazz = clazz;
+    @Contract(value = " -> new", pure = true)
+    public @NotNull Map<String, byte[]> getCompiled() {
+        return new HashMap<>(compiled);
     }
 
     public List<String> getLines() {
@@ -176,4 +127,5 @@ public final class BScriptCompiler {
         this.lines = lines;
     }
 }
+
 

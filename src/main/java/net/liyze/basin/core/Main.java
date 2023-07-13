@@ -5,8 +5,6 @@ import com.google.common.base.Splitter;
 import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.context.ApplicationContext;
 import com.moandjiezana.toml.Toml;
-import javassist.CannotCompileException;
-import javassist.NotFoundException;
 import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -44,7 +42,7 @@ public final class Main {
     private static String command;
 
 
-    public static void main(String @NotNull [] args) throws CannotCompileException, IOException, NotFoundException {
+    public static void main(String @NotNull [] args) throws IOException {
         if (args.length > 0)
             switch (args[0]) {
                 case "-compile" -> BScriptHelper.getInstance().compileFile(new File(args[1]));
