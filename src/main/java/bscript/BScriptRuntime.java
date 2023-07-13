@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public final class BScriptRuntime implements Runnable, AutoCloseable {
     private final Logger LOGGER = LoggerFactory.getLogger(BScriptRuntime.class);
@@ -92,6 +93,11 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
     public void close() {
         broadcast("shutdown");
         pool.shutdown();
+        try {
+            pool.awaitTermination(500, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         handlers.clear();
         LOGGER.debug("{} closed.", this);
     }

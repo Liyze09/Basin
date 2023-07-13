@@ -6,7 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The util class of BScript
@@ -52,8 +54,7 @@ public final class BScriptHelper {
         compiler.setLines(compiler.preProcess(new StringReader(source)));
         compiler.toBytecode();
         for (Map.Entry<String, byte[]> entry : compiler.getCompiled().entrySet()) {
-            var file = new File(dir + entry.getKey() + ".class");
-            file.mkdirs();
+            var file = new File(dir + File.separator + entry.getKey().substring(entry.getKey().lastIndexOf(".") + 1) + ".class");
             file.createNewFile();
             try (var stream = new FileOutputStream(file)) {
                 stream.write(entry.getValue());
@@ -102,7 +103,7 @@ public final class BScriptHelper {
      * @param name  The full name of the class
      * @throws LoadFailedException If class can't load to JVM.
      */
-    public void execute(Map<String, byte[]> bytes, String name) throws LoadFailedException {
+    public void execute(Map<String, byte[]> bytes, String name) {
         OutputBytecode bytecode;
         try (URLClassLoader loader = new BScriptClassLoader(bytes)) {
             bytecode = (OutputBytecode) loader.loadClass("bscript.classes." + name).getDeclaredConstructor().newInstance();
@@ -118,9 +119,14 @@ public final class BScriptHelper {
      * @throws LoadFailedException If class can't load to JVM.
      */
     public void executeFile(@NotNull File clazz) throws IOException {
-        String name = clazz.getName();
-        try (InputStream stream = new FileInputStream(clazz)) {
-            execute(Map.of(name, stream.readAllBytes()), name.substring(0, name.length() - 6));
+        String n = clazz.getName();
+        final String name = n.substring(0, n.length() - 6);
+        Map<String, byte[]> map = new HashMap<>();
+        for (File file : Objects.requireNonNull(clazz.getParentFile().listFiles(file -> file.isFile() && file.getName().startsWith(name)))) {
+            try (InputStream input = new FileInputStream(file)) {
+                map.put("bscript.classes." + file.getName().substring(0, file.getName().length() - 6), input.readAllBytes());
+            }
         }
+        execute(map, name);
     }
 }
