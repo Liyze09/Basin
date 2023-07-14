@@ -5,6 +5,9 @@ on: [ workflow_dispatch, release ]
 permissions:
   contents: write
 
+env:
+  ci: ""
+
 jobs:
   publish:
     runs-on: ubuntu-latest
