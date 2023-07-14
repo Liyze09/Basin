@@ -93,9 +93,6 @@ publishing {
                 usage('java-api') {
                     fromResolutionOf('runtimeClasspath')
                 }
-                usage('java-runtime') {
-                    fromResolutionResult(null)
-                }
             }
             pom {
                 name = 'basin'
