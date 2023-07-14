@@ -67,10 +67,12 @@ public final class BScriptHelper {
      *
      * @param source The .bs file
      */
-    public void compileFile(@NotNull File source) throws IOException {
+    public void compileFile(@NotNull File source) {
         String name = source.getName();
         try (InputStream inputStream = new FileInputStream(source)) {
             compileToFile(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8), source.getParent());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -104,13 +106,11 @@ public final class BScriptHelper {
      * @throws LoadFailedException If class can't load to JVM.
      */
     public void execute(Map<String, byte[]> bytes, String name) {
-        OutputBytecode bytecode;
         try (URLClassLoader loader = new BScriptClassLoader(bytes)) {
-            bytecode = (OutputBytecode) loader.loadClass("bscript.classes." + name).getDeclaredConstructor().newInstance();
+            ((BScriptRuntime) loader.loadClass("bscript.classes." + name).getField("runtime").get(null)).run();
         } catch (Exception e) {
             throw new LoadFailedException(e);
         }
-        bytecode.runtime.run();
     }
 
     /**

@@ -81,21 +81,23 @@ public final class BScriptCompiler {
      */
     public void toBytecode() {
         StringBuilder builder = new StringBuilder();
-        builder.append("package bscript.classes;import bscript.BScriptEvent;import bscript.OutputBytecode;\n");
+        builder.append("package bscript.classes;import bscript.BScriptEvent;import bscript.OutputBytecode;import bscript.BScriptRuntime;\n");
         for (String imp : imports) {
             builder.append("import ").append(imp).append(";");
         }
-        builder.append("public final class ").append(name).append(" extends OutputBytecode {\n");
+        builder.append("public final class ").append(name)
+                .append(" extends OutputBytecode {\npublic static BScriptRuntime runtime = new BScriptRuntime();\nstatic{runtime.load(")
+                .append(name).append(".class);}");
         for (String line : getLines()) {
             if (line.startsWith("def ")) {
-                builder.append("public ")
+                builder.append("public static ")
                         .append(line.substring(4).strip());
             } else if (line.startsWith("handle ")) {
-                builder.append("public void ")
+                builder.append("public static void ")
                         .append(line.substring(7, line.lastIndexOf(" ")).strip())
                         .append("Event(BScriptEvent event){");
             } else if (line.startsWith("var ")) {
-                builder.append("public ")
+                builder.append("public static ")
                         .append(line.substring(4));
             } else if (line.startsWith("class ")) {
                 builder.append("static ")

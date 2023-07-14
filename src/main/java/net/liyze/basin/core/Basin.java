@@ -90,7 +90,7 @@ public final class Basin {
         Main.taskPool.shutdown();
         Main.servicePool.shutdownNow();
         try {
-            taskPool.awaitTermination(10, TimeUnit.SECONDS);
+            taskPool.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             System.exit(0);
         }
@@ -128,7 +128,7 @@ public final class Basin {
         servicePool = Executors.newCachedThreadPool();
         app.close();
         app = new AnnotationConfigApplicationContext(Basin.class);
-        app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
+        app.findBeanDefinitions(Command.class).forEach(def -> registerCommand((Command) def.getInstance()));
         try {
             loadEnv();
         } catch (Exception e) {

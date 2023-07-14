@@ -4,16 +4,13 @@ import bscript.exception.BScriptException;
 import bscript.exception.BroadcastException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -21,34 +18,16 @@ import java.util.concurrent.TimeUnit;
 public final class BScriptRuntime implements Runnable, AutoCloseable {
     private final Logger LOGGER = LoggerFactory.getLogger(BScriptRuntime.class);
     public final ExecutorService pool = Executors.newCachedThreadPool();
-    private final Class<?> clazz;
-    private final OutputBytecode instance;
     private final Multimap<String, Method> handlers = HashMultimap.create();
 
-    public BScriptRuntime(Class<?> clazz, OutputBytecode instance) {
-        this.clazz = clazz;
-        this.instance = instance;
+    public BScriptRuntime() {
+
     }
 
     @Override
     public void run() {
         LOGGER.debug("{} started.", this);
-        final ArrayList<Method> methods = new ArrayList<>(List.of(clazz.getDeclaredMethods()));
-        instance.init();
-        methods.forEach(method -> {
-            String name = method.getName();
-            if (name.substring(name.length() - 1).matches("\\d")) {
-                name = name.substring(0, name.length() - 1);
-            }
-            handlers.put(name, method);
-        });
-        methods.clear();
         broadcast("main");
-    }
-
-    @Contract(pure = true)
-    public @Nullable Class<?> getClazz() {
-        return this.clazz;
     }
 
     public void broadcast(@NotNull String event) {
@@ -69,7 +48,7 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
             if (method.trySetAccessible()) try {
                 if (b) directBroadcast("before", null);
                 if (b) directBroadcast("around", null);
-                method.invoke(instance, new BScriptEvent(event, body));
+                method.invoke(null, new BScriptEvent(event, body));
                 if (b) directBroadcast("around", null);
                 if (b) directBroadcast("after", null);
             } catch (IllegalAccessException e) {
@@ -80,20 +59,13 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
         });
     }
 
-    public void load(@NotNull Class<?> clazz, @NotNull OutputBytecode instance) {
+    public void load(@NotNull Class<?> clazz) {
         LOGGER.debug("Loading a new bean.");
-        final ArrayList<Method> methods = new ArrayList<>(List.of(clazz.getDeclaredMethods()));
-        instance.init();
-        methods.forEach(method -> {
-            String name = method.getName();
-            if (name.substring(name.length() - 1).matches("\\w")) {
-                name = name.substring(0, name.length() - 1);
-            }
-            handlers.put(name, method);
-        });
-        methods.clear();
+        Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().endsWith("Event"))
+                .forEach(method -> this.handlers.put(method.getName(), method));
         broadcast("loadBean");
     }
+
     public void close() {
         broadcast("shutdown");
         pool.shutdown();

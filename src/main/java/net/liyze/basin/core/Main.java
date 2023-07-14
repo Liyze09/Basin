@@ -1,20 +1,19 @@
 package net.liyze.basin.core;
 
+import bscript.BScriptClassLoader;
 import bscript.BScriptHelper;
+import bscript.BScriptRuntime;
 import com.google.common.base.Splitter;
 import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.context.ApplicationContext;
 import com.moandjiezana.toml.Toml;
-import net.liyze.basin.mixin.MixinProcessor;
 import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -29,10 +28,11 @@ public final class Main {
     public static final HashMap<String, Command> commands = new HashMap<>();
     public static final File userHome = new File("data" + File.separator + "home");
     public final static File config = new File("data" + File.separator + "cfg.json");
+    public static final File script = new File("data" + File.separator + "script");
     public final static List<Class<?>> BootClasses = new ArrayList<>();
     public static final CommandParser CONSOLE_COMMAND_PARSER = new CommandParser();
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
-    public static final List<ApplicationContext> contexts = new ArrayList<ApplicationContext>();
+    public static final List<ApplicationContext> contexts = new ArrayList<>();
     static final File jars = new File("data" + File.separator + "jars");
     public static Toml env = new Toml();
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
@@ -41,7 +41,11 @@ public final class Main {
     public static Config cfg = Config.initConfig();
     public static ApplicationContext app;
     private static String command;
+    public static BScriptRuntime runtime = new BScriptRuntime();
 
+    private Main() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void main(String @NotNull [] args) throws IOException {
         if (args.length > 0)
@@ -62,6 +66,7 @@ public final class Main {
         taskPool.submit(new Thread(() -> {
             try {
                 userHome.mkdirs();
+                script.mkdirs();
                 jars.mkdirs();
                 loadEnv();
                 envMap.forEach((key, value) -> publicVars.put(key, value.toString()));
@@ -79,7 +84,7 @@ public final class Main {
                     })));
                     LOGGER.info("Startup method are finished.");
                     app = new AnnotationConfigApplicationContext(Basin.class);
-                    app.findBeanDefinitions(Command.class).forEach(def -> register((Command) def.getInstance()));
+                    app.findBeanDefinitions(Command.class).forEach(def -> registerCommand((Command) def.getInstance()));
 
                     if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
                     if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
@@ -90,7 +95,7 @@ public final class Main {
                         }
                     }
                 }
-                new MixinProcessor(contexts).run();
+                loadScripts();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -141,6 +146,34 @@ public final class Main {
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
     }
 
+    public static void loadScripts() {
+        Arrays.stream(Objects.requireNonNull(script.listFiles((dir, name) -> name.endsWith(".bs"))))
+                .toList().forEach(BScriptHelper.getInstance()::compileFile);
+        Map<String, byte[]> bytes = new HashMap<>();
+        Arrays.stream(Objects.requireNonNull(script
+                        .listFiles((dir, name) -> name.endsWith(".class"))))
+                .toList().forEach(clazz -> {
+                    try (InputStream input = new FileInputStream(clazz)) {
+                        bytes.put("bscript.classes." + clazz.getName().substring(0, clazz.getName().length() - 6),
+                                input.readAllBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        try (URLClassLoader loader = new BScriptClassLoader(bytes)) {
+            bytes.keySet().forEach(name -> {
+                try {
+                    runtime.load(loader.loadClass(name));
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        runtime.run();
+    }
+
     public static void loadJars() throws Exception {
         File[] children = jars.listFiles((file, s) -> s.matches(".*\\.jar"));
         String b, c;
@@ -172,7 +205,7 @@ public final class Main {
                             Class<?> cls = Class.forName(i);
                             Object command = cls.getDeclaredConstructor().newInstance();
                             if (command instanceof Command) {
-                                register((Command) command);
+                                registerCommand((Command) command);
                             } else {
                                 LOGGER.warn("Command-Class {} is unsupported", jar.getName());
                             }
@@ -183,7 +216,7 @@ public final class Main {
         }
     }
 
-    public static void register(Command cmd) {
+    public static void registerCommand(Command cmd) {
         commands.put(cmd.Name(), cmd);
     }
 }
