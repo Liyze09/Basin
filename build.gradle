@@ -63,18 +63,20 @@ jar{
         attributes 'Export-Command': 'net.liyze.basin.core.InternalPluginDemo'
         attributes 'Boot-Class': 'net.liyze.basin.core.InternalPluginDemo'
     }
-    from {
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
+    if (System.getenv("CI") == null) {
+        from {
+            configurations.runtimeClasspath.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
         }
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        exclude 'META-INF/versions/**'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'module-info.class'
     }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    exclude 'META-INF/versions/**'
-    exclude 'META-INF/LICENSE'
-    exclude 'META-INF/LICENSE.txt'
-    exclude 'META-INF/NOTICE.txt'
-    exclude 'META-INF/INDEX.LIST'
-    exclude 'module-info.class'
 }
 
 tasks.withType(JavaCompile).configureEach {
