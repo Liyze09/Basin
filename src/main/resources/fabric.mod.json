@@ -1,9 +1,0 @@
-{
-	"schemaVersion": 1,
-	"id": "basin",
-	"version": "${version}",
-	"authors": [
-		"Liyze09"
-	],
-	"license": "GPLv3"
-}
