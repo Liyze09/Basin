@@ -87,12 +87,20 @@ java {
 }
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
             artifactId = 'Basin'
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult(null)
+                }
+            }
             pom {
                 name = 'basin'
                 description = 'Basin'
-                url = 'hjttps://github.com/Liyze09/Basin'
+                url = 'https://github.com/Liyze09/Basin'
                 licenses {
                     license {
                         name = 'GPLv3'
@@ -112,6 +120,7 @@ publishing {
                     url = 'https://github.com/Liyze09/Basin'
                 }
             }
+            from components.java
         }
     }
     repositories {
@@ -130,5 +139,5 @@ publishing {
     }
 }
 signing {
-    sign(publishing.publications.mavenJava)
+    sign(publishing.publications.maven)
 }
