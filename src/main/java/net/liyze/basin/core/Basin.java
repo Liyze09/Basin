@@ -66,14 +66,14 @@ public final class Basin {
      */
     @Contract(pure = true)
     public @NotNull String getVersion() {
-        return "0.1";
+        return "1.6";
     }
 
     /**
      * Get version version's int.
      */
     public int getVersionNum() {
-        return 1;
+        return 6;
     }
 
     /**
