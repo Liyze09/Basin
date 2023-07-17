@@ -1,5 +1,6 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection DependencyNotationArgument
+//file:noinspection GrUnresolvedAccess
 plugins {
     id 'maven-publish'
     id 'signing'
@@ -7,7 +8,7 @@ plugins {
 }
 
 group = 'io.github.liyze09'
-version = '1.5'
+version = '1.6'
 
 repositories {
     maven {
@@ -26,6 +27,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     api 'org.slf4j:slf4j-api:2.0.7'
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic

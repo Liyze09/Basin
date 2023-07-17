@@ -5,6 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+/**
+ * AOP {@code  @After} handler
+ */
 public abstract class AfterInvocationHandlerAdapter implements InvocationHandler {
 
     public abstract Object after(Object proxy, Object returnValue, Method method, Object[] args);

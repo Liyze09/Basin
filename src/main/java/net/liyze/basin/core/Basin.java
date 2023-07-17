@@ -81,16 +81,20 @@ public final class Basin {
      */
     public void shutdown() {
         Main.LOGGER.info("Stopping\n");
+        runtime.broadcast("shuttingDown");
         BootClasses.forEach((i) -> {
             try {
                 ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
             } catch (Exception ignored) {
             }
         });
-        Main.taskPool.shutdown();
-        Main.servicePool.shutdownNow();
+        runtime.broadcast("shutdown");
+        taskPool.shutdown();
+        runtime.pool.shutdown();
+        servicePool.shutdownNow();
         try {
-            taskPool.awaitTermination(5, TimeUnit.SECONDS);
+            runtime.pool.awaitTermination(1, TimeUnit.SECONDS);
+            taskPool.awaitTermination(4, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             System.exit(0);
         }
@@ -102,6 +106,7 @@ public final class Basin {
      */
 
     public void restart() {
+        runtime.broadcast("restarting");
         BootClasses.forEach((i) -> {
             try {
                 BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
@@ -155,6 +160,7 @@ public final class Basin {
                 LOGGER.error(e.toString());
             }
         }
+        runtime.broadcast("restarted");
         LOGGER.info("Restarted!");
     }
 }

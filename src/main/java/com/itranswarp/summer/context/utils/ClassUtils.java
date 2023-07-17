@@ -46,9 +46,9 @@ public class ClassUtils {
      * Get bean name by:
      * <p>
      * <code>
-     * <p>
      * {@code @Bean} Hello createHello() {}
      * </code>
+     * </p>
      */
     public static String getBeanName(Method method) {
         Bean bean = method.getAnnotation(Bean.class);
@@ -63,9 +63,9 @@ public class ClassUtils {
      * Get bean name by:
      * <p>
      * <code>
-     * <p>
      * &#064;Component  public class Hello {}
      * </code>
+     * </p>
      */
     public static String getBeanName(Class<?> clazz) {
         String name = "";
@@ -99,9 +99,9 @@ public class ClassUtils {
      * class.
      * <p>
      * <code>
-     * <p>
      * &#064;PostConstruct  void init() {}
      * </code>
+     * </p>
      */
     @Nullable
     public static Method findAnnotationMethod(Class<?> clazz, Class<? extends Annotation> annoClass) {

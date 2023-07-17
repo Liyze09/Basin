@@ -40,7 +40,7 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
 
     private void directBroadcast(String event, BScriptEvent body) {
         if (event.equals("exception") && handlers.get("exceptionEvent").size() == 0)
-            throw new BScriptException((Throwable) body.body());
+            throw new BScriptException((Throwable) body.body()[0]);
         handlers.get(event + "Event").forEach(method -> {
             LOGGER.debug("Event: {}", event);
             boolean b = !event.equals("before") && !event.equals("around") && !event.equals("broadcast") && !event.equals("after") && !event.equals("exception");

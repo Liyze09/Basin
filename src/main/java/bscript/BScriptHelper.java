@@ -34,9 +34,10 @@ public final class BScriptHelper {
      * @param source Bean's all source
      * @return Outputted JVM bytecode
      */
-    public Map<String, byte[]> compile(String name, String source) {
-        var compiler = new BScriptCompiler(name);
+    public @NotNull Map<String, byte[]> compile(String name, String source) {
+        var compiler = new BScriptCompiler();
         compiler.setLines(compiler.preProcess(new StringReader(source)));
+        compiler.addSource(name, source);
         compiler.toBytecode();
         return compiler.getCompiled();
     }
@@ -49,15 +50,17 @@ public final class BScriptHelper {
      * @param dir    The directory of the .class file
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void compileToFile(String name, String source, String dir) throws IOException {
-        var compiler = new BScriptCompiler(name);
-        compiler.setLines(compiler.preProcess(new StringReader(source)));
+    public void compileToFile(String name, String source, String dir) {
+        var compiler = new BScriptCompiler();
+        compiler.addSource(name, source);
         compiler.toBytecode();
         for (Map.Entry<String, byte[]> entry : compiler.getCompiled().entrySet()) {
             var file = new File(dir + File.separator + entry.getKey().substring(entry.getKey().lastIndexOf(".") + 1) + ".class");
-            file.createNewFile();
             try (var stream = new FileOutputStream(file)) {
+                file.createNewFile();
                 stream.write(entry.getValue());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -65,14 +68,28 @@ public final class BScriptHelper {
     /**
      * Compile a .bs file to JVM bytecode and write into a .class file in the same directory
      *
-     * @param source The .bs file
+     * @param src .bs files
      */
-    public void compileFile(@NotNull File source) {
-        String name = source.getName();
-        try (InputStream inputStream = new FileInputStream(source)) {
-            compileToFile(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8), source.getParent());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void compileFiles(File @NotNull ... src) {
+        var compiler = new BScriptCompiler();
+        for (File source : src) {
+            String name = source.getName();
+            try (InputStream inputStream = new FileInputStream(source)) {
+                compiler.addSource(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        compiler.toBytecode();
+        for (Map.Entry<String, byte[]> entry : compiler.getCompiled().entrySet()) {
+            var file = new File(src[0].getParent() + File.separator + entry.getKey().substring(entry.getKey().lastIndexOf(".") + 1) + ".class");
+            try (OutputStream stream = new FileOutputStream(file)) {
+                file.createNewFile();
+                stream.write(entry.getValue());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -81,10 +98,12 @@ public final class BScriptHelper {
      *
      * @param source The .bs file
      */
-    public void interpretFile(@NotNull File source) throws IOException {
+    public void interpretFile(@NotNull File source) {
         String name = source.getName();
         try (InputStream inputStream = new FileInputStream(source)) {
             interpret(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -115,16 +134,19 @@ public final class BScriptHelper {
 
     /**
      * Execute a compiled BScript Bean
+     *
      * @param clazz Class file
      * @throws LoadFailedException If class can't load to JVM.
      */
-    public void executeFile(@NotNull File clazz) throws IOException {
+    public void executeFile(@NotNull File clazz) {
         String n = clazz.getName();
         final String name = n.substring(0, n.length() - 6);
         Map<String, byte[]> map = new HashMap<>();
         for (File file : Objects.requireNonNull(clazz.getParentFile().listFiles(file -> file.isFile() && file.getName().startsWith(name)))) {
             try (InputStream input = new FileInputStream(file)) {
                 map.put("bscript.classes." + file.getName().substring(0, file.getName().length() - 6), input.readAllBytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
         execute(map, name);

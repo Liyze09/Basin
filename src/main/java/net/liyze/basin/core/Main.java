@@ -1,6 +1,7 @@
 package net.liyze.basin.core;
 
 import bscript.BScriptClassLoader;
+import bscript.BScriptEvent;
 import bscript.BScriptHelper;
 import bscript.BScriptRuntime;
 import com.google.common.base.Splitter;
@@ -50,7 +51,7 @@ public final class Main {
     public static void main(String @NotNull [] args) throws IOException {
         if (args.length > 0)
             switch (args[0]) {
-                case "-compile" -> BScriptHelper.getInstance().compileFile(new File(args[1]));
+                case "-compile" -> BScriptHelper.getInstance().compileFiles(new File(args[1]));
                 case "-execute" -> BScriptHelper.getInstance().executeFile(new File(args[1]));
                 case "-interpret" -> BScriptHelper.getInstance().interpretFile(new File(args[1]));
                 default -> LOGGER.warn("Bad arg input.");
@@ -105,6 +106,7 @@ public final class Main {
                 try (Scanner scanner = new Scanner(System.in)) {
                     while (true) {
                         command = scanner.nextLine();
+                        runtime.broadcast("executeCommand", new BScriptEvent("executeCommand", command));
                         if (cfg.enableParallel) {
                             taskPool.submit(new Thread(() -> {
                                 try {
@@ -147,8 +149,7 @@ public final class Main {
     }
 
     public static void loadScripts() {
-        Arrays.stream(Objects.requireNonNull(script.listFiles((dir, name) -> name.endsWith(".bs"))))
-                .toList().forEach(BScriptHelper.getInstance()::compileFile);
+        BScriptHelper.getInstance().compileFiles(Objects.requireNonNull(script.listFiles((dir, name) -> name.endsWith(".bs"))));
         Map<String, byte[]> bytes = new HashMap<>();
         Arrays.stream(Objects.requireNonNull(script
                         .listFiles((dir, name) -> name.endsWith(".class"))))

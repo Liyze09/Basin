@@ -1,5 +1,6 @@
 package net.liyze.basin.http;
 
+import bscript.BScriptEvent;
 import com.itranswarp.summer.context.BeanDefinition;
 import net.liyze.basin.core.Server;
 import net.liyze.basin.http.annotation.GetMapping;
@@ -31,8 +32,8 @@ public class HttpServer implements Server {
     public static final Map<String, HttpServer> runningServer = new HashMap<>();
     public final File root;
     private final HttpBootstrap bootstrap = new HttpBootstrap();
-    public String serverName;
-    public int port;
+    public final String serverName;
+    public final int port;
 
     /**
      * Init server on {@code <port>} with {@code <name>}
@@ -48,6 +49,7 @@ public class HttpServer implements Server {
      * Stop web server.
      */
     public void stop() {
+        runtime.broadcast("webServerStop", new BScriptEvent("webServerStop", this));
         bootstrap.shutdown();
         LOGGER.info("Server {} on port {} stopped", serverName, port);
     }
@@ -57,6 +59,7 @@ public class HttpServer implements Server {
      */
     @SuppressWarnings("DataFlowIssue")
     public HttpServer start() {
+        runtime.broadcast("webServerStart", new BScriptEvent("webServerStart", this));
         LOGGER.info("Server {} on port {} started", serverName, port);
         final List<BeanDefinition> models = new ArrayList<>();
         contexts.forEach(i -> models.addAll(i.getBeanDefinitions().stream().filter(bean -> bean.getBeanClass().isAnnotationPresent(Model.class)).toList()));
@@ -65,6 +68,7 @@ public class HttpServer implements Server {
             bootstrap.httpHandler(new HttpServerHandler() {
                 @Override
                 public void handle(HttpRequest request, HttpResponse response) {
+                    runtime.broadcast("webServerResponding", new BScriptEvent("webServerResponding", this, request, response));
                     LOGGER.debug("A HTTP Link {} started from {}", request.getRequestURL(), request.getRemoteHost());
                     LOGGER.trace("Request:\nMethod: {}\nContentType: {}\nCharacterEncoding: {}\nProtocol: {}\nScheme: {}",
                             request.getMethod(),
@@ -168,6 +172,7 @@ public class HttpServer implements Server {
                             response.getReasonPhrase(),
                             response.getContentType()
                     );
+                    runtime.broadcast("webServerResponse", new BScriptEvent("webServerResponse", this, request, response));
                 }
             }).setPort(port).start();
         } catch (Exception e) {
