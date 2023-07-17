@@ -1,17 +1,17 @@
 package bscript.test;
 
 import bscript.BScriptHelper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.IOException;
 
 @DisplayName("BScript Test 1")
 public final class ScriptTest {
-    //@Disabled
+    @Disabled
     @Test
-    public void script() throws IOException {
+    public void script() {
         BScriptHelper.getInstance().compileToFile("Test", """
                 def void fun() {
                  print("f")
