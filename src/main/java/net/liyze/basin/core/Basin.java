@@ -80,25 +80,27 @@ public final class Basin {
      * Stop basin after all task finished.
      */
     public void shutdown() {
-        Main.LOGGER.info("Stopping\n");
-        runtime.broadcast("shuttingDown");
-        BootClasses.forEach((i) -> {
+        new Thread(() -> {
+            Main.LOGGER.info("Stopping\n");
+            runtime.broadcast("shuttingDown");
+            BootClasses.forEach((i) -> {
+                try {
+                    ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
+                } catch (Exception ignored) {
+                }
+            });
+            runtime.broadcast("shutdown");
+            taskPool.shutdown();
+            runtime.pool.shutdown();
+            servicePool.shutdownNow();
             try {
-                ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
-            } catch (Exception ignored) {
+                runtime.pool.awaitTermination(1, TimeUnit.SECONDS);
+                taskPool.awaitTermination(4, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                System.exit(0);
             }
-        });
-        runtime.broadcast("shutdown");
-        taskPool.shutdown();
-        runtime.pool.shutdown();
-        servicePool.shutdownNow();
-        try {
-            runtime.pool.awaitTermination(1, TimeUnit.SECONDS);
-            taskPool.awaitTermination(4, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
             System.exit(0);
-        }
-        System.exit(0);
+        }).start();
     }
 
     /**
@@ -106,61 +108,63 @@ public final class Basin {
      */
 
     public void restart() {
-        runtime.broadcast("restarting");
-        BootClasses.forEach((i) -> {
-            try {
-                BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
-                in.beforeStop();
-            } catch (Exception e) {
-                LOGGER.error(e.toString());
-            }
-        });
-        cs.forEach(c -> c.vars.clear());
-        taskPool.shutdownNow();
-        servicePool.shutdownNow();
-        servers.forEach(Server::stop);
-        servers.clear();
-        runningServer.values().forEach(HttpServer::stop);
-        runningServer.clear();
-        commands.clear();
-        BootClasses.clear();
-        publicVars.clear();
-        try {
-            taskPool.awaitTermination(3, TimeUnit.SECONDS);
-        } catch (InterruptedException ignore) {
-        }
-        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
-        servicePool = Executors.newCachedThreadPool();
-        app.close();
-        app = new AnnotationConfigApplicationContext(Basin.class);
-        app.findBeanDefinitions(Command.class).forEach(def -> registerCommand((Command) def.getInstance()));
-        try {
-            loadEnv();
-        } catch (Exception e) {
-            LOGGER.error(e.toString());
-        }
-        try {
-            loadJars();
+        new Thread(() -> {
+            runtime.broadcast("restarting");
             BootClasses.forEach((i) -> {
                 try {
                     BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
-                    in.afterStart();
+                    in.beforeStop();
                 } catch (Exception e) {
                     LOGGER.error(e.toString());
                 }
             });
-        } catch (Exception e) {
-            LOGGER.error(e.toString());
-        }
-        if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
-        if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
+            cs.forEach(c -> c.vars.clear());
+            taskPool.shutdownNow();
+            servicePool.shutdownNow();
+            servers.forEach(Server::stop);
+            servers.clear();
+            runningServer.values().forEach(HttpServer::stop);
+            runningServer.clear();
+            commands.clear();
+            BootClasses.clear();
+            publicVars.clear();
             try {
-                new RemoteServer(cfg.accessToken, cfg.remotePort, new CommandParser()).start();
+                taskPool.awaitTermination(3, TimeUnit.SECONDS);
+            } catch (InterruptedException ignore) {
+            }
+            taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
+            servicePool = Executors.newCachedThreadPool();
+            app.close();
+            app = new AnnotationConfigApplicationContext(Basin.class);
+            app.findBeanDefinitions(Command.class).forEach(def -> registerCommand((Command) def.getInstance()));
+            try {
+                loadEnv();
             } catch (Exception e) {
                 LOGGER.error(e.toString());
             }
-        }
-        runtime.broadcast("restarted");
-        LOGGER.info("Restarted!");
+            try {
+                loadJars();
+                BootClasses.forEach((i) -> {
+                    try {
+                        BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
+                        in.afterStart();
+                    } catch (Exception e) {
+                        LOGGER.error(e.toString());
+                    }
+                });
+            } catch (Exception e) {
+                LOGGER.error(e.toString());
+            }
+            if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
+            if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
+                try {
+                    new RemoteServer(cfg.accessToken, cfg.remotePort, new CommandParser()).start();
+                } catch (Exception e) {
+                    LOGGER.error(e.toString());
+                }
+            }
+            runtime.broadcast("restarted");
+            LOGGER.info("Restarted!");
+        }).start();
     }
 }

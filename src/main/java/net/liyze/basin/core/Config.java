@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.util.UUID;
 
 import static net.liyze.basin.core.Main.*;
 
@@ -32,7 +33,9 @@ public final class Config {
         if (!config.exists()) {
             try (Writer writer = Files.newBufferedWriter(config.toPath())) {
                 config.createNewFile();
-                (new GsonBuilder().setPrettyPrinting().create()).toJson(Config.class.getDeclaredConstructor().newInstance(), writer);
+                var config = new Config();
+                config.accessToken = UUID.randomUUID().toString().replace("-", "");
+                (new GsonBuilder().setPrettyPrinting().create()).toJson(config, writer);
             } catch (Exception e) {
                 LOGGER.info("Error on loading config {}", e.toString());
             }
