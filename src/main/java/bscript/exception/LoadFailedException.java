@@ -4,4 +4,8 @@ public class LoadFailedException extends RuntimeException {
     public LoadFailedException(Throwable cause) {
         super(cause);
     }
+
+    public LoadFailedException() {
+        super();
+    }
 }

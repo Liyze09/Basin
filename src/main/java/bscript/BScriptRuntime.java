@@ -2,23 +2,20 @@ package bscript;
 
 import bscript.exception.BScriptException;
 import bscript.exception.BroadcastException;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public final class BScriptRuntime implements Runnable, AutoCloseable {
-    private final Logger LOGGER = LoggerFactory.getLogger(BScriptRuntime.class);
+
     public final ExecutorService pool = Executors.newCachedThreadPool();
-    private final Multimap<String, Method> handlers = HashMultimap.create();
+    private final MultiMap<String, Method> handlers = new MultiMap<>();
 
     public BScriptRuntime() {
 
@@ -26,7 +23,6 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
 
     @Override
     public void run() {
-        LOGGER.debug("{} started.", this);
         broadcast("main");
     }
 
@@ -38,11 +34,10 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
         pool.submit(() -> directBroadcast(event, body));
     }
 
-    private void directBroadcast(String event, BScriptEvent body) {
+    public void directBroadcast(@NotNull String event, BScriptEvent body) {
         if (event.equals("exception") && handlers.get("exceptionEvent").size() == 0)
             throw new BScriptException((Throwable) body.body()[0]);
         handlers.get(event + "Event").forEach(method -> {
-            LOGGER.debug("Event: {}", event);
             boolean b = !event.equals("before") && !event.equals("around") && !event.equals("broadcast") && !event.equals("after") && !event.equals("exception");
             if (b) broadcast("broadcast");
             if (method.trySetAccessible()) try {
@@ -60,7 +55,6 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
     }
 
     public void load(@NotNull Class<?> clazz) {
-        LOGGER.debug("Loading a new bean.");
         Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().endsWith("Event"))
                 .forEach(method -> this.handlers.put(method.getName(), method));
         broadcast("loadBean");
@@ -75,6 +69,25 @@ public final class BScriptRuntime implements Runnable, AutoCloseable {
             throw new RuntimeException(e);
         }
         handlers.clear();
-        LOGGER.debug("{} closed.", this);
+    }
+
+    public static class MultiMap<K, V> {
+        private final Map<K, Set<V>> map = new ConcurrentHashMap<>();
+
+        public void put(K key, V value) {
+            if (!map.containsKey(key)) {
+                map.put(key, new HashSet<>());
+            }
+            map.get(key).add(value);
+        }
+
+        public Collection<V> get(K key) {
+            if (!map.containsKey(key)) return new ArrayList<>();
+            return new ArrayList<>(map.get(key));
+        }
+
+        public void clear() {
+            map.clear();
+        }
     }
 }

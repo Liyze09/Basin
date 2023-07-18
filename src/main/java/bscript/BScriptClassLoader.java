@@ -9,11 +9,19 @@ import java.util.Map;
  * A ClassLoader that load a ByteArray.
  */
 public class BScriptClassLoader extends URLClassLoader {
-    Map<String, byte[]> classBytes = new HashMap<>();
+    private final Map<String, byte[]> classBytes = new HashMap<>();
 
     public BScriptClassLoader(Map<String, byte[]> classBytes) {
         super(new URL[0], BScriptClassLoader.class.getClassLoader());
         this.classBytes.putAll(classBytes);
+    }
+
+    public BScriptClassLoader() {
+        super(new URL[0], BScriptClassLoader.class.getClassLoader());
+    }
+
+    public void put(String name, byte[] bytes) {
+        classBytes.put(name, bytes);
     }
 
     @Override
