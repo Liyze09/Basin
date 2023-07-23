@@ -7,7 +7,7 @@ class BScriptJarBuilderTest {
     @Disabled
     @Test
     void toJar() {
-        new BScriptJarBuilder().toJar(BScriptHelper.getInstance().compile("Test", """
+        new BScriptJarBuilder().toJar(BScriptHelper.getInstance().compile("t.Test", """
                 handle main {
                  print("Hello, World!")
                 }

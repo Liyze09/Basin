@@ -36,6 +36,7 @@ dependencies {
     api 'com.google.guava:guava:32.0.1-jre'
     // https://mvnrepository.com/artifact/org.smartboot.http/smart-http-server
     api 'org.smartboot.http:smart-http-server:1.2.1'
+    api 'org.smartboot.http:smart-http-client:1.2.1'
     // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
     api 'com.moandjiezana.toml:toml4j:0.7.2'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson

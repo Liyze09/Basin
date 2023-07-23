@@ -17,12 +17,17 @@ public final class BScriptCompiler {
     private List<String> lines = new ArrayList<>();
     private final List<String> imports = new ArrayList<>();
     private final Map<String, byte[]> compiled = new HashMap<>();
+    private String group;
 
     public BScriptCompiler() {
 
     }
 
     public void addSource(String name, String src) {
+        if (name.contains(".")) {
+            group = name.substring(0, name.lastIndexOf("."));
+            name = name.substring(name.lastIndexOf(".") + 1);
+        }
         name = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
         toJava(name, preProcess(new StringReader(src)));
     }
@@ -48,7 +53,12 @@ public final class BScriptCompiler {
      */
     public void toJava(String name, List<String> lines) {
         StringBuilder builder = new StringBuilder();
-        builder.append("package bscript.classes;import bscript.BScriptEvent;import bscript.BScriptRuntime;\n");
+        builder.append("package bscript.classes");
+        if (group != null) {
+            builder.append(".")
+                    .append(group);
+        }
+        builder.append(";import bscript.BScriptEvent;import bscript.BScriptRuntime;\n");
         for (String imp : imports) {
             builder.append("import ").append(imp).append(";");
         }
