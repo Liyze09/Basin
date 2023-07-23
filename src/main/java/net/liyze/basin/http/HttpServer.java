@@ -25,15 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Basin.*;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class HttpServer implements Server {
     public static final Map<String, HttpServer> runningServer = new HashMap<>();
     public final File root;
-    private final HttpBootstrap bootstrap = new HttpBootstrap();
     public final String serverName;
     public final int port;
+    private final HttpBootstrap bootstrap = new HttpBootstrap();
 
     /**
      * Init server on {@code <port>} with {@code <name>}

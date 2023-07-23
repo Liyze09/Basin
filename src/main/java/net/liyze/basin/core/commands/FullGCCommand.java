@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Basin.LOGGER;
 
 @Component
 public class FullGCCommand implements Command {

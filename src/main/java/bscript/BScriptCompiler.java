@@ -14,9 +14,9 @@ import java.util.*;
  * BScript's default compiler
  */
 public final class BScriptCompiler {
-    private List<String> lines = new ArrayList<>();
     private final List<String> imports = new ArrayList<>();
     private final Map<String, byte[]> compiled = new HashMap<>();
+    private List<String> lines = new ArrayList<>();
     private String group;
 
     public BScriptCompiler() {

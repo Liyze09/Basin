@@ -1,8 +1,8 @@
 package net.liyze.basin.core.commands;
 
 import com.itranswarp.summer.context.annotation.Component;
+import net.liyze.basin.core.Basin;
 import net.liyze.basin.core.Command;
-import net.liyze.basin.core.Main;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
@@ -32,7 +32,7 @@ public class BenchCommand implements Command {
             ++i;
             t += 2;
         } while (Instant.now().getEpochSecond() != start + 10);
-        Main.LOGGER.info(String.valueOf(i));
+        Basin.LOGGER.info(String.valueOf(i));
     }
 
     @Override

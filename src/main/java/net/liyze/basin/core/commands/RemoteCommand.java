@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Basin.*;
 
 @Component
 public class RemoteCommand implements Command {

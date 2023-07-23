@@ -13,16 +13,15 @@ import java.util.Map;
 
 public final class JavaStringCompiler {
 
+    public static final JavaStringCompiler JAVAC = new JavaStringCompiler();
     private final JavaCompiler compiler;
     private final StandardJavaFileManager stdManager;
-    public static final JavaStringCompiler JAVAC = new JavaStringCompiler();
+    private final Map<String, String> src = new HashMap<>();
 
     private JavaStringCompiler() {
         this.compiler = ToolProvider.getSystemJavaCompiler();
         this.stdManager = compiler.getStandardFileManager(null, null, null);
     }
-
-    private final Map<String, String> src = new HashMap<>();
 
     /**
      * Add a source String to compiler

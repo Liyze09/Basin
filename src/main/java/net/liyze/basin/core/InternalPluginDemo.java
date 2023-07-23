@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.LOGGER;
+import static net.liyze.basin.core.Basin.LOGGER;
 
 /**
  * Basin can use as a Basin Plugin

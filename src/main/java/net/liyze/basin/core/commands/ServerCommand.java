@@ -1,8 +1,8 @@
 package net.liyze.basin.core.commands;
 
 import com.itranswarp.summer.context.annotation.Component;
+import net.liyze.basin.core.Basin;
 import net.liyze.basin.core.Command;
-import net.liyze.basin.core.Main;
 import net.liyze.basin.http.HttpServer;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +21,7 @@ public class ServerCommand implements Command {
                     server.stop();
                     HttpServer.runningServer.remove(name);
                 } else {
-                    Main.LOGGER.error("{} is not exist.", name);
+                    Basin.LOGGER.error("{} is not exist.", name);
                 }
             } else throw new IndexOutOfBoundsException();
         } catch (IndexOutOfBoundsException ignored) {
@@ -30,7 +30,7 @@ public class ServerCommand implements Command {
                 server = new HttpServer(name, port);
                 HttpServer.runningServer.put(name, server.start());
             } catch (Exception e) {
-                Main.LOGGER.error(e.toString());
+                Basin.LOGGER.error(e.toString());
             }
         }
     }

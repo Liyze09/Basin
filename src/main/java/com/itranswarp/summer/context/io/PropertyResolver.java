@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static net.liyze.basin.core.Main.envMap;
+import static net.liyze.basin.core.Basin.envMap;
 /*
 Edited
 YAML to TOML

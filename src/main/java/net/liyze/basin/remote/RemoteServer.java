@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Basin.*;
 
 public class RemoteServer implements Server {
     public static final List<net.liyze.basin.core.Server> servers = new ArrayList<>();

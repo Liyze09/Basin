@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Basin.*;
 
 /**
  * Basin Command Parser

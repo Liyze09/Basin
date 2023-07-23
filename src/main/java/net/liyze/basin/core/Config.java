@@ -9,7 +9,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.util.UUID;
 
-import static net.liyze.basin.core.Main.*;
+import static net.liyze.basin.core.Basin.*;
 
 /**
  * Basin Config Bean
@@ -36,6 +36,7 @@ public final class Config {
                 var config = new Config();
                 config.accessToken = UUID.randomUUID().toString().replace("-", "");
                 (new GsonBuilder().setPrettyPrinting().create()).toJson(config, writer);
+                writer.flush();
             } catch (Exception e) {
                 LOGGER.info("Error on loading config {}", e.toString());
             }

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static net.liyze.basin.core.Main.publicVars;
+import static net.liyze.basin.core.Basin.publicVars;
 
 @Component
 public class PublicCommand implements Command {

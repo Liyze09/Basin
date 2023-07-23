@@ -16,7 +16,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.liyze.basin.core.Main.contexts;
+import static net.liyze.basin.core.Basin.contexts;
 
 
 @SuppressWarnings({"SpellCheckingInspection", "GrazieInspection", "unused", "ResultOfMethodCallIgnored"})

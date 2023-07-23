@@ -21,6 +21,7 @@ public final class BScriptHelper {
 
     /**
      * Get the singleton of BScriptHelper
+     *
      * @return The singleton of BScriptHelper
      */
     public static BScriptHelper getInstance() {
@@ -92,6 +93,7 @@ public final class BScriptHelper {
             }
         }
     }
+
 
     /**
      * Compile a .bs file to JVM bytecode and execute it
