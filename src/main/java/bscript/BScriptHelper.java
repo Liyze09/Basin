@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -94,6 +95,19 @@ public final class BScriptHelper {
         }
     }
 
+    public @NotNull Map<String, byte[]> compileFilesToBytes(List<File> src) {
+        var compiler = new BScriptCompiler();
+        for (File source : src) {
+            String name = source.getName();
+            try (InputStream inputStream = new FileInputStream(source)) {
+                compiler.addSource(name.substring(0, name.length() - 3), new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        compiler.toBytecode();
+        return compiler.getCompiled();
+    }
 
     /**
      * Compile a .bs file to JVM bytecode and execute it

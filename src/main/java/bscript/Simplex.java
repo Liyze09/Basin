@@ -3,6 +3,8 @@ package bscript;
 import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,13 +16,12 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Simplex {
+public final class Simplex {
     private static final Logger LOGGER = LoggerFactory.getLogger("Simplex");
     public Path dir = Path.of("");
     public Project project = new Project();
@@ -88,13 +89,45 @@ public class Simplex {
         }
     }
 
-    public void compile() {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Contract
+    public Map<String, byte[]> compile() {
+        final ArrayList<File> files = new ArrayList<>();
+        File src = dir.resolve("src").toFile();
+        Map<String, byte[]> bytes = BScriptHelper.getInstance().compileFilesToBytes(files(Arrays.stream(Objects.requireNonNull(src.listFiles())).toList()));
+        for (Map.Entry<String, byte[]> entry : bytes.entrySet()) {
+            var file = new File("build" + File.separator + entry.getKey().replace('.', File.separatorChar) + ".class");
+            try (OutputStream stream = new FileOutputStream(file)) {
+                file.createNewFile();
+                stream.write(entry.getValue());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return bytes;
+    }
 
+    public void build() {
+        var jar = new BScriptJarBuilder();
+        jar.toJar(compile(), "build/libs/" + project.artifactId + "-" + project.version + ".jar");
+    }
+
+    private @NotNull List<File> files(@NotNull List<File> files) {
+        List<File> ret = new ArrayList<>();
+        files.forEach(file -> {
+            if (file.isFile()) {
+                ret.add(file);
+            } else {
+                ret.addAll(files(Arrays.stream(Objects.requireNonNull(file.listFiles())).toList()));
+            }
+        });
+        return ret;
     }
 
     public static class Project {
         public String groupId = "";
         public String artifactId = "";
+        public String version = "1.0-SNAPSHOT";
         public String[] repositories = {"https://repo1.maven.org/maven2"};
         public String[] dependencies = {};
 

@@ -18,7 +18,7 @@ public class BScriptJarBuilder {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void toJar(@NotNull Map<String, byte[]> classes, String fileName) {
-        File file = new File(fileName);
+        File file = new File(fileName.replace('/', File.separatorChar));
         file.getParentFile().mkdirs();
         try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(file))) {
             StringBuilder builder = new StringBuilder();

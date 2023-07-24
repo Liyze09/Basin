@@ -9,7 +9,7 @@ import java.io.IOException;
 class SimplexTest {
     @Disabled
     @Test
-    void init() throws IOException {
+    void test() throws IOException {
         var s = new Simplex();
         s.init();
         s.load();
