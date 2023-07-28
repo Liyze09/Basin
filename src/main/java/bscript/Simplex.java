@@ -19,7 +19,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Simplex {
     private static final Logger LOGGER = LoggerFactory.getLogger("Simplex");
@@ -27,7 +26,7 @@ public final class Simplex {
     public Project project = new Project();
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void init() throws IOException {
+    public void init() {
         dir.resolve("src").toFile().mkdirs();
         dir.resolve("build").toFile().mkdirs();
         dir.resolve("data").resolve("jars").toFile().mkdirs();
@@ -57,7 +56,6 @@ public final class Simplex {
         for (String dependency : this.project.dependencies) {
             Splitter splitter = Splitter.on(':');
             List<String> list = splitter.splitToList(dependency);
-            AtomicBoolean completed = new AtomicBoolean(false);
             for (String repo : this.project.repositories) {
                 Future<HttpResponse<byte[]>> r = client.sendAsync(
                         HttpRequest.newBuilder()
@@ -78,20 +76,19 @@ public final class Simplex {
                         out.write(r.get().body());
                         out.flush();
                     }
-                    completed.set(true);
                 } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
-                if (completed.get()) break;
+                break;
             }
         }
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Contract
-    public Map<String, byte[]> compile() {
+    public @NotNull Map<String, byte[]> compile() {
         final ArrayList<File> files = new ArrayList<>();
         File src = dir.resolve("src").toFile();
         Map<String, byte[]> bytes = BScriptHelper.getInstance().compileFilesToBytes(files(Arrays.stream(Objects.requireNonNull(src.listFiles())).toList()));
@@ -140,5 +137,9 @@ public final class Simplex {
                     "depend:" +
                     Arrays.toString(dependencies);
         }
+    }
+
+    public static class MavenProject {
+        public List<List<String>> dependencies;
     }
 }

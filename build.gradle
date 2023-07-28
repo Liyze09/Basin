@@ -48,7 +48,6 @@ dependencies {
     api 'com.zaxxer:HikariCP:5.0.1'
     // https://mvnrepository.com/artifact/org.freemarker/freemarker
     api 'org.freemarker:freemarker:2.3.32'
-
 }
 test {
     useJUnitPlatform()
