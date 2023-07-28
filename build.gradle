@@ -36,7 +36,6 @@ dependencies {
     api 'com.google.guava:guava:32.0.1-jre'
     // https://mvnrepository.com/artifact/org.smartboot.http/smart-http-server
     api 'org.smartboot.http:smart-http-server:1.2.1'
-    api 'org.smartboot.http:smart-http-client:1.2.1'
     // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
     api 'com.moandjiezana.toml:toml4j:0.7.2'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
@@ -47,6 +46,9 @@ dependencies {
     api 'net.bytebuddy:byte-buddy:1.14.5'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     api 'com.zaxxer:HikariCP:5.0.1'
+    // https://mvnrepository.com/artifact/org.freemarker/freemarker
+    api 'org.freemarker:freemarker:2.3.32'
+
 }
 test {
     useJUnitPlatform()

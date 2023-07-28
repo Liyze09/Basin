@@ -7,8 +7,8 @@ import bscript.BScriptRuntime;
 import com.google.common.base.Splitter;
 import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.context.ApplicationContext;
+import com.itranswarp.summer.context.annotation.ComponentScan;
 import com.moandjiezana.toml.Toml;
-import net.liyze.basin.http.HttpServer;
 import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -25,12 +25,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 import static net.liyze.basin.core.CommandParser.cs;
-import static net.liyze.basin.http.HttpServer.runningServer;
+import static net.liyze.basin.core.commands.ServerCommand.serverMap;
 import static net.liyze.basin.remote.RemoteServer.servers;
 
 /**
  * Basin start class
  */
+@ComponentScan(value = {"net.liyze.basin.core.commands"})
 public final class Basin {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();
@@ -306,7 +307,6 @@ public final class Basin {
     /**
      * Restart basin.
      */
-
     public void restart() {
         new Thread(() -> {
             runtime.broadcast("restarting");
@@ -323,8 +323,8 @@ public final class Basin {
             servicePool.shutdownNow();
             servers.forEach(Server::stop);
             servers.clear();
-            runningServer.values().forEach(HttpServer::stop);
-            runningServer.clear();
+            serverMap.values().forEach(Server::stop);
+            serverMap.clear();
             commands.clear();
             BootClasses.clear();
             publicVars.clear();

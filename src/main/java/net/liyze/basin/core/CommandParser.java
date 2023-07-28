@@ -101,7 +101,7 @@ public class CommandParser {
                 } catch (IndexOutOfBoundsException e) {
                     LOGGER.error("Bad arg input.");
                 } catch (Exception e) {
-                    LOGGER.error(e.toString());
+                    e.printStackTrace();
                 }
             } else LOGGER.error("Unknown command: " + cmdName);
         }

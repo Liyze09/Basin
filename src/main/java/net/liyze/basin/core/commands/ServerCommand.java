@@ -3,35 +3,32 @@ package net.liyze.basin.core.commands;
 import com.itranswarp.summer.context.annotation.Component;
 import net.liyze.basin.core.Basin;
 import net.liyze.basin.core.Command;
+import net.liyze.basin.core.Server;
 import net.liyze.basin.http.HttpServer;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ServerCommand implements Command {
+    public static final Map<String, Server> serverMap = new ConcurrentHashMap<>();
+
     @Override
     public void run(@NotNull List<String> args) {
-        String name = args.get(1);
-        HttpServer server;
-        try {
-            if (args.get(0).equals("stop")) {
-                server = HttpServer.runningServer.get(name);
-                if (server != null) {
-                    server.stop();
-                    HttpServer.runningServer.remove(name);
-                } else {
-                    Basin.LOGGER.error("{} is not exist.", name);
-                }
-            } else throw new IndexOutOfBoundsException();
-        } catch (IndexOutOfBoundsException ignored) {
-            int port = Integer.parseInt(args.get(0));
+        String name = args.get(0);
+        if (!args.get(1).equals("stop")) {
             try {
-                server = new HttpServer(name, port);
-                HttpServer.runningServer.put(name, server.start());
-            } catch (Exception e) {
-                Basin.LOGGER.error(e.toString());
+                serverMap.put(name, new HttpServer(name, Integer.parseInt(args.get(1))).start());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+        } else {
+            Server server = serverMap.remove(name);
+            if (server != null) server.stop();
+            else Basin.LOGGER.error("Server {} was not exist.", name);
         }
     }
 
@@ -39,5 +36,4 @@ public class ServerCommand implements Command {
     public @NotNull String Name() {
         return "server";
     }
-
 }
