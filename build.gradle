@@ -80,6 +80,7 @@ jar{
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/INDEX.LIST'
         exclude 'module-info.class'
+        exclude 'META-INF/NOTICE'
     }
 }
 

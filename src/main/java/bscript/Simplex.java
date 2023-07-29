@@ -138,8 +138,4 @@ public final class Simplex {
                     Arrays.toString(dependencies);
         }
     }
-
-    public static class MavenProject {
-        public List<List<String>> dependencies;
-    }
 }

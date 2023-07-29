@@ -43,7 +43,6 @@ public final class Basin {
     public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
     public static final List<ApplicationContext> contexts = new ArrayList<>();
     static final File jars = new File("data" + File.separator + "jars");
-    private static final Basin b = new Basin();
     public static Toml env = new Toml();
     public static ExecutorService servicePool = Executors.newCachedThreadPool();
     public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
@@ -56,7 +55,7 @@ public final class Basin {
      * Basin's ASCII banner
      */
     @SuppressWarnings("SpellCheckingInspection")
-    public String banner = String.format(
+    public static String banner = String.format(
             """
                     \r
                     BBBBBBBBBBBBBBBBB                                         iiii
@@ -79,7 +78,7 @@ public final class Basin {
                     """, getVersion());
 
     private Basin() {
-
+        throw new UnsupportedOperationException();
     }
 
     public static void main(String @NotNull [] args) {
@@ -162,7 +161,7 @@ public final class Basin {
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
-        System.out.println(Basin.getBasin().banner);
+        System.out.println(banner);
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
@@ -256,31 +255,24 @@ public final class Basin {
     }
 
     /**
-     * Get the singleton
-     */
-    public static Basin getBasin() {
-        return b;
-    }
-
-    /**
      * Get version version's String.
      */
     @Contract(pure = true)
-    public @NotNull String getVersion() {
+    public static @NotNull String getVersion() {
         return "1.6";
     }
 
     /**
      * Get version version's int.
      */
-    public int getVersionNum() {
+    public static int getVersionNum() {
         return 6;
     }
 
     /**
      * Stop basin after all task finished.
      */
-    public void shutdown() {
+    public static void shutdown() {
         new Thread(() -> {
             Basin.LOGGER.info("Stopping\n");
             runtime.broadcast("shuttingDown");
@@ -307,7 +299,7 @@ public final class Basin {
     /**
      * Restart basin.
      */
-    public void restart() {
+    public static void restart() {
         new Thread(() -> {
             runtime.broadcast("restarting");
             BootClasses.forEach((i) -> {
