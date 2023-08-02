@@ -1,13 +1,16 @@
 package net.liyze.basin.http;
 
 import com.google.gson.Gson;
-import freemarker.cache.FileTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.TemplateException;
 import net.liyze.basin.core.Basin;
 import net.liyze.basin.core.Server;
 import net.liyze.basin.http.annotation.GetMapping;
 import net.liyze.basin.http.annotation.PostMapping;
+import org.beetl.core.Configuration;
+import org.beetl.core.GroupTemplate;
+import org.beetl.core.ResourceLoader;
+import org.beetl.core.Template;
+import org.beetl.core.resource.ClasspathResourceLoader;
+import org.beetl.core.resource.FileResourceLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.smartboot.http.common.enums.HttpStatus;
@@ -16,16 +19,20 @@ import org.smartboot.http.server.HttpRequest;
 import org.smartboot.http.server.HttpResponse;
 import org.smartboot.http.server.HttpServerHandler;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class HttpServer implements Server {
-    private final Configuration FREE_MARKER = new Configuration(Configuration.VERSION_2_3_32);
+    private final Configuration cfg = Configuration.defaultConfiguration();
+    private final GroupTemplate cgt;
+    private final GroupTemplate fgt;
     private final HttpBootstrap bootstrap = new HttpBootstrap();
     public final int port;
     public final String serverName;
@@ -42,8 +49,6 @@ public final class HttpServer implements Server {
         root.mkdirs();
         var temp = Path.of(root.getPath()).resolve("template").toFile();
         temp.mkdirs();
-        FREE_MARKER.setTemplateLoader(
-                new FileTemplateLoader(temp));
         Basin.contexts.forEach(context -> context.getBeans(WebController.class)
                 .forEach(bean -> Arrays.stream(bean.getClass().getMethods())
                         .forEach(method -> {
@@ -57,6 +62,13 @@ public final class HttpServer implements Server {
                             }
                         }))
         );
+        var cfg = Configuration.defaultConfiguration();
+        cfg.setDirectByteOutput(true);
+        ResourceLoader<String> fileLoader = new FileResourceLoader(
+                "data" + File.separator + "web" + File.separator + serverName + "template");
+        ResourceLoader<String> classpathLoader = new ClasspathResourceLoader("static/" + serverName + "template");
+        cgt = new GroupTemplate(classpathLoader, cfg);
+        fgt = new GroupTemplate(fileLoader, cfg);
     }
 
     @Override
@@ -86,7 +98,7 @@ public final class HttpServer implements Server {
         return this;
     }
 
-    private void getDispatch(@NotNull HttpRequest request, HttpResponse response) throws InvocationTargetException, IllegalAccessException, IOException, TemplateException {
+    private void getDispatch(@NotNull HttpRequest request, HttpResponse response) throws InvocationTargetException, IllegalAccessException, IOException {
         if (request.getRequestURI().startsWith("/favicon.ico") || request.getRequestURI().startsWith("/static")) {
             staticResource(request, response);
             return;
@@ -108,14 +120,20 @@ public final class HttpServer implements Server {
         }
     }
 
-    private void render(@NotNull ModelAndView view, @NotNull HttpResponse response) throws IOException, TemplateException {
-        var template = FREE_MARKER.getTemplate(view.view());
-        var out = new StringWriter();
-        template.process(view.model(), out);
-        response.write(out.getBuffer().toString().getBytes(StandardCharsets.UTF_8));
+    private void render(@NotNull ModelAndView view, @NotNull HttpResponse response) {
+        String temp = view.view();
+        Template template;
+        if (temp.startsWith("classpath:")) {
+            template = cgt.getTemplate(view.view());
+        } else if (temp.startsWith("file:")) {
+            template = fgt.getTemplate(view.view());
+        } else {
+            throw new RuntimeException("Illegal view path: " + view.view());
+        }
+        template.renderTo(response.getOutputStream());
     }
 
-    private void postDispatch(@NotNull HttpRequest request, HttpResponse response) throws InvocationTargetException, IllegalAccessException, TemplateException, IOException {
+    private void postDispatch(@NotNull HttpRequest request, HttpResponse response) throws InvocationTargetException, IllegalAccessException, IOException {
         PostDispatcher dispatcher = getPostDispatcher(request.getRequestURI());
         if (dispatcher == null) {
             response.setHttpStatus(HttpStatus.NOT_FOUND);

@@ -5,9 +5,9 @@ import bscript.BScriptEvent;
 import bscript.BScriptHelper;
 import bscript.BScriptRuntime;
 import com.google.common.base.Splitter;
-import com.itranswarp.summer.context.AnnotationConfigApplicationContext;
-import com.itranswarp.summer.context.ApplicationContext;
-import com.itranswarp.summer.context.annotation.ComponentScan;
+import com.itranswarp.summer.AnnotationConfigApplicationContext;
+import com.itranswarp.summer.ApplicationContext;
+import com.itranswarp.summer.annotation.ComponentScan;
 import com.moandjiezana.toml.Toml;
 import net.liyze.basin.remote.RemoteServer;
 import org.jetbrains.annotations.Contract;
@@ -25,13 +25,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 import static net.liyze.basin.core.CommandParser.cs;
-import static net.liyze.basin.core.commands.ServerCommand.serverMap;
+import static net.liyze.basin.core.scan.ServerCommand.serverMap;
 import static net.liyze.basin.remote.RemoteServer.servers;
 
 /**
  * Basin start class
  */
-@ComponentScan(value = {"net.liyze.basin.core.commands"})
+@ComponentScan(value = {"net.liyze.basin.core.scan"})
 public final class Basin {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();

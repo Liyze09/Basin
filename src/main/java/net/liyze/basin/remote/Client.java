@@ -42,6 +42,8 @@ public class Client {
         writeBuffer.flush();
         runtime.broadcast("remoteClientSent", new BScriptEvent("remoteClientSent", message, host, port));
         LOGGER.info("Remote Sent: \"{}\" to \"{}\":{}", message, host, port);
+
+        client.shutdown();
     }
 
     /**
