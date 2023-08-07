@@ -1,4 +1,4 @@
-package net.liyze.basin.remote;
+package net.liyze.basin.core.remote;
 
 import bscript.BScriptEvent;
 import org.jetbrains.annotations.NotNull;

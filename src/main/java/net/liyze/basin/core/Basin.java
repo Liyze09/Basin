@@ -9,7 +9,7 @@ import com.itranswarp.summer.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.ApplicationContext;
 import com.itranswarp.summer.annotation.ComponentScan;
 import com.moandjiezana.toml.Toml;
-import net.liyze.basin.remote.RemoteServer;
+import net.liyze.basin.core.remote.RemoteServer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -25,13 +25,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 import static net.liyze.basin.core.CommandParser.cs;
+import static net.liyze.basin.core.remote.RemoteServer.servers;
 import static net.liyze.basin.core.scan.ServerCommand.serverMap;
-import static net.liyze.basin.remote.RemoteServer.servers;
 
 /**
  * Basin start class
  */
-@ComponentScan(value = {"net.liyze.basin.core.scan"})
+@ComponentScan(value = {"net.liyze.basin.core.scan", "net.liyze.basin.rpc"})
 public final class Basin {
     public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
     public static final HashMap<String, Command> commands = new HashMap<>();

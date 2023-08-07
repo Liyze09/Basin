@@ -3,6 +3,7 @@ package net.liyze.basin.http;
 import com.google.gson.Gson;
 import net.liyze.basin.core.Basin;
 import net.liyze.basin.core.Server;
+import net.liyze.basin.http.annotation.Control;
 import net.liyze.basin.http.annotation.GetMapping;
 import net.liyze.basin.http.annotation.PostMapping;
 import org.beetl.core.Configuration;
@@ -30,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class HttpServer implements Server {
-    private final Configuration cfg = Configuration.defaultConfiguration();
+    public final Configuration cfg = Configuration.defaultConfiguration();
     private final GroupTemplate cgt;
     private final GroupTemplate fgt;
     private final HttpBootstrap bootstrap = new HttpBootstrap();
@@ -50,7 +51,10 @@ public final class HttpServer implements Server {
         var temp = Path.of(root.getPath()).resolve("template").toFile();
         temp.mkdirs();
         Basin.contexts.forEach(context -> context.getBeans(WebController.class)
-                .forEach(bean -> Arrays.stream(bean.getClass().getMethods())
+                .forEach(bean -> {
+                    Control annotation0 = bean.getClass().getAnnotation(Control.class);
+                    if (annotation0 != null && annotation0.serverName().equals(serverName)) {
+                        Arrays.stream(bean.getClass().getMethods())
                         .forEach(method -> {
                             GetMapping annotation = method.getAnnotation(GetMapping.class);
                             if (annotation != null) {
@@ -60,9 +64,10 @@ public final class HttpServer implements Server {
                             if (annotation1 != null) {
                                 postMappings.put(annotation1.path(), new PostDispatcher(bean, method, method.getParameterTypes(), gson));
                             }
-                        }))
+                        });
+                    }
+                })
         );
-        var cfg = Configuration.defaultConfiguration();
         cfg.setDirectByteOutput(true);
         ResourceLoader<String> fileLoader = new FileResourceLoader(
                 "data" + File.separator + "web" + File.separator + serverName + "template");

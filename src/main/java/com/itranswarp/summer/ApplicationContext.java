@@ -55,8 +55,4 @@ public interface ApplicationContext extends AutoCloseable, Cloneable {
     Object createBeanAsEarlySingleton(BeanDefinition def);
 
     Collection<BeanDefinition> getBeanDefinitions();
-
-    void startRpcService(int port);
-
-    void stopRpcService();
 }

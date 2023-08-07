@@ -2,7 +2,7 @@ package net.liyze.basin.core.scan;
 
 import com.itranswarp.summer.annotation.Component;
 import net.liyze.basin.core.Command;
-import net.liyze.basin.remote.Client;
+import net.liyze.basin.core.remote.Client;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

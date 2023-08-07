@@ -6,6 +6,9 @@ import net.liyze.basin.core.Basin;
 import org.jetbrains.annotations.Nullable;
 
 public class ContextUtils {
+    private ContextUtils() {
+        throw new UnsupportedOperationException();
+    }
     public static @Nullable BeanDefinition getBean(String name) {
         for (ApplicationContext context : Basin.contexts) {
             BeanDefinition bean = context.findBeanDefinition(name);

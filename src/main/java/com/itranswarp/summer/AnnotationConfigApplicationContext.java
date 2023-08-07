@@ -5,8 +5,6 @@ import com.itranswarp.summer.exception.*;
 import com.itranswarp.summer.io.PropertyResolver;
 import com.itranswarp.summer.io.ResourceResolver;
 import com.itranswarp.summer.utils.ClassUtils;
-import net.liyze.basin.core.Server;
-import net.liyze.basin.rpc.RpcServer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,20 +23,10 @@ import static net.liyze.basin.core.Basin.contexts;
 public final class AnnotationConfigApplicationContext implements ApplicationContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotationConfigApplicationContext.class);
-    private static Server rpc = null;
     private final PropertyResolver propertyResolver;
     private final Map<String, BeanDefinition> beans;
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
     private final Set<String> creatingBeanNames;
-
-    public void startRpcService(int port) {
-        if (rpc == null) rpc = new RpcServer(port).start();
-    }
-
-    public void stopRpcService() {
-        rpc.stop();
-        rpc = null;
-    }
 
     public AnnotationConfigApplicationContext(Class<?> configClass) {
         contexts.add(this);
@@ -104,7 +92,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
 
         defs.forEach(def -> {
             // 如果Bean未被创建(可能在其他Bean的构造方法注入前被创建):
-            if (def.getInstance() == null && !def.getBeanClass().isAnnotationPresent(WithoutInstance.class)) {
+            if (def.getInstance() == null) {
                 // 创建Bean:
                 createBeanAsEarlySingleton(def);
             }
@@ -150,7 +138,6 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
                 final Annotation[] paramAnnos = parametersAnnos[i];
                 final Value value = ClassUtils.getAnnotation(paramAnnos, Value.class);
                 final Autowired autowired = ClassUtils.getAnnotation(paramAnnos, Autowired.class);
-
                 // @Configuration类型的Bean是工厂，不允许使用@Autowired创建:
                 final boolean isConfiguration = isConfigurationDefinition(def);
                 if (isConfiguration && autowired != null) {

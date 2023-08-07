@@ -1,11 +1,12 @@
-package com.itranswarp.summer.annotation;
+package net.liyze.basin.http.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithoutInstance {
+@Target(ElementType.TYPE)
+public @interface Control {
+    String serverName();
 }
