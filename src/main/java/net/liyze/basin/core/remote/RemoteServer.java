@@ -1,6 +1,5 @@
 package net.liyze.basin.core.remote;
 
-import bscript.BScriptEvent;
 import net.liyze.basin.core.CommandParser;
 import net.liyze.basin.core.Server;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.liyze.basin.core.Basin.*;
+import static net.liyze.basin.core.Basin.LOGGER;
 
 public class RemoteServer implements Server {
     public static final List<net.liyze.basin.core.Server> servers = new ArrayList<>();
@@ -44,7 +43,6 @@ public class RemoteServer implements Server {
      * Stop remote Server
      */
     public void stop() {
-        runtime.broadcast("remoteServerStop", new BScriptEvent("remoteServerStop", this));
         server.shutdown();
     }
 
@@ -52,9 +50,7 @@ public class RemoteServer implements Server {
      * Start remote server
      */
     public RemoteServer start() {
-        runtime.broadcast("remoteServerStart", new BScriptEvent("remoteServerStart", this));
         MessageProcessor<byte[]> processor = (s, b) -> {
-            runtime.broadcast("remoteServerRequest", new BScriptEvent("remoteServerRequest", s, b, this));
             Cipher cipher;
             String msg = "";
             WriteBuffer outputStream = s.writeBuffer();
@@ -100,7 +96,6 @@ public class RemoteServer implements Server {
                     LOGGER.warn(e.toString());
                 }
             }
-            runtime.broadcast("remoteServerRequested", new BScriptEvent("remoteServerRequested", s, b, this));
         };
         server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
         server.setLowMemory(true);

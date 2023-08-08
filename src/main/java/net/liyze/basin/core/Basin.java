@@ -1,9 +1,5 @@
 package net.liyze.basin.core;
 
-import bscript.BScriptClassLoader;
-import bscript.BScriptEvent;
-import bscript.BScriptHelper;
-import bscript.BScriptRuntime;
 import com.google.common.base.Splitter;
 import com.itranswarp.summer.AnnotationConfigApplicationContext;
 import com.itranswarp.summer.ApplicationContext;
@@ -15,8 +11,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.URLClassLoader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +47,7 @@ public final class Basin {
     public static Map<String, Object> envMap = new HashMap<>();
     public static Config cfg = Config.initConfig();
     public static ApplicationContext app;
-    public static BScriptRuntime runtime = new BScriptRuntime();
+
     private static String command;
     /**
      * Basin's ASCII banner
@@ -82,16 +80,7 @@ public final class Basin {
     }
 
     public static void main(String @NotNull [] args) {
-        if (args.length > 0)
-            switch (args[0]) {
-                case "-compile" -> BScriptHelper.getInstance().compileFiles(new File(args[1]));
-                case "-execute" -> BScriptHelper.getInstance().executeFile(new File(args[1]));
-                case "-interpret" -> BScriptHelper.getInstance().interpretFile(new File(args[1]));
-                default -> LOGGER.warn("Bad arg input.");
-            }
-        else {
-            start();
-        }
+        start();
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
@@ -129,7 +118,6 @@ public final class Basin {
                         }
                     }
                 }
-                loadScripts();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -139,7 +127,6 @@ public final class Basin {
                 try (Scanner scanner = new Scanner(System.in)) {
                     while (true) {
                         command = scanner.nextLine();
-                        runtime.broadcast("executeCommand", new BScriptEvent("executeCommand", command));
                         if (cfg.enableParallel) {
                             taskPool.submit(new Thread(() -> {
                                 try {
@@ -181,32 +168,6 @@ public final class Basin {
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
     }
 
-    public static void loadScripts() {
-        BScriptHelper.getInstance().compileFiles(Objects.requireNonNull(script.listFiles((dir, name) -> name.endsWith(".bs"))));
-        Map<String, byte[]> bytes = new HashMap<>();
-        Arrays.stream(Objects.requireNonNull(script
-                        .listFiles((dir, name) -> name.endsWith(".class"))))
-                .toList().forEach(clazz -> {
-                    try (InputStream input = new FileInputStream(clazz)) {
-                        bytes.put("bscript.classes." + clazz.getName().substring(0, clazz.getName().length() - 6),
-                                input.readAllBytes());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-        try (URLClassLoader loader = new BScriptClassLoader(bytes)) {
-            bytes.keySet().forEach(name -> {
-                try {
-                    runtime.load(loader.loadClass(name));
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        runtime.run();
-    }
 
     public static void loadJars() throws Exception {
         File[] children = jars.listFiles((file, s) -> s.matches(".*\\.jar"));
@@ -275,19 +236,15 @@ public final class Basin {
     public static void shutdown() {
         new Thread(() -> {
             Basin.LOGGER.info("Stopping\n");
-            runtime.broadcast("shuttingDown");
             BootClasses.forEach((i) -> {
                 try {
                     ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
                 } catch (Exception ignored) {
                 }
             });
-            runtime.broadcast("shutdown");
             taskPool.shutdown();
-            runtime.pool.shutdown();
             servicePool.shutdownNow();
             try {
-                runtime.pool.awaitTermination(1, TimeUnit.SECONDS);
                 taskPool.awaitTermination(4, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 System.exit(0);
@@ -301,7 +258,6 @@ public final class Basin {
      */
     public static void restart() {
         new Thread(() -> {
-            runtime.broadcast("restarting");
             BootClasses.forEach((i) -> {
                 try {
                     BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
@@ -355,7 +311,6 @@ public final class Basin {
                     LOGGER.error(e.toString());
                 }
             }
-            runtime.broadcast("restarted");
             LOGGER.info("Restarted!");
         }).start();
     }

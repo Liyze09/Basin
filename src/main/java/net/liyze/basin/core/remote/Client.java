@@ -1,6 +1,5 @@
 package net.liyze.basin.core.remote;
 
-import bscript.BScriptEvent;
 import org.jetbrains.annotations.NotNull;
 import org.smartboot.socket.MessageProcessor;
 import org.smartboot.socket.extension.protocol.StringProtocol;
@@ -25,7 +24,6 @@ public class Client {
      * @param port    Remote port
      */
     public static void send(String message, String host, @NotNull String token, int port) throws Exception {
-        runtime.broadcast("remoteClientSending", new BScriptEvent("remoteClientSending", message, host, port));
         MessageProcessor<String> processor = (session, msg) -> LOGGER.info("Receive from server: " + msg);
         AioQuickClient client = new AioQuickClient(host, port, new StringProtocol(), processor);
         AioSession session = client.start();
@@ -40,7 +38,6 @@ public class Client {
         writeBuffer.writeInt(msg.length);
         writeBuffer.write(msg);
         writeBuffer.flush();
-        runtime.broadcast("remoteClientSent", new BScriptEvent("remoteClientSent", message, host, port));
         LOGGER.info("Remote Sent: \"{}\" to \"{}\":{}", message, host, port);
 
         client.shutdown();
