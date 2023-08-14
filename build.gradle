@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'io.github.liyze09'
-version = '2.1.2-final'
+version = '2.2'
 
 repositories {
     maven {
@@ -26,6 +26,8 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:24.0.1'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    // https://mvnrepository.com/artifact/org.hsqldb/hsqldb
+    testImplementation 'org.hsqldb:hsqldb:2.7.2'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -51,6 +53,10 @@ dependencies {
     api 'org.furyio:fury-core:0.1.0'
     // https://mvnrepository.com/artifact/com.ibeetl/beetl
     api 'com.ibeetl:beetl:3.15.7.RELEASE'
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm
+    runtimeOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3'
 }
 test {
     useJUnitPlatform()
@@ -94,7 +100,9 @@ javadoc {
     failOnError false
 }
 java {
-    withJavadocJar()
+    if (System.getenv("CI") != null) {
+        withJavadocJar()
+    }
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17

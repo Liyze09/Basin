@@ -1,19 +1,23 @@
+@file:Suppress("unused")
+
 package net.liyze.basin.jdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
 
 class JdbcPool {
     private val config: HikariConfig = HikariConfig()
+
+    @Volatile
     private var data: HikariDataSource? = null
-    private val pool = Executors.newCachedThreadPool()
     fun connect(jdbcUrl: String, userName: String, password: String): JdbcPool {
         config.username = userName
         config.jdbcUrl = jdbcUrl
@@ -22,6 +26,7 @@ class JdbcPool {
         config.maximumPoolSize = 16
         config.minimumIdle = 4
         config.maxLifetime = 60000
+        config.idleTimeout = 0
         data = HikariDataSource(config)
         return this
     }
@@ -64,24 +69,44 @@ class JdbcPool {
         return null
     }
 
-    fun <T> execute(action: Callback<T>): Future<T>? {
+    fun <T> execute(action: Callback<T>): JdbcResult<T> {
         val connection = getConnection()
-        return pool.submit(Callable {
-            try {
-                val ret: T? = action.run(connection)
-                connection.commit()
-                return@Callable ret
-            } catch (e: SQLException) {
-                connection.rollback()
-                throw RuntimeException(e)
-            }
-        })
+        return JdbcResult(action, connection)
     }
 
-    fun close() = data?.close()
+    fun close() = data?.close() ?: throw RuntimeException("Must connect SQL before use!")
 
     @FunctionalInterface
     interface Callback<T> {
-        fun run(connection: Connection): T?
+        fun run(connection: Connection): T
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    class JdbcResult<T>(
+        val action: Callback<T>,
+        val connection: Connection,
+    ) {
+        @Volatile
+        var result: T? = null
+
+        init {
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    val ret: T = action.run(connection)
+                    connection.commit()
+                    result = ret
+                } catch (e: Throwable) {
+                    connection.rollback()
+                    throw RuntimeException(e)
+                }
+            }
+        }
+
+        fun get(): T {
+            while (result == null) {
+                Thread.onSpinWait()
+            }
+            return result!!
+        }
     }
 }
