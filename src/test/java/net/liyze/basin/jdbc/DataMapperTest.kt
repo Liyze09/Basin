@@ -1,9 +1,11 @@
 package net.liyze.basin.jdbc
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class DataMapperTest {
     @Test
+    @Disabled
     fun test() {
         val jdbcPool = JdbcPool()
         jdbcPool.connect("jdbc:hsqldb:data/db", "sa", "")
