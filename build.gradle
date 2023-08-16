@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'io.github.liyze09'
-version = '2.2'
+version = '2.2-unstable'
 
 repositories {
     maven {

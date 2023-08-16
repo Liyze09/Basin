@@ -8,17 +8,24 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.Closeable
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 
-class JdbcPool {
+class JdbcPool : Closeable {
     private val config: HikariConfig = HikariConfig()
 
     @Volatile
     private var data: HikariDataSource? = null
-    fun connect(jdbcUrl: String, userName: String, password: String): JdbcPool {
+
+    @JvmOverloads
+    fun connect(
+        jdbcUrl: String,
+        userName: String,
+        password: String = ""
+    ): JdbcPool {
         config.username = userName
         config.jdbcUrl = jdbcUrl
         config.password = password
@@ -33,52 +40,60 @@ class JdbcPool {
 
     fun getConfig() = config
     fun getConnection() = data?.getConnection() ?: throw RuntimeException("Must connect SQL before use!")
-    fun query(sql: String, args: List<Any>): ResultSet? {
+    @JvmOverloads
+    fun query(sql: String, args: List<Any> = listOf()): ResultSet {
         val connection = getConnection()
         try {
             val ps = connection.prepareStatement(sql)
             for ((index, value) in args.withIndex()) {
-                ps.setObject(index, value)
+                ps.setObject(index + 1, value)
             }
             val ret = ps.executeQuery()
             connection.commit()
             return ret
-        } catch (_: SQLException) {
+        } catch (e: SQLException) {
             connection.rollback()
+            throw RuntimeException(e)
         } finally {
             connection.close()
         }
-        return null
     }
 
-    fun update(sql: String, args: List<Any>): ResultSet? {
+    @JvmOverloads
+    fun update(sql: String, args: List<Any> = listOf()): Long {
         val connection = getConnection()
         try {
             val ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
             for ((index, value) in args.withIndex()) {
-                ps.setObject(index, value)
+                ps.setObject(index + 1, value)
             }
             ps.executeUpdate()
             connection.commit()
-            return ps.generatedKeys
-        } catch (_: SQLException) {
+            return ps.generatedKeys.use { rs ->
+                var id: Long = -1
+                if (rs.next()) {
+                    id = rs.getLong(1)
+                }
+                return@use id
+            }
+        } catch (e: SQLException) {
             connection.rollback()
+            throw RuntimeException(e)
         } finally {
             connection.close()
         }
-        return null
     }
 
-    fun <T> execute(action: Callback<T>): JdbcResult<T> {
+    infix fun <T> execute(action: Callback<T>): JdbcResult<T> {
         val connection = getConnection()
         return JdbcResult(action, connection)
     }
 
-    fun close() = data?.close() ?: throw RuntimeException("Must connect SQL before use!")
+    override fun close() = data?.close() ?: throw RuntimeException("Must connect SQL before use!")
 
     @FunctionalInterface
-    interface Callback<T> {
-        fun run(connection: Connection): T
+    fun interface Callback<T> {
+        infix fun run(connection: Connection): T
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -92,7 +107,7 @@ class JdbcPool {
         init {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    val ret: T = action.run(connection)
+                    val ret: T = action run connection
                     connection.commit()
                     result = ret
                 } catch (e: Throwable) {
