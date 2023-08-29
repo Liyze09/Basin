@@ -1,20 +1,15 @@
-package net.liyze.basin.util;
+@file: JvmName("ContextUtils")
 
-import com.itranswarp.summer.ApplicationContext;
-import com.itranswarp.summer.BeanDefinition;
-import net.liyze.basin.core.Basin;
-import org.jetbrains.annotations.Nullable;
+package net.liyze.basin.util
 
-public class ContextUtils {
-    private ContextUtils() {
-        throw new UnsupportedOperationException();
+import com.itranswarp.summer.BeanDefinition
+import net.liyze.basin.core.Basin
+
+fun getBean(name: String?): BeanDefinition? {
+    for (context in Basin.contexts) {
+        val bean = context.findBeanDefinition(name)
+        if (bean != null) return bean
     }
-    public static @Nullable BeanDefinition getBean(String name) {
-        for (ApplicationContext context : Basin.contexts) {
-            BeanDefinition bean = context.findBeanDefinition(name);
-            if (bean != null) return bean;
-        }
-        return null;
-    }
-
+    return null
 }
+

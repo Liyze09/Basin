@@ -2,9 +2,9 @@
 
 package net.liyze.basin.jdbc
 
+import net.liyze.basin.util.createInstance
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import sun.misc.Unsafe
 import java.lang.reflect.Field
 import java.time.*
 import java.util.function.Function
@@ -52,31 +52,13 @@ class DataMapper<T>(val name: String, val pool: JdbcPool, val clazz: Class<T>) {
     }
 
     fun get(index: Long): T {
-        val instance = createInstance()
+        val instance = clazz.createInstance()
         val result = pool.query("SELECT * FROM $name WHERE id = ?", listOf(index))
         for (field in fields) {
             if (converters.containsKey(field.type)) {
                 field.set(instance, converters[field.type]?.apply(result.getString(field.name)))
             }
             field.set(instance, result.getObject(field.name, field.type))
-        }
-        return instance
-    }
-
-    private fun createInstance(): T {
-        var instance: T
-        try {
-            instance = clazz.getConstructor().newInstance()
-        } catch (_: Exception) {
-            try {
-                instance = clazz.getDeclaredConstructor().newInstance()
-            } catch (_: Exception) {
-                logger.warn("Using Unsafe to create instance!")
-                val field = Unsafe::class.java.getDeclaredField("theUnsafe")
-                field.setAccessible(true)
-                @Suppress("UNCHECKED_CAST")
-                instance = (field.get(null) as Unsafe).allocateInstance(clazz) as T
-            }
         }
         return instance
     }
