@@ -1,22 +1,18 @@
-package net.liyze.basin.core;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
+package net.liyze.basin.core
 
 /**
  * Basin Command's SPI
  */
-public interface Command {
+interface Command {
     /**
      * What to do when start the command
      *
      * @author Liyze09
      */
-    void run(@NotNull List<String> args);
+    fun run(args: List<String?>)
 
     /**
      * The Name of the command
      */
-    @NotNull String Name();
+    fun Name(): String
 }

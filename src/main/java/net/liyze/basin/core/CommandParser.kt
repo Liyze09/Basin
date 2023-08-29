@@ -1,118 +1,111 @@
-package net.liyze.basin.core;
+package net.liyze.basin.core
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
-
-import static net.liyze.basin.core.Basin.*;
+import com.google.common.base.Splitter
+import com.google.common.collect.Lists
+import org.slf4j.LoggerFactory
+import java.io.BufferedReader
+import java.io.IOException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Basin Command Parser
  */
-@SuppressWarnings("unused")
-public class CommandParser {
-
-    /**
-     * All Parser.
-     */
-    public static final List<CommandParser> cs = new ArrayList<>();
-
+@Suppress("unused")
+class CommandParser {
     /**
      * This Parser's vars.
      */
-    public final Map<String, String> vars = new ConcurrentHashMap<>();
+    @JvmField
+    val vars: MutableMap<String, String> = ConcurrentHashMap()
 
-    public CommandParser() {
-        cs.add(this);
+    init {
+        cs.add(this)
     }
 
     /**
      * Sync variables to the public environment.
      */
-    public CommandParser sync() {
-        vars.putAll(publicVars);
-        return this;
+    fun sync(): CommandParser {
+        vars.putAll(publicVars)
+        return this
     }
 
     /**
      * Parse command from String.
      */
-    public boolean parse(@NotNull String ac) {
-        if (ac.isBlank() || ac.startsWith("#")) return true;
-        LOGGER.info(ac);
-        Splitter sp = Splitter.on(" ").trimResults();
-        return parse(Lists.newArrayList(sp.split(ac)));
+    fun parse(ac: String): Boolean {
+        if (ac.isBlank() || ac.startsWith("#")) return true
+        LOGGER.info(ac)
+        val sp = Splitter.on(" ").trimResults()
+        return parse(Lists.newArrayList(sp.split(ac)))
     }
 
     /**
      * Parse command from a List.
      */
-    public boolean parse(@NotNull List<String> alc) {
-        final List<List<String>> allArgs = new ArrayList<>();
-        {
-            final List<String> areaArgs = new ArrayList<>();
-            for (String i : alc) {
+    fun parse(alc: List<String>): Boolean {
+        val allArgs: MutableList<MutableList<String?>> = ArrayList()
+        run {
+            val areaArgs: MutableList<String?> = ArrayList()
+            for (i in alc) {
                 //Multi Command Apply
-                if (i.equals("&")) {
-                    allArgs.add(areaArgs);
-                    areaArgs.clear();
-                    continue;
+                if (i == "&") {
+                    allArgs.add(areaArgs)
+                    areaArgs.clear()
+                    continue
                 }
-                AtomicReference<String> f = new AtomicReference<>(i);
-                AtomicReference<String> s = new AtomicReference<>(null);
+                val s = AtomicReference<String?>(null)
                 if (s.get() != null) {
-                    areaArgs.add(s.get());
+                    areaArgs.add(s.get())
                 } else {
-                    areaArgs.add(i);
+                    areaArgs.add(i)
                 }
             }
-            allArgs.add(areaArgs);
+            allArgs.add(areaArgs)
         }
-        for (List<String> args : allArgs) {
-            final String cmdName = args.get(0);
-            final Logger LOGGER = LoggerFactory.getLogger(cmdName);
+        for (args in allArgs) {
+            val cmdName = args[0]
+            val logger = LoggerFactory.getLogger(cmdName)
             //Var Define Apply
-            if (cmdName.matches(".*=.*")) {
-                Splitter sp = Splitter.on("=").trimResults();
-                List<String> var = Lists.newArrayList(sp.split(cmdName));
-                vars.put(var.get(0).strip(), var.get(1).strip());
-                LOGGER.info(cmdName);
-                return true;
+            if (cmdName!!.matches(".*=.*".toRegex())) {
+                val sp = Splitter.on("=").trimResults()
+                val v: List<String> = Lists.newArrayList(sp.split(cmdName))
+                vars[v[0].trim()] = v[1].trim()
+                logger.info(cmdName)
+                return true
             }
-            args.remove(cmdName);
-            final Command run = commands.get(cmdName.toLowerCase().strip());
+            args.remove(cmdName)
+            val run = commands[cmdName.lowercase(Locale.getDefault()).trim()]
             //Run command method
-            if (!(run == null)) {
+            if (run != null) {
                 try {
-                    LOGGER.debug(cmdName + " started.");
-                    run.run(args);
-                    return true;
-                } catch (IndexOutOfBoundsException e) {
-                    LOGGER.error("Bad arg input.");
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.debug("$cmdName started.")
+                    run.run(args)
+                    return true
+                } catch (e: IndexOutOfBoundsException) {
+                    logger.error("Bad arg input.")
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-            } else LOGGER.error("Unknown command: " + cmdName);
+            } else logger.error("Unknown command: $cmdName")
         }
-        return false;
+        return false
     }
 
-    public void parseScript(@NotNull BufferedReader script) throws IOException {
-        Stream<String> lines = script.lines();
-        lines.forEach(i -> {
-            if (!(i).isEmpty()) this.parse(i);
-        });
-        script.close();
+    @Throws(IOException::class)
+    fun parseScript(script: BufferedReader) {
+        val lines = script.lines()
+        lines.forEach { i: String -> if (!i.isEmpty()) this.parse(i) }
+        script.close()
+    }
+
+    companion object {
+        /**
+         * All Parser.
+         */
+        @JvmField
+        val cs: MutableList<CommandParser> = ArrayList()
     }
 }

@@ -1,16 +1,16 @@
-package net.liyze.basin.core;
+package net.liyze.basin.core
 
 /**
  * Basin AIO server SPI
  */
-public interface Server {
+interface Server {
     /**
      * Stop the server.
      */
-    void stop();
+    fun stop()
 
     /**
      * Start the server.
      */
-    Server start();
+    fun start(): Server?
 }

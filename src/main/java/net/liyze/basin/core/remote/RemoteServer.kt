@@ -1,109 +1,103 @@
-package net.liyze.basin.core.remote;
+package net.liyze.basin.core.remote
 
-import net.liyze.basin.core.CommandParser;
-import net.liyze.basin.core.Server;
-import org.jetbrains.annotations.NotNull;
-import org.smartboot.socket.MessageProcessor;
-import org.smartboot.socket.extension.protocol.ByteArrayProtocol;
-import org.smartboot.socket.transport.AioQuickServer;
-import org.smartboot.socket.transport.WriteBuffer;
+import net.liyze.basin.core.CommandParser
+import net.liyze.basin.core.Server
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.smartboot.socket.MessageProcessor
+import org.smartboot.socket.extension.protocol.ByteArrayProtocol
+import org.smartboot.socket.transport.AioQuickServer
+import org.smartboot.socket.transport.AioSession
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import javax.crypto.Cipher
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+class RemoteServer(token: String, port: Int, remoteParser: CommandParser) : Server {
+    private val token: String
+    private val port: Int
+    private val parser: CommandParser
+    var server: AioQuickServer? = null
 
-import static net.liyze.basin.core.Basin.LOGGER;
-
-public class RemoteServer implements Server {
-    public static final List<net.liyze.basin.core.Server> servers = new ArrayList<>();
-    private final String token;
-    private final int port;
-    private final CommandParser REMOTE_Parser;
-    public AioQuickServer server = null;
-
-    /**
-     * Init remote server at{@code <port>} with {@code <token>} and use {@code <remoteParser>} to parse remote command.
-     *
-     * @param token        Remote Access Token
-     * @param port         Port
-     * @param remoteParser Command parser
-     */
-    public RemoteServer(@NotNull String token, int port, CommandParser remoteParser) {
-        servers.add(this);
-        this.token = token;
-        this.port = port;
-        REMOTE_Parser = remoteParser;
+    init {
+        servers.add(this)
+        this.token = token
+        this.port = port
+        parser = remoteParser
     }
 
     /**
      * Stop remote Server
      */
-    public void stop() {
-        server.shutdown();
+    override fun stop() {
+        server!!.shutdown()
     }
 
     /**
      * Start remote server
      */
-    public RemoteServer start() {
-        MessageProcessor<byte[]> processor = (s, b) -> {
-            Cipher cipher;
-            String msg = "";
-            WriteBuffer outputStream = s.writeBuffer();
+    override fun start(): RemoteServer {
+        val processor = MessageProcessor { s: AioSession, b: ByteArray? ->
+            val cipher: Cipher
+            var msg = ""
+            val outputStream = s.writeBuffer()
             try {
-                cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                SecretKey keySpec = new SecretKeySpec(token.getBytes(StandardCharsets.UTF_8), "AES");
-                cipher.init(Cipher.DECRYPT_MODE, keySpec);
-                msg = new String(cipher.doFinal(b), StandardCharsets.UTF_8);
-            } catch (Exception e) {
+                cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+                val keySpec: SecretKey = SecretKeySpec(token.toByteArray(StandardCharsets.UTF_8), "AES")
+                cipher.init(Cipher.DECRYPT_MODE, keySpec)
+                msg = String(cipher.doFinal(b), StandardCharsets.UTF_8)
+            } catch (e: Exception) {
                 try {
-                    outputStream.write("Illegal BRC Request.".getBytes(StandardCharsets.UTF_8));
-                } catch (IOException ex) {
-                    LOGGER.error(ex.toString());
+                    outputStream.write("Illegal BRC Request.".toByteArray(StandardCharsets.UTF_8))
+                } catch (ex: IOException) {
+                    LOGGER.error(ex.toString())
                 }
-                LOGGER.warn(e.toString());
+                LOGGER.warn(e.toString())
             }
             if (!msg.startsWith("brc:")) {
                 try {
-                    byte[] bytes = "Illegal BRC Request.".getBytes(StandardCharsets.UTF_8);
-                    LOGGER.warn("Illegal BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
-                    outputStream.writeInt(bytes.length);
-                    outputStream.write(bytes);
-                } catch (IOException e) {
-                    LOGGER.warn("Illegal BRC Request: {}", msg);
+                    val bytes = "Illegal BRC Request.".toByteArray(StandardCharsets.UTF_8)
+                    LOGGER.warn("Illegal BRC Request: {} from {}", msg, s.remoteAddress.toString())
+                    outputStream.writeInt(bytes.size)
+                    outputStream.write(bytes)
+                } catch (e: IOException) {
+                    LOGGER.warn("Illegal BRC Request: {}", msg)
                 }
-                return;
+                return@MessageProcessor
             }
-            if (!REMOTE_Parser.sync().parse(msg.substring(4))) {
+            if (!parser.sync().parse(msg.substring(4))) {
                 try {
-                    byte[] bytes = "Failed to run the command.".getBytes(StandardCharsets.UTF_8);
-                    outputStream.writeInt(bytes.length);
-                    outputStream.write(bytes);
-                } catch (IOException ex) {
-                    LOGGER.error(ex.toString());
+                    val bytes = "Failed to run the command.".toByteArray(StandardCharsets.UTF_8)
+                    outputStream.writeInt(bytes.size)
+                    outputStream.write(bytes)
+                } catch (ex: IOException) {
+                    LOGGER.error(ex.toString())
                 }
             } else {
                 try {
-                    byte[] bytes = "Okay".getBytes(StandardCharsets.UTF_8);
-                    outputStream.writeInt(bytes.length);
-                    outputStream.write(bytes);
-                    LOGGER.info("BRC Request: {} from {}", msg, s.getRemoteAddress().toString());
-                } catch (IOException e) {
-                    LOGGER.warn(e.toString());
+                    val bytes = "Okay".toByteArray(StandardCharsets.UTF_8)
+                    outputStream.writeInt(bytes.size)
+                    outputStream.write(bytes)
+                    LOGGER.info("BRC Request: {} from {}", msg, s.remoteAddress.toString())
+                } catch (e: IOException) {
+                    LOGGER.warn(e.toString())
                 }
             }
-        };
-        server = new AioQuickServer(port, new ByteArrayProtocol(), processor);
-        server.setLowMemory(true);
-        try {
-            server.start();
-        } catch (IOException e) {
-            LOGGER.error("Failed to start server {}", e.toString());
         }
-        return this;
+        server = AioQuickServer(port, ByteArrayProtocol(), processor)
+        server!!.setLowMemory(true)
+        try {
+            server!!.start()
+        } catch (e: IOException) {
+            LOGGER.error("Failed to start server {}", e.toString())
+        }
+        return this
+    }
+
+    companion object {
+        @JvmField
+        val servers: MutableList<Server> = ArrayList()
+        val LOGGER: Logger = LoggerFactory.getLogger(RemoteServer::class.java)
     }
 }

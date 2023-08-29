@@ -1,24 +1,21 @@
-package net.liyze.basin.core;
+package net.liyze.basin.core
 
 /**
  * Basin's Plugin/Boot SPI
  */
-public interface BasinBoot {
+interface BasinBoot {
     /**
      * Runs on basin loading app jar
      */
-    default void onStart() {
-    }
+    fun onStart() {}
 
     /**
      * Runs after basin starting
      */
-    default void afterStart() {
-    }
+    fun afterStart() {}
 
     /**
      * Runs before basin stopping
      */
-    default void beforeStop() {
-    }
+    fun beforeStop() {}
 }

@@ -1,61 +1,80 @@
-package net.liyze.basin.core;
+@file:JvmName("Basin")
+@file:Suppress("unused")
 
-import com.google.common.base.Splitter;
-import com.itranswarp.summer.AnnotationConfigApplicationContext;
-import com.itranswarp.summer.ApplicationContext;
-import com.itranswarp.summer.annotation.ComponentScan;
-import com.moandjiezana.toml.Toml;
-import net.liyze.basin.core.remote.RemoteServer;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package net.liyze.basin.core
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.jar.JarFile;
-
-import static net.liyze.basin.core.CommandParser.cs;
-import static net.liyze.basin.core.remote.RemoteServer.servers;
-import static net.liyze.basin.core.scan.ServerCommand.serverMap;
+import com.google.common.base.Splitter
+import com.itranswarp.summer.AnnotationConfigApplicationContext
+import com.itranswarp.summer.ApplicationContext
+import com.itranswarp.summer.BeanDefinition
+import com.itranswarp.summer.annotation.ComponentScan
+import com.moandjiezana.toml.Toml
+import net.liyze.basin.core.Config.Companion.initConfig
+import net.liyze.basin.core.remote.RemoteServer
+import net.liyze.basin.core.scan.ServerCommand
+import org.jetbrains.annotations.Contract
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
+import java.util.jar.JarFile
+import kotlin.system.exitProcess
 
 /**
  * Basin start class
  */
-@ComponentScan(value = {"net.liyze.basin.core.scan", "net.liyze.basin.rpc"})
-public final class Basin {
-    public static final Logger LOGGER = LoggerFactory.getLogger("Basin");
-    public static final HashMap<String, Command> commands = new HashMap<>();
-    public static final File userHome = new File("data" + File.separator + "home");
-    public final static File config = new File("data" + File.separator + "cfg.json");
-    public static final File script = new File("data" + File.separator + "script");
-    public final static List<Class<?>> BootClasses = new ArrayList<>();
-    public static final CommandParser CONSOLE_COMMAND_PARSER = new CommandParser();
-    public static final Map<String, String> publicVars = new ConcurrentHashMap<>();
-    public static final List<ApplicationContext> contexts = new ArrayList<>();
-    static final File jars = new File("data" + File.separator + "jars");
-    public static Toml env = new Toml();
-    public static ExecutorService servicePool = Executors.newCachedThreadPool();
-    public static ExecutorService taskPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-    public static Map<String, Object> envMap = new HashMap<>();
-    public static Config cfg = Config.initConfig();
-    public static ApplicationContext app;
+@ComponentScan(value = ["net.liyze.basin.core.scan", "net.liyze.basin.rpc"])
+class BasinApplication private constructor()
 
-    private static String command;
-    /**
-     * Basin's ASCII banner
-     */
-    @SuppressWarnings("SpellCheckingInspection")
-    public static String banner = String.format(
-            """
-                    \r
+@JvmField
+val LOGGER: Logger = LoggerFactory.getLogger("Basin")
+
+@JvmField
+val commands = HashMap<String, Command?>()
+
+@JvmField
+val userHome = File("data" + File.separator + "home")
+val config = File("data" + File.separator + "cfg.json")
+val script = File("data" + File.separator + "script")
+val BootClasses: MutableList<Class<*>> = ArrayList()
+val CONSOLE_COMMAND_PARSER = CommandParser()
+
+@JvmField
+val publicVars: MutableMap<String, String> = ConcurrentHashMap()
+
+@JvmField
+val contexts: List<ApplicationContext> = ArrayList()
+val jars = File("data" + File.separator + "jars")
+var env = Toml()
+
+@JvmField
+var servicePool: ExecutorService = Executors.newCachedThreadPool()
+var taskPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1)
+
+@JvmField
+var envMap: MutableMap<String, Any> = HashMap()
+
+@JvmField
+var cfg = initConfig()
+
+@JvmField
+var app: ApplicationContext? = null
+private var command: String? = null
+
+/**
+ * Basin's ASCII banner
+ */
+@Suppress("SpellCheckingInspection")
+var banner = String.format(
+    """
+                    ${'\r'}
                     BBBBBBBBBBBBBBBBB                                         iiii
                     B::::::::::::::::B                                       i::::i
                     B::::::BBBBBB:::::B                                       iiii
@@ -73,245 +92,242 @@ public final class Basin {
                     B::::::::::::::::B   a::::::::::aa:::a  s:::::::::::ss   i::::::i  n::::n    n::::n
                     BBBBBBBBBBBBBBBBB     aaaaaaaaaa  aaaa   sssssssssss     iiiiiiii  nnnnnn    nnnnnn
                     :: Basin :: (%s)
-                    """, getVersion());
+                    
+                    """.trimIndent(), version
+)
 
-    private Basin() {
-        throw new UnsupportedOperationException();
-    }
+fun main() {
+    start()
+}
 
-    public static void main(String @NotNull [] args) {
-        start();
-    }
-
-    @SuppressWarnings({"ResultOfMethodCallIgnored"})
-    public static void start() {
-        LOGGER.info("----------------------------------------------\nBasin started.");
-        taskPool.submit(new Thread(() -> {
-            try {
-                userHome.mkdirs();
-                script.mkdirs();
-                jars.mkdirs();
-                loadEnv();
-                envMap.forEach((key, value) -> publicVars.put(key, value.toString()));
-                LOGGER.info("Init method are finished.");
-                if (cfg.doLoadJars) {
-                    loadJars();
-                    LOGGER.info("Loader's method are finished.");
-                    BootClasses.forEach((i) -> servicePool.submit(new Thread(() -> {
-                        try {
-                            BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
-                            in.afterStart();
-                        } catch (Exception e) {
-                            LOGGER.error(e.getMessage());
-                        }
-                    })));
-                    LOGGER.info("Startup method are finished.");
-                    app = new AnnotationConfigApplicationContext(Basin.class);
-                    app.findBeanDefinitions(Command.class).forEach(def -> registerCommand((Command) def.getInstance()));
-
-                    if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
-                    if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
-                        try {
-                            new RemoteServer(cfg.accessToken, cfg.remotePort, new CommandParser()).start();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }));
+fun start() {
+    LOGGER.info("----------------------------------------------\nBasin started.")
+    taskPool.submit(Thread {
         try {
-            new Thread(() -> {
-                try (Scanner scanner = new Scanner(System.in)) {
-                    while (true) {
-                        command = scanner.nextLine();
-                        if (cfg.enableParallel) {
-                            taskPool.submit(new Thread(() -> {
-                                try {
-                                    CONSOLE_COMMAND_PARSER.sync().parse(command);
-                                } catch (Exception e) {
-                                    LOGGER.error(e.toString());
-                                }
-                            }));
-                        } else {
+            userHome.mkdirs()
+            script.mkdirs()
+            jars.mkdirs()
+            loadEnv()
+            envMap.forEach { (key: String, value: Any) -> publicVars[key] = value.toString() }
+            LOGGER.info("Init method are finished.")
+            if (cfg.doLoadJars) {
+                loadJars()
+                LOGGER.info("Loader's method are finished.")
+                BootClasses.forEach(Consumer { i: Class<*> ->
+                    servicePool.submit(Thread {
+                        try {
+                            val `in` = i.getDeclaredConstructor().newInstance() as BasinBoot
+                            `in`.afterStart()
+                        } catch (e: Exception) {
+                            LOGGER.error(e.message)
+                        }
+                    })
+                })
+                LOGGER.info("Startup method are finished.")
+                app = AnnotationConfigApplicationContext(BasinApplication::class.java)
+                (app as AnnotationConfigApplicationContext).findBeanDefinitions(Command::class.java)
+                    .forEach(Consumer { def: BeanDefinition -> registerCommand(def.instance as Command) })
+                if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand)
+                if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
+                    try {
+                        RemoteServer(cfg.accessToken, cfg.remotePort, CommandParser()).start()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    })
+    try {
+        Thread {
+            Scanner(System.`in`).use { scanner ->
+                while (true) {
+                    command = scanner.nextLine()
+                    if (cfg.enableParallel) {
+                        taskPool.submit(Thread {
                             try {
-                                CONSOLE_COMMAND_PARSER.sync().parse(command);
-                            } catch (Exception e) {
-                                LOGGER.error(e.toString());
+                                CONSOLE_COMMAND_PARSER.sync().parse(command!!)
+                            } catch (e: Exception) {
+                                LOGGER.error(e.toString())
                             }
-                        }
-                    }
-                }
-            }).start();
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
-        System.out.println(banner);
-    }
-
-    @SuppressWarnings({"ResultOfMethodCallIgnored"})
-    public static void loadEnv() throws IOException {
-        File envFile = new File("data" + File.separator + "env.toml");
-        if (!envFile.exists()) {
-            try {
-                envFile.createNewFile();
-            } catch (IOException e) {
-                LOGGER.error("Error when create environment variable file: ", e);
-            }
-            try (Writer writer = new FileWriter(envFile)) {
-                writer.write("# Basin Environment Variables");
-            }
-        }
-        envMap.putAll(env.read(envFile).toMap());
-        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
-    }
-
-
-    public static void loadJars() throws Exception {
-        File[] children = jars.listFiles((file, s) -> s.matches(".*\\.jar"));
-        String b, c;
-        Iterable<String> bl, cl;
-        if (children == null) {
-            LOGGER.error("Jars file isn't exist!");
-        } else {
-            for (File jar : children) {
-                try (JarFile jarFile = new JarFile(jar)) {
-                    b = jarFile.getManifest().getMainAttributes().getValue("Boot-Class");
-                    Splitter sp = Splitter.on(" ").trimResults();
-                    bl = sp.split(b);
-                    c = jarFile.getManifest().getMainAttributes().getValue("Export-Command");
-                    cl = sp.split(c);
-                    for (String i : bl) {
-                        if (!b.isBlank()) {
-                            Class<?> cls = Class.forName(i);
-                            Object boot = cls.getDeclaredConstructor().newInstance();
-                            if (boot instanceof BasinBoot) {
-                                new Thread(() -> ((BasinBoot) boot).onStart()).start();
-                                BootClasses.add(cls);
-                            } else {
-                                LOGGER.warn("App-BootClass {} is unsupported", jar.getName());
-                            }
-                        }
-                    }
-                    for (String i : cl) {
-                        if (!c.isBlank()) {
-                            Class<?> cls = Class.forName(i);
-                            Object command = cls.getDeclaredConstructor().newInstance();
-                            if (command instanceof Command) {
-                                registerCommand((Command) command);
-                            } else {
-                                LOGGER.warn("Command-Class {} is unsupported", jar.getName());
-                            }
+                        })
+                    } else {
+                        try {
+                            CONSOLE_COMMAND_PARSER.sync().parse(command!!)
+                        } catch (e: Exception) {
+                            LOGGER.error(e.toString())
                         }
                     }
                 }
             }
+        }.start()
+    } catch (throwable: Throwable) {
+        throwable.printStackTrace()
+    }
+    println(banner)
+}
+
+@Throws(IOException::class)
+fun loadEnv() {
+    val envFile = File("data" + File.separator + "env.toml")
+    if (!envFile.exists()) {
+        try {
+            envFile.createNewFile()
+        } catch (e: IOException) {
+            LOGGER.error("Error when create environment variable file: ", e)
+        }
+        FileWriter(envFile).use { writer -> writer.write("# Basin Environment Variables") }
+    }
+    envMap.putAll(env.read(envFile).toMap())
+    taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
+}
+
+@Throws(Exception::class)
+fun loadJars() {
+    val children = jars.listFiles { _: File?, s: String -> s.matches(".*\\.jar".toRegex()) }
+    var b: String
+    var c: String
+    var bl: Iterable<String?>
+    var cl: Iterable<String?>
+    if (children == null) {
+        LOGGER.error("Jars file isn't exist!")
+    } else {
+        for (jar in children) {
+            JarFile(jar).use { jarFile ->
+                b = jarFile.manifest.mainAttributes.getValue("Boot-Class")
+                val sp = Splitter.on(" ").trimResults()
+                bl = sp.split(b)
+                c = jarFile.manifest.mainAttributes.getValue("Export-Command")
+                cl = sp.split(c)
+                for (i in bl) {
+                    if (b.isNotBlank()) {
+                        val cls = Class.forName(i)
+                        val boot = cls.getDeclaredConstructor().newInstance()
+                        if (boot is BasinBoot) {
+                            Thread { boot.onStart() }.start()
+                            BootClasses.add(cls)
+                        } else {
+                            LOGGER.warn("App-BootClass {} is unsupported", jar.getName())
+                        }
+                    }
+                }
+                for (i in cl) {
+                    if (c.isNotBlank()) {
+                        val cls = Class.forName(i)
+                        val command = cls.getDeclaredConstructor().newInstance()
+                        if (command is Command) {
+                            registerCommand(command)
+                        } else {
+                            LOGGER.warn("Command-Class {} is unsupported", jar.getName())
+                        }
+                    }
+                }
+            }
         }
     }
+}
 
-    public static void registerCommand(Command cmd) {
-        commands.put(cmd.Name(), cmd);
-    }
+fun registerCommand(cmd: Command) {
+    commands[cmd.Name()] = cmd
+}
 
+@get:Contract(pure = true)
+val version: String
     /**
      * Get version version's String.
      */
-    @Contract(pure = true)
-    public static @NotNull String getVersion() {
-        return "1.6";
-    }
-
+    get() = "1.6"
+val versionNum: Int
     /**
      * Get version version's int.
      */
-    public static int getVersionNum() {
-        return 6;
-    }
+    get() = 6
 
-    /**
-     * Stop basin after all task finished.
-     */
-    public static void shutdown() {
-        new Thread(() -> {
-            Basin.LOGGER.info("Stopping\n");
-            BootClasses.forEach((i) -> {
-                try {
-                    ((BasinBoot) i.getDeclaredConstructor().newInstance()).beforeStop();
-                } catch (Exception ignored) {
-                }
-            });
-            taskPool.shutdown();
-            servicePool.shutdownNow();
-            try {
-                taskPool.awaitTermination(4, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                System.exit(0);
-            }
-            System.exit(0);
-        }).start();
-    }
+/**
+ * Stop basin after all task finished.
+ */
 
-    /**
-     * Restart basin.
-     */
-    public static void restart() {
-        new Thread(() -> {
-            BootClasses.forEach((i) -> {
+fun shutdown() {
+    Thread {
+        LOGGER.info("Stopping\n")
+        BootClasses.forEach(Consumer { i: Class<*> ->
+            try {
+                (i.getDeclaredConstructor().newInstance() as BasinBoot).beforeStop()
+            } catch (ignored: Exception) {
+            }
+        })
+        taskPool.shutdown()
+        servicePool.shutdownNow()
+        try {
+            taskPool.awaitTermination(4, TimeUnit.SECONDS)
+        } catch (e: InterruptedException) {
+            exitProcess(0)
+        }
+        exitProcess(0)
+    }.start()
+}
+
+/**
+ * Restart basin.
+ */
+fun restart() {
+    Thread {
+        BootClasses.forEach(Consumer { i: Class<*> ->
+            try {
+                val `in` = i.getDeclaredConstructor().newInstance() as BasinBoot
+                `in`.beforeStop()
+            } catch (e: Exception) {
+                LOGGER.error(e.toString())
+            }
+        })
+        CommandParser.cs.forEach(Consumer { c: CommandParser -> c.vars.clear() })
+        taskPool.shutdownNow()
+        servicePool.shutdownNow()
+        RemoteServer.servers.forEach(Consumer { obj: Server -> obj.stop() })
+        RemoteServer.servers.clear()
+        ServerCommand.serverMap.values.forEach(Consumer { obj: Server -> obj.stop() })
+        ServerCommand.serverMap.clear()
+        commands.clear()
+        BootClasses.clear()
+        publicVars.clear()
+        try {
+            taskPool.awaitTermination(3, TimeUnit.SECONDS)
+        } catch (ignore: InterruptedException) {
+        }
+        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
+        servicePool = Executors.newCachedThreadPool()
+        app!!.close()
+        app = AnnotationConfigApplicationContext(BasinApplication::class.java)
+        (app as AnnotationConfigApplicationContext).findBeanDefinitions(Command::class.java)
+            .forEach(Consumer { def: BeanDefinition -> registerCommand(def.instance as Command) })
+        try {
+            loadEnv()
+        } catch (e: Exception) {
+            LOGGER.error(e.toString())
+        }
+        try {
+            loadJars()
+            BootClasses.forEach(Consumer { i: Class<*> ->
                 try {
-                    BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
-                    in.beforeStop();
-                } catch (Exception e) {
-                    LOGGER.error(e.toString());
+                    val `in` = i.getDeclaredConstructor().newInstance() as BasinBoot
+                    `in`.afterStart()
+                } catch (e: Exception) {
+                    LOGGER.error(e.toString())
                 }
-            });
-            cs.forEach(c -> c.vars.clear());
-            taskPool.shutdownNow();
-            servicePool.shutdownNow();
-            servers.forEach(Server::stop);
-            servers.clear();
-            serverMap.values().forEach(Server::stop);
-            serverMap.clear();
-            commands.clear();
-            BootClasses.clear();
-            publicVars.clear();
+            })
+        } catch (e: Exception) {
+            LOGGER.error(e.toString())
+        }
+        if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand)
+        if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
             try {
-                taskPool.awaitTermination(3, TimeUnit.SECONDS);
-            } catch (InterruptedException ignore) {
+                RemoteServer(cfg.accessToken, cfg.remotePort, CommandParser()).start()
+            } catch (e: Exception) {
+                LOGGER.error(e.toString())
             }
-            taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize);
-            servicePool = Executors.newCachedThreadPool();
-            app.close();
-            app = new AnnotationConfigApplicationContext(Basin.class);
-            app.findBeanDefinitions(Command.class).forEach(def -> registerCommand((Command) def.getInstance()));
-            try {
-                loadEnv();
-            } catch (Exception e) {
-                LOGGER.error(e.toString());
-            }
-            try {
-                loadJars();
-                BootClasses.forEach((i) -> {
-                    try {
-                        BasinBoot in = (BasinBoot) i.getDeclaredConstructor().newInstance();
-                        in.afterStart();
-                    } catch (Exception e) {
-                        LOGGER.error(e.toString());
-                    }
-                });
-            } catch (Exception e) {
-                LOGGER.error(e.toString());
-            }
-            if (!cfg.startCommand.isBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand);
-            if (cfg.enableRemote && !cfg.accessToken.isBlank()) {
-                try {
-                    new RemoteServer(cfg.accessToken, cfg.remotePort, new CommandParser()).start();
-                } catch (Exception e) {
-                    LOGGER.error(e.toString());
-                }
-            }
-            LOGGER.info("Restarted!");
-        }).start();
-    }
+        }
+        LOGGER.info("Restarted!")
+    }.start()
 }

@@ -1,51 +1,66 @@
-package net.liyze.basin.core;
+package net.liyze.basin.core
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.util.UUID;
-
-import static net.liyze.basin.core.Basin.*;
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import java.io.IOException
+import java.nio.file.Files
+import java.util.*
 
 /**
  * Basin Config Bean
  */
-public final class Config {
-    public int taskPoolSize = Runtime.getRuntime().availableProcessors() + 1;
-    public boolean doLoadJars = true;
-    public String startCommand = "";
-    public boolean enableRemote = false;
-    public boolean enableShellCommand = false;
-    public String accessToken = "";
-    public int remotePort = 32768;
-    public boolean enableParallel = true;
+class Config {
+    @JvmField
+    var taskPoolSize = Runtime.getRuntime().availableProcessors() + 1
 
-    /**
-     * Load the config {@code cfg.json}
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    static Config initConfig() {
-        Config cfg = new Config();
-        if (!config.exists()) {
-            try (Writer writer = Files.newBufferedWriter(config.toPath())) {
-                config.createNewFile();
-                var config = new Config();
-                config.accessToken = UUID.randomUUID().toString().replace("-", "");
-                (new GsonBuilder().setPrettyPrinting().create()).toJson(config, writer);
-                writer.flush();
-            } catch (Exception e) {
-                LOGGER.info("Error on loading config {}", e.toString());
+    @JvmField
+    var doLoadJars = true
+
+    @JvmField
+    var startCommand = ""
+
+    @JvmField
+    var enableRemote = false
+
+    @JvmField
+    var enableShellCommand = false
+
+    @JvmField
+    var accessToken = ""
+
+    @JvmField
+    var remotePort = 32768
+
+    @JvmField
+    var enableParallel = true
+
+    companion object {
+        /**
+         * Load the config `cfg.json`
+         */
+        @JvmStatic
+        fun initConfig(): Config {
+            var cfg = Config()
+            if (!config.exists()) {
+                try {
+                    Files.newBufferedWriter(config.toPath()).use { writer ->
+                        config.createNewFile()
+                        val config = Config()
+                        config.accessToken = UUID.randomUUID().toString().replace("-", "")
+                        GsonBuilder().setPrettyPrinting().create().toJson(config, writer)
+                        writer.flush()
+                    }
+                } catch (e: Exception) {
+                    LOGGER.info("Error on loading config {}", e.toString())
+                }
             }
+            try {
+                Files.newBufferedReader(config.toPath())
+                    .use { reader -> cfg = Gson().fromJson(reader, Config::class.java) }
+            } catch (e: IOException) {
+                LOGGER.info("Error on loading config {}", e.toString())
+            }
+            return cfg
         }
-        try (Reader reader = Files.newBufferedReader(config.toPath())) {
-            cfg = new Gson().fromJson(reader, Config.class);
-        } catch (IOException e) {
-            LOGGER.info("Error on loading config {}", e.toString());
-        }
-        return cfg;
     }
 }

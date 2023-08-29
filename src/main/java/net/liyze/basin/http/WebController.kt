@@ -1,4 +1,3 @@
-package net.liyze.basin.http;
+package net.liyze.basin.http
 
-public interface WebController {
-}
+interface WebController

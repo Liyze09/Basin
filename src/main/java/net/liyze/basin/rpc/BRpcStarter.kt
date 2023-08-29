@@ -1,17 +1,12 @@
-package net.liyze.basin.rpc;
+@file: JvmName("BRpcStarter")
 
-import net.liyze.basin.core.Server;
+package net.liyze.basin.rpc
 
-public class BRpcStarter {
-    private BRpcStarter() {
-        throw new UnsupportedOperationException();
-    }
+import net.liyze.basin.core.Server
 
-    private static Server server = null;
-
-    public static void startRpcServer(int port) {
-        if (server == null) {
-            server = new RpcServer(port).start();
-        }
+private var server: Server? = null
+fun startRpcServer(port: Int) {
+    if (server == null) {
+        server = RpcServer(port).start()
     }
 }

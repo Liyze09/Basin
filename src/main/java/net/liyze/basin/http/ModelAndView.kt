@@ -1,5 +1,4 @@
-package net.liyze.basin.http;
+package net.liyze.basin.http
 
-public record ModelAndView(Object model, String view) {
-}
-
+@JvmRecord
+data class ModelAndView(val model: Any, @JvmField val view: String)

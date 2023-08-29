@@ -1,202 +1,210 @@
-package net.liyze.basin.http;
+package net.liyze.basin.http
 
-import com.google.gson.Gson;
-import net.liyze.basin.core.Basin;
-import net.liyze.basin.core.Server;
-import net.liyze.basin.http.annotation.Control;
-import net.liyze.basin.http.annotation.GetMapping;
-import net.liyze.basin.http.annotation.PostMapping;
-import org.beetl.core.Configuration;
-import org.beetl.core.GroupTemplate;
-import org.beetl.core.ResourceLoader;
-import org.beetl.core.Template;
-import org.beetl.core.resource.ClasspathResourceLoader;
-import org.beetl.core.resource.FileResourceLoader;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.smartboot.http.common.enums.HttpStatus;
-import org.smartboot.http.server.HttpBootstrap;
-import org.smartboot.http.server.HttpRequest;
-import org.smartboot.http.server.HttpResponse;
-import org.smartboot.http.server.HttpServerHandler;
+import com.google.gson.Gson
+import com.itranswarp.summer.ApplicationContext
+import net.liyze.basin.core.Server
+import net.liyze.basin.core.contexts
+import net.liyze.basin.http.annotation.Control
+import net.liyze.basin.http.annotation.GetMapping
+import net.liyze.basin.http.annotation.PostMapping
+import org.beetl.core.Configuration
+import org.beetl.core.GroupTemplate
+import org.beetl.core.ResourceLoader
+import org.beetl.core.Template
+import org.beetl.core.resource.ClasspathResourceLoader
+import org.beetl.core.resource.FileResourceLoader
+import org.smartboot.http.common.enums.HttpStatus
+import org.smartboot.http.server.HttpBootstrap
+import org.smartboot.http.server.HttpRequest
+import org.smartboot.http.server.HttpResponse
+import org.smartboot.http.server.HttpServerHandler
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
+import java.nio.file.Path
+import java.util.*
+import java.util.function.Consumer
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+class HttpServer(val serverName: String, val port: Int) : Server {
+    val cfg: Configuration = Configuration.defaultConfiguration()
+    private val cgt: GroupTemplate
+    private val fgt: GroupTemplate
+    private val bootstrap = HttpBootstrap()
+    val root: File = File("data/web/$serverName/root".replace('/', File.separatorChar))
+    var getMappings: MutableMap<String, GetDispatcher> = HashMap()
+    var postMappings: MutableMap<String, PostDispatcher> = HashMap()
+    var gson = Gson()
 
-public final class HttpServer implements Server {
-    public final Configuration cfg = Configuration.defaultConfiguration();
-    private final GroupTemplate cgt;
-    private final GroupTemplate fgt;
-    private final HttpBootstrap bootstrap = new HttpBootstrap();
-    public final int port;
-    public final String serverName;
-    public final File root;
-    public Map<String, GetDispatcher> getMappings = new HashMap<>();
-    public Map<String, PostDispatcher> postMappings = new HashMap<>();
-    public Gson gson = new Gson();
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public HttpServer(String name, int port) throws IOException {
-        this.port = port;
-        this.serverName = name;
-        root = new File(("data/web/" + serverName + "/root").replace('/', File.separatorChar));
-        root.mkdirs();
-        var temp = Path.of(root.getPath()).resolve("template").toFile();
-        temp.mkdirs();
-        Basin.contexts.forEach(context -> context.getBeans(WebController.class)
-                .forEach(bean -> {
-                    Control annotation0 = bean.getClass().getAnnotation(Control.class);
-                    if (annotation0 != null && annotation0.serverName().equals(serverName)) {
-                        Arrays.stream(bean.getClass().getMethods())
-                        .forEach(method -> {
-                            GetMapping annotation = method.getAnnotation(GetMapping.class);
-                            if (annotation != null) {
-                                getMappings.put(annotation.path(), new GetDispatcher(bean, method, method.getParameterTypes()));
-                            }
-                            PostMapping annotation1 = method.getAnnotation(PostMapping.class);
-                            if (annotation1 != null) {
-                                postMappings.put(annotation1.path(), new PostDispatcher(bean, method, method.getParameterTypes(), gson));
-                            }
-                        });
-                    }
-                })
-        );
-        cfg.setDirectByteOutput(true);
-        ResourceLoader<String> fileLoader = new FileResourceLoader(
-                "data" + File.separator + "web" + File.separator + serverName + "template");
-        ResourceLoader<String> classpathLoader = new ClasspathResourceLoader("static/" + serverName + "template");
-        cgt = new GroupTemplate(classpathLoader, cfg);
-        fgt = new GroupTemplate(fileLoader, cfg);
+    init {
+        root.mkdirs()
+        val temp = Path.of(root.path).resolve("template").toFile()
+        temp.mkdirs()
+        contexts.forEach(
+            Consumer { context: ApplicationContext ->
+                context.getBeans(
+                    WebController::class.java
+                )
+                    .forEach(Consumer { bean: WebController ->
+                        val annotation0 = bean.javaClass.getAnnotation(
+                            Control::class.java
+                        )
+                        if (annotation0 != null && annotation0.serverName == serverName) {
+                            Arrays.stream(bean.javaClass.getMethods())
+                                .forEach { method: Method ->
+                                    val annotation = method.getAnnotation(
+                                        GetMapping::class.java
+                                    )
+                                    if (annotation != null) {
+                                        getMappings[annotation.path] =
+                                            GetDispatcher(bean, method, method.parameterTypes)
+                                    }
+                                    val annotation1 = method.getAnnotation(PostMapping::class.java)
+                                    if (annotation1 != null) {
+                                        postMappings[annotation1.path] =
+                                            PostDispatcher(bean, method, method.parameterTypes, gson)
+                                    }
+                                }
+                        }
+                    })
+            }
+        )
+        cfg.isDirectByteOutput = true
+        val fileLoader: ResourceLoader<String> = FileResourceLoader(
+            "data" + File.separator + "web" + File.separator + serverName + "template"
+        )
+        val classpathLoader: ResourceLoader<String> = ClasspathResourceLoader("static/" + serverName + "template")
+        cgt = GroupTemplate(classpathLoader, cfg)
+        fgt = GroupTemplate(fileLoader, cfg)
     }
 
-    @Override
-    public void stop() {
-        bootstrap.shutdown();
+    override fun stop() {
+        bootstrap.shutdown()
     }
 
-    @Override
-    public @NotNull Server start() {
-        bootstrap.configuration().serverName(serverName);
-        bootstrap.httpHandler(new HttpServerHandler() {
-            @Override
-            public void handle(HttpRequest request, HttpResponse response) throws IOException {
+    override fun start(): Server {
+        bootstrap.configuration().serverName(serverName)
+        bootstrap.httpHandler(object : HttpServerHandler() {
+            @Throws(IOException::class)
+            override fun handle(request: HttpRequest, response: HttpResponse) {
                 try {
-                    if (request.getMethod().equalsIgnoreCase("get")) {
-                        getDispatch(request, response);
-                    } else if (request.getMethod().equalsIgnoreCase("post")) {
-                        postDispatch(request, response);
+                    if (request.method.equals("get", ignoreCase = true)) {
+                        getDispatch(request, response)
+                    } else if (request.method.equals("post", ignoreCase = true)) {
+                        postDispatch(request, response)
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                    getFileResource("/500.html", response);
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    getFileResource("/500.html", response)
                 }
             }
-        }).setPort(port).start();
-        return this;
+        }).setPort(port).start()
+        return this
     }
 
-    private void getDispatch(@NotNull HttpRequest request, HttpResponse response) throws InvocationTargetException, IllegalAccessException, IOException {
-        if (request.getRequestURI().startsWith("/favicon.ico") || request.getRequestURI().startsWith("/static")) {
-            staticResource(request, response);
-            return;
+    @Throws(InvocationTargetException::class, IllegalAccessException::class, IOException::class)
+    private fun getDispatch(request: HttpRequest, response: HttpResponse) {
+        if (request.requestURI.startsWith("/favicon.ico") || request.requestURI.startsWith("/static")) {
+            staticResource(request, response)
+            return
         }
-        GetDispatcher dispatcher = getGetDispatcher(request.getRequestURI());
+        val dispatcher = getGetDispatcher(request.requestURI)
         if (dispatcher == null) {
-            staticResource(request, response);
-            return;
+            staticResource(request, response)
+            return
         }
-        ModelAndView view = dispatcher.invoke(request, response);
+        val view = dispatcher.invoke(request, response)
         if (view != null) {
-            if (view.view().startsWith("redirect:")) {
-                response.setHeader("Location", view.view().substring(9).strip());
-                if (response.getHttpStatus() == 200) {
-                    response.setHttpStatus(HttpStatus.TEMPORARY_REDIRECT);
+            if (view.view.startsWith("redirect:")) {
+                response.setHeader("Location", view.view.substring(9).trim())
+                if (response.httpStatus == 200) {
+                    response.setHttpStatus(HttpStatus.TEMPORARY_REDIRECT)
                 }
             }
-            render(view, response);
+            render(view, response)
         }
     }
 
-    private void render(@NotNull ModelAndView view, @NotNull HttpResponse response) {
-        String temp = view.view();
-        Template template;
-        if (temp.startsWith("classpath:")) {
-            template = cgt.getTemplate(view.view());
+    private fun render(view: ModelAndView, response: HttpResponse) {
+        val temp = view.view
+        val template: Template = if (temp.startsWith("classpath:")) {
+            cgt.getTemplate(view.view)
         } else if (temp.startsWith("file:")) {
-            template = fgt.getTemplate(view.view());
+            fgt.getTemplate(view.view)
         } else {
-            throw new RuntimeException("Illegal view path: " + view.view());
+            throw RuntimeException("Illegal view path: " + view.view)
         }
-        template.renderTo(response.getOutputStream());
+        template.renderTo(response.outputStream)
     }
 
-    private void postDispatch(@NotNull HttpRequest request, HttpResponse response) throws InvocationTargetException, IllegalAccessException, IOException {
-        PostDispatcher dispatcher = getPostDispatcher(request.getRequestURI());
+    @Throws(InvocationTargetException::class, IllegalAccessException::class, IOException::class)
+    private fun postDispatch(request: HttpRequest, response: HttpResponse) {
+        val dispatcher = getPostDispatcher(request.requestURI)
         if (dispatcher == null) {
-            response.setHttpStatus(HttpStatus.NOT_FOUND);
-            getFileResource("/404.html", response);
-            return;
+            response.setHttpStatus(HttpStatus.NOT_FOUND)
+            getFileResource("/404.html", response)
+            return
         }
-        ModelAndView view = dispatcher.invoke(request, response);
+        val view = dispatcher.invoke(request, response)
         if (view != null) {
-            if (view.view().startsWith("redirect:")) {
-                response.setHeader("Location", view.view().substring(9).strip());
-                if (response.getHttpStatus() == 200) {
-                    response.setHttpStatus(HttpStatus.TEMPORARY_REDIRECT);
+            if (view.view.startsWith("redirect:")) {
+                response.setHeader("Location", view.view.substring(9).trim())
+                if (response.httpStatus == 200) {
+                    response.setHttpStatus(HttpStatus.TEMPORARY_REDIRECT)
                 }
             }
-            render(view, response);
+            render(view, response)
         }
     }
 
-    private @Nullable GetDispatcher getGetDispatcher(String uri) {
-        GetDispatcher result = getMappings.get(uri);
-        if (!uri.contains("/")) return null;
+    private fun getGetDispatcher(uri: String): GetDispatcher? {
+        var result = getMappings[uri]
+        if (!uri.contains("/")) return null
         if (result == null) {
-            result = getGetDispatcher(uri.substring(0, uri.lastIndexOf("/")));
+            result = getGetDispatcher(uri.substring(0, uri.lastIndexOf("/")))
         }
-        return result;
+        return result
     }
 
-    private @Nullable PostDispatcher getPostDispatcher(String uri) {
-        PostDispatcher result = postMappings.get(uri);
-        if (!uri.contains("/")) return null;
+    private fun getPostDispatcher(uri: String): PostDispatcher? {
+        var result = postMappings[uri]
+        if (!uri.contains("/")) return null
         if (result == null) {
-            result = getPostDispatcher(uri.substring(0, uri.lastIndexOf("/")));
+            result = getPostDispatcher(uri.substring(0, uri.lastIndexOf("/")))
         }
-        return result;
+        return result
     }
 
-    private void staticResource(@NotNull HttpRequest request, HttpResponse response) throws IOException {
-        getFileResource(request.getRequestURI(), response);
+    @Throws(IOException::class)
+    private fun staticResource(request: HttpRequest, response: HttpResponse) {
+        getFileResource(request.requestURI, response)
     }
 
-    private void getFileResource(@NotNull String uri, HttpResponse response) throws IOException {
-        if (uri.equals("/") || uri.isBlank()) uri = "/index.html";
-        try (InputStream tmp0 = HttpServer.class.getResourceAsStream("/static/" + serverName + uri);
-             InputStream tmp1 = HttpServer.class.getResourceAsStream("/static" + uri)) {
-            File tmp2 = new File(
+    @Suppress("NAME_SHADOWING")
+    @Throws(IOException::class)
+    private fun getFileResource(uri: String, response: HttpResponse) {
+        var uri = uri
+        if (uri == "/" || uri.isBlank()) uri = "/index.html"
+        HttpServer::class.java.getResourceAsStream("/static/$serverName$uri").use { tmp0 ->
+            HttpServer::class.java.getResourceAsStream(
+                "/static$uri"
+            ).use { tmp1 ->
+                val tmp2 = File(
                     "data" + File.separator + "web" + File.separator
-                            + serverName + uri.replace('/', File.separatorChar));
-            if (tmp0 != null) {
-                response.write(tmp0.readAllBytes());
-            } else if (tmp2.exists()) {
-                try (InputStream input = new FileInputStream(tmp2)) {
-                    response.write(input.readAllBytes());
+                            + serverName + uri.replace('/', File.separatorChar)
+                )
+                if (tmp0 != null) {
+                    response.write(tmp0.readAllBytes())
+                } else if (tmp2.exists()) {
+                    FileInputStream(tmp2).use { input -> response.write(input.readAllBytes()) }
+                } else if (tmp1 != null) {
+                    response.write(tmp1.readAllBytes())
+                } else {
+                    response.setHttpStatus(HttpStatus.NOT_FOUND)
+                    getFileResource("/404.html", response)
                 }
-            } else if (tmp1 != null) {
-                response.write(tmp1.readAllBytes());
-            } else {
-                response.setHttpStatus(HttpStatus.NOT_FOUND);
-                getFileResource("/404.html", response);
             }
         }
     }
