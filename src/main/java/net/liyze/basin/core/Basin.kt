@@ -95,8 +95,10 @@ var banner = String.format(
                     
                     """.trimIndent(), version
 )
+lateinit var startArgs: Array<String>
 
-fun main() {
+fun main(args: Array<String>) {
+    startArgs = args
     start()
 }
 
