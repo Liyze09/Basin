@@ -19,6 +19,6 @@ public class JdbcTest {
             return new Object();
         });
         System.out.println(222);
-        System.out.println(result.get());
+        System.out.println(result.await());
     }
 }
