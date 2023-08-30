@@ -1,11 +1,6 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class BeanNotOfRequiredTypeException extends BeansException {
-
-    public BeanNotOfRequiredTypeException() {
-    }
-
-    public BeanNotOfRequiredTypeException(String message) {
-        super(message);
-    }
+class BeanNotOfRequiredTypeException : BeansException {
+    constructor()
+    constructor(message: String?) : super(message)
 }

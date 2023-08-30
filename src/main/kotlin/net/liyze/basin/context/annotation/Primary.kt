@@ -1,9 +1,11 @@
-package com.itranswarp.summer.annotation;
+package net.liyze.basin.context.annotation
 
-import java.lang.annotation.*;
-
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Primary {
-}
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class Primary

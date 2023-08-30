@@ -1,8 +1,9 @@
-package com.itranswarp.summer.utils;
+package net.liyze.basin.context;
 
-import com.itranswarp.summer.annotation.Bean;
-import com.itranswarp.summer.annotation.Component;
-import com.itranswarp.summer.exception.BeanDefinitionException;
+
+import net.liyze.basin.context.annotation.Bean;
+import net.liyze.basin.context.annotation.Component;
+import net.liyze.basin.context.exception.BeanDefinitionException;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;

@@ -1,11 +1,6 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class NoSuchBeanDefinitionException extends BeanDefinitionException {
-
-    public NoSuchBeanDefinitionException() {
-    }
-
-    public NoSuchBeanDefinitionException(String message) {
-        super(message);
-    }
+class NoSuchBeanDefinitionException : BeanDefinitionException {
+    constructor()
+    constructor(message: String?) : super(message)
 }

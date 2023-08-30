@@ -4,8 +4,6 @@ package net.liyze.basin.jdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import net.liyze.basin.async.Callable
-import net.liyze.basin.async.Result
 import java.io.Closeable
 import java.sql.Connection
 import java.sql.ResultSet
@@ -82,7 +80,7 @@ class JdbcPool : Closeable {
         }
     }
 
-    infix fun <T> execute(action: Callable<Connection, T>): JdbcResult<T> {
+    infix fun <T> execute(action: net.liyze.basin.async.Callable<Connection, T>): JdbcResult<T> {
         val connection = getConnection()
         return JdbcResult(action, connection)
     }
@@ -90,9 +88,9 @@ class JdbcPool : Closeable {
     override fun close() = data?.close() ?: throw IllegalStateException("Must connect SQL before use!")
 
     class JdbcResult<T>(
-        action: Callable<Connection, T>,
+        action: net.liyze.basin.async.Callable<Connection, T>,
         val connection: Connection
-    ) : Result<Connection, T>(action, connection) {
+    ) : net.liyze.basin.async.Result<Connection, T>(action, connection) {
         override fun run(): T {
             try {
                 val ret: T = action run connection

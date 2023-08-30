@@ -1,19 +1,8 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class NestedRuntimeException extends RuntimeException {
-
-    public NestedRuntimeException() {
-    }
-
-    public NestedRuntimeException(String message) {
-        super(message);
-    }
-
-    public NestedRuntimeException(Throwable cause) {
-        super(cause);
-    }
-
-    public NestedRuntimeException(String message, Throwable cause) {
-        super(message, cause);
-    }
+open class NestedRuntimeException : RuntimeException {
+    constructor()
+    constructor(message: String?) : super(message)
+    constructor(cause: Throwable?) : super(cause)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

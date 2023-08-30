@@ -1,178 +1,165 @@
-package com.itranswarp.summer;
+package net.liyze.basin.context
 
-import com.itranswarp.summer.exception.BeanCreationException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.liyze.basin.context.exception.BeanCreationException
+import java.lang.reflect.Constructor
+import java.lang.reflect.Method
+import java.util.*
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Objects;
-
-
-public class BeanDefinition implements Comparable<BeanDefinition> {
-
+class BeanDefinition : Comparable<BeanDefinition> {
     // unique bean name:
-    private final String name;
+    @JvmField
+    val name: String
+
     // bean class:
-    private final Class<?> beanClass;
+    @JvmField
+    val beanClass: Class<*>
+
     // constructor or null:
-    private final Constructor<?> constructor;
+    @JvmField
+    val constructor: Constructor<*>?
+
     // factory name or null:
-    private final String factoryName;
+    @JvmField
+    val factoryName: String?
+
     // factory method or null:
-    private final Method factoryMethod;
+    @JvmField
+    val factoryMethod: Method?
+
     // bean order used by ApplicationContext.getBeans(type):
-    private final int order;
+    private val order: Int
+
     // has @Primary?
-    private final boolean primary;
+    val isPrimary: Boolean
+
     // bean instance:
-    private Object instance = null;
+    var instance: Any? = null
+        private set
+
     // autowired and called init method:
-    private boolean init = false;
+    var isInit = false
+        private set
+    var initMethodName: String? = null
+        private set
+    var destroyMethodName: String? = null
+        private set
+    var initMethod: Method? = null
+        private set
+    var destroyMethod: Method? = null
+        private set
 
-    private String initMethodName;
-    private String destroyMethodName;
-
-    private Method initMethod;
-    private Method destroyMethod;
-
-    public BeanDefinition(String name, Class<?> beanClass, @NotNull Constructor<?> constructor, int order, boolean primary, String initMethodName,
-                          String destroyMethodName, Method initMethod, Method destroyMethod) {
-        this.name = name;
-        this.beanClass = beanClass;
-        this.constructor = constructor;
-        this.factoryName = null;
-        this.factoryMethod = null;
-        this.order = order;
-        this.primary = primary;
-        constructor.setAccessible(true);
-        setInitAndDestroyMethod(initMethodName, destroyMethodName, initMethod, destroyMethod);
+    constructor(
+        name: String,
+        beanClass: Class<*>,
+        constructor: Constructor<*>,
+        order: Int,
+        primary: Boolean,
+        initMethodName: String?,
+        destroyMethodName: String?,
+        initMethod: Method?,
+        destroyMethod: Method?
+    ) {
+        this.name = name
+        this.beanClass = beanClass
+        this.constructor = constructor
+        factoryName = null
+        factoryMethod = null
+        this.order = order
+        isPrimary = primary
+        constructor.setAccessible(true)
+        setInitAndDestroyMethod(initMethodName, destroyMethodName, initMethod, destroyMethod)
     }
 
-    public BeanDefinition(String name, Class<?> beanClass, String factoryName, @NotNull Method factoryMethod, int order, boolean primary, String initMethodName,
-                          String destroyMethodName, Method initMethod, Method destroyMethod) {
-        this.name = name;
-        this.beanClass = beanClass;
-        this.constructor = null;
-        this.factoryName = factoryName;
-        this.factoryMethod = factoryMethod;
-        this.order = order;
-        this.primary = primary;
-        factoryMethod.setAccessible(true);
-        setInitAndDestroyMethod(initMethodName, destroyMethodName, initMethod, destroyMethod);
+    constructor(
+        name: String,
+        beanClass: Class<*>,
+        factoryName: String?,
+        factoryMethod: Method,
+        order: Int,
+        primary: Boolean,
+        initMethodName: String?,
+        destroyMethodName: String?,
+        initMethod: Method?,
+        destroyMethod: Method?
+    ) {
+        this.name = name
+        this.beanClass = beanClass
+        constructor = null
+        this.factoryName = factoryName
+        this.factoryMethod = factoryMethod
+        this.order = order
+        isPrimary = primary
+        factoryMethod.setAccessible(true)
+        setInitAndDestroyMethod(initMethodName, destroyMethodName, initMethod, destroyMethod)
     }
 
-    private void setInitAndDestroyMethod(String initMethodName, String destroyMethodName, Method initMethod, Method destroyMethod) {
-        this.initMethodName = initMethodName;
-        this.destroyMethodName = destroyMethodName;
-        if (initMethod != null) {
-            initMethod.setAccessible(true);
+    private fun setInitAndDestroyMethod(
+        initMethodName: String?,
+        destroyMethodName: String?,
+        initMethod: Method?,
+        destroyMethod: Method?
+    ) {
+        this.initMethodName = initMethodName
+        this.destroyMethodName = destroyMethodName
+        initMethod?.setAccessible(true)
+        destroyMethod?.setAccessible(true)
+        this.initMethod = initMethod
+        this.destroyMethod = destroyMethod
+    }
+
+    fun setInstance(instance: Any) {
+        Objects.requireNonNull(instance, "Bean instance is null.")
+        if (!beanClass.isAssignableFrom(instance.javaClass)) {
+            throw BeanCreationException(
+                String.format(
+                    "Instance '%s' of Bean '%s' is not the expected type: %s", instance, instance.javaClass.getName(),
+                    beanClass.getName()
+                )
+            )
         }
-        if (destroyMethod != null) {
-            destroyMethod.setAccessible(true);
+        this.instance = instance
+    }
+
+    val requiredInstance: Any?
+        get() {
+            if (instance == null) {
+                throw BeanCreationException(
+                    String.format(
+                        "Instance of bean with name '%s' and type '%s' is not instantiated during current stage.",
+                        name, beanClass.getName()
+                    )
+                )
+            }
+            return instance
         }
-        this.initMethod = initMethod;
-        this.destroyMethod = destroyMethod;
+
+    fun setInit() {
+        isInit = true
     }
 
-    @Nullable
-    public Constructor<?> getConstructor() {
-        return this.constructor;
+    override fun toString(): String {
+        return ("BeanDefinition [name=" + name + ", beanClass=" + beanClass.getName() + ", factory=" + createDetail + ", init-method="
+                + (if (initMethod == null) "null" else initMethod!!.name) + ", destroy-method=" + (if (destroyMethod == null) "null" else destroyMethod!!.name)
+                + ", primary=" + isPrimary + ", instance=" + instance + "]")
     }
 
-    @Nullable
-    public String getFactoryName() {
-        return this.factoryName;
-    }
-
-    @Nullable
-    public Method getFactoryMethod() {
-        return this.factoryMethod;
-    }
-
-    @Nullable
-    public Method getInitMethod() {
-        return this.initMethod;
-    }
-
-    @Nullable
-    public Method getDestroyMethod() {
-        return this.destroyMethod;
-    }
-
-    @Nullable
-    public String getInitMethodName() {
-        return this.initMethodName;
-    }
-
-    @Nullable
-    public String getDestroyMethodName() {
-        return this.destroyMethodName;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public Class<?> getBeanClass() {
-        return this.beanClass;
-    }
-
-    public Object getInstance() {
-        return this.instance;
-    }
-
-    public void setInstance(Object instance) {
-        Objects.requireNonNull(instance, "Bean instance is null.");
-        if (!this.beanClass.isAssignableFrom(instance.getClass())) {
-            throw new BeanCreationException(String.format("Instance '%s' of Bean '%s' is not the expected type: %s", instance, instance.getClass().getName(),
-                    this.beanClass.getName()));
+    val createDetail: String?
+        get() {
+            if (factoryMethod != null) {
+                val params = java.lang.String.join(
+                    ", ",
+                    *Arrays.stream(factoryMethod.parameterTypes)
+                        .map { obj: Class<*> -> obj.getSimpleName() }
+                        .toArray { Array(0) { String() } })
+                return factoryMethod.declaringClass.getSimpleName() + "." + factoryMethod.name + "(" + params + ")"
+            }
+            return null
         }
-        this.instance = instance;
-    }
 
-    public Object getRequiredInstance() {
-        if (this.instance == null) {
-            throw new BeanCreationException(String.format("Instance of bean with name '%s' and type '%s' is not instantiated during current stage.",
-                    this.getName(), this.getBeanClass().getName()));
-        }
-        return this.instance;
-    }
-
-    public boolean isInit() {
-        return this.init;
-    }
-
-    public void setInit() {
-        this.init = true;
-    }
-
-    public boolean isPrimary() {
-        return this.primary;
-    }
-
-    @Override
-    public String toString() {
-        return "BeanDefinition [name=" + name + ", beanClass=" + beanClass.getName() + ", factory=" + getCreateDetail() + ", init-method="
-                + (initMethod == null ? "null" : initMethod.getName()) + ", destroy-method=" + (destroyMethod == null ? "null" : destroyMethod.getName())
-                + ", primary=" + primary + ", instance=" + instance + "]";
-    }
-
-    String getCreateDetail() {
-        if (this.factoryMethod != null) {
-            String params = String.join(", ", Arrays.stream(this.factoryMethod.getParameterTypes()).map(Class::getSimpleName).toArray(String[]::new));
-            return this.factoryMethod.getDeclaringClass().getSimpleName() + "." + this.factoryMethod.getName() + "(" + params + ")";
-        }
-        return null;
-    }
-
-    @Override
-    public int compareTo(BeanDefinition def) {
-        int cmp = Integer.compare(this.order, def.order);
-        if (cmp != 0) {
-            return cmp;
-        }
-        return this.name.compareTo(def.name);
+    override fun compareTo(other: BeanDefinition): Int {
+        val cmp = order.compareTo(other.order)
+        return if (cmp != 0) {
+            cmp
+        } else name.compareTo(other.name)
     }
 }

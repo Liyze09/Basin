@@ -1,19 +1,8 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class BeansException extends NestedRuntimeException {
-
-    public BeansException() {
-    }
-
-    public BeansException(String message) {
-        super(message);
-    }
-
-    public BeansException(Throwable cause) {
-        super(cause);
-    }
-
-    public BeansException(String message, Throwable cause) {
-        super(message, cause);
-    }
+open class BeansException : NestedRuntimeException {
+    constructor()
+    constructor(message: String?) : super(message)
+    constructor(cause: Throwable?) : super(cause)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

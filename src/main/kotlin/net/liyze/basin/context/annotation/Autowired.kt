@@ -1,19 +1,21 @@
-package com.itranswarp.summer.annotation;
+package net.liyze.basin.context.annotation
 
-import java.lang.annotation.*;
-
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Autowired {
-
+@Target(
+    AnnotationTarget.FIELD,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER,
+    AnnotationTarget.VALUE_PARAMETER
+)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class Autowired(
     /**
      * Is required.
      */
-    boolean value() default true;
-
+    val value: Boolean = true,
     /**
      * Bean name if set.
      */
-    String name() default "";
-}
+    val name: String = ""
+)

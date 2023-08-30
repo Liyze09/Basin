@@ -1,32 +1,24 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Basin;
-import net.liyze.basin.core.Command;
-import net.liyze.basin.core.CommandParser;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import net.liyze.basin.core.CommandParser
+import net.liyze.basin.core.servicePool
 
 /**
  * Put command into a CachedThreadPool
- * /execute [command] [args..]
+ * /execute command args...
  *
  * @author Liyze09
  */
 @Component
-public class ExecuteCommand implements Command {
-
-
-    @Override
-    public void run(@NotNull List<String> args) {
-        Basin.servicePool.submit(new Thread(() -> new CommandParser().sync().parse(args)));
+class ExecuteCommand : Command {
+    override fun run(args: List<String?>) {
+        servicePool.submit(Thread { CommandParser().sync().parse(args.requireNoNulls()) })
     }
 
-    @Override
-    public @NotNull String Name() {
-        return "execute";
+    override fun Name(): String {
+        return "execute"
     }
 }
-
-

@@ -1,19 +1,8 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class BeanDefinitionException extends BeansException {
-
-    public BeanDefinitionException() {
-    }
-
-    public BeanDefinitionException(String message) {
-        super(message);
-    }
-
-    public BeanDefinitionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public BeanDefinitionException(Throwable cause) {
-        super(cause);
-    }
+open class BeanDefinitionException : BeansException {
+    constructor()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
 }

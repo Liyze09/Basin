@@ -1,12 +1,8 @@
-package com.itranswarp.summer.annotation;
+package net.liyze.basin.context.annotation
 
-import java.lang.annotation.*;
+import kotlin.reflect.KClass
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Import {
-
-    Class<?>[] value();
-
-}
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class Import(vararg val value: KClass<*>)

@@ -1,10 +1,9 @@
-package com.itranswarp.summer;
+package net.liyze.basin.context;
 
-import com.itranswarp.summer.annotation.*;
-import com.itranswarp.summer.exception.*;
-import com.itranswarp.summer.io.PropertyResolver;
-import com.itranswarp.summer.io.ResourceResolver;
-import com.itranswarp.summer.utils.ClassUtils;
+import net.liyze.basin.context.annotation.*;
+import net.liyze.basin.context.exception.*;
+import net.liyze.basin.context.io.PropertyResolver;
+import net.liyze.basin.context.io.ResourceResolver;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +48,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
                 // 过滤出@Configuration:
                 .filter(this::isConfigurationDefinition).sorted().map(def -> {
                     createBeanAsEarlySingleton(def);
-                    return def.getName();
+                    return def.name;
                 }).collect(Collectors.toList());
 
         // 创建BeanPostProcessor类型的Bean:
@@ -104,19 +103,19 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Override
     public Object createBeanAsEarlySingleton(@NotNull BeanDefinition def) {
-        LOGGER.atDebug().log("Try create bean '{}' as early singleton: {}", def.getName(), def.getBeanClass().getName());
-        if (!this.creatingBeanNames.add(def.getName())) {
-            throw new UnsatisfiedDependencyException(String.format("Circular dependency detected when create bean '%s'", def.getName()));
+        LOGGER.atDebug().log("Try create bean '{}' as early singleton: {}", def.name, def.beanClass.getName());
+        if (!this.creatingBeanNames.add(def.name)) {
+            throw new UnsatisfiedDependencyException(String.format("Circular dependency detected when create bean '%s'", def.name));
         }
 
         // 创建方式：构造方法或工厂方法:
         Executable createFn;
-        if (def.getFactoryName() == null) {
+        if (def.factoryName == null) {
             // by constructor:
-            createFn = def.getConstructor();
+            createFn = def.constructor;
         } else {
             // by factory method:
-            createFn = def.getFactoryMethod();
+            createFn = def.factoryMethod;
         }
 
         // 创建参数:
@@ -137,29 +136,23 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
                 final Parameter param = parameters[i];
                 final Annotation[] paramAnnos = parametersAnnos[i];
                 final Value value = ClassUtils.getAnnotation(paramAnnos, Value.class);
-                final Autowired autowired = ClassUtils.getAnnotation(paramAnnos, Autowired.class);
-                // @Configuration类型的Bean是工厂，不允许使用@Autowired创建:
-                final boolean isConfiguration = isConfigurationDefinition(def);
-                if (isConfiguration && autowired != null) {
-                    throw new BeanCreationException(
-                            String.format("Cannot specify @Autowired when create @Configuration bean '%s': %s.", def.getName(), def.getBeanClass().getName()));
-                }
+                final Autowired autowired = getAutowired(def, paramAnnos);
 
                 // BeanPostProcessor不能依赖其他Bean，不允许使用@Autowired创建:
                 final boolean isBeanPostProcessor = isBeanPostProcessorDefinition(def);
                 if (isBeanPostProcessor && autowired != null) {
                     throw new BeanCreationException(
-                            String.format("Cannot specify @Autowired when create BeanPostProcessor '%s': %s.", def.getName(), def.getBeanClass().getName()));
+                            String.format("Cannot specify @Autowired when create BeanPostProcessor '%s': %s.", def.name, def.beanClass.getName()));
                 }
 
                 // 参数需要@Value或@Autowired两者之一:
                 if (value != null && autowired != null) {
                     throw new BeanCreationException(
-                            String.format("Cannot specify both @Autowired and @Value when create bean '%s': %s.", def.getName(), def.getBeanClass().getName()));
+                            String.format("Cannot specify both @Autowired and @Value when create bean '%s': %s.", def.name, def.beanClass.getName()));
                 }
                 if (value == null && autowired == null) {
                     throw new BeanCreationException(
-                            String.format("Must specify @Autowired or @Value when create bean '%s': %s.", def.getName(), def.getBeanClass().getName()));
+                            String.format("Must specify @Autowired or @Value when create bean '%s': %s.", def.name, def.beanClass.getName()));
                 }
                 // 参数类型:
                 final Class<?> type = param.getType();
@@ -175,7 +168,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
                     // 检测required==true?
                     if (required && dependsOnDef == null) {
                         throw new BeanCreationException(String.format("Missing autowired bean with type '%s' when create bean '%s': %s.", type.getName(),
-                                def.getName(), def.getBeanClass().getName()));
+                                def.name, def.beanClass.getName()));
                     }
                     if (dependsOnDef != null) {
                         // 获取依赖Bean:
@@ -194,41 +187,54 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
 
         // 创建Bean实例:
         Object instance = null;
-        if (def.getFactoryName() == null) {
+        if (def.factoryName == null) {
             // 用构造方法创建:
             try {
-                if (def.getConstructor() != null) {
-                    instance = def.getConstructor().newInstance(args);
+                if (def.constructor != null) {
+                    instance = def.constructor.newInstance(args);
                 }
             } catch (Exception e) {
-                throw new BeanCreationException(String.format("Exception when create bean '%s': %s", def.getName(), def.getBeanClass().getName()), e);
+                throw new BeanCreationException(String.format("Exception when create bean '%s': %s", def.name, def.beanClass.getName()), e);
             }
         } else {
             // 用@Bean方法创建:
-            Object configInstance = getBean(def.getFactoryName());
+            Object configInstance = getBean(def.factoryName);
             try {
-                if (def.getFactoryMethod() != null) {
-                    instance = def.getFactoryMethod().invoke(configInstance, args);
+                if (def.factoryMethod != null) {
+                    instance = def.factoryMethod.invoke(configInstance, args);
                 }
             } catch (Exception e) {
-                throw new BeanCreationException(String.format("Exception when create bean '%s': %s", def.getName(), def.getBeanClass().getName()), e);
+                throw new BeanCreationException(String.format("Exception when create bean '%s': %s", def.name, def.beanClass.getName()), e);
             }
         }
-        def.setInstance(instance);
+        if (instance != null) {
+            def.setInstance(instance);
+        }
 
         // 调用BeanPostProcessor处理Bean:
         for (BeanPostProcessor processor : beanPostProcessors) {
-            Object processed = processor.postProcessBeforeInitialization(def.getInstance(), def.getName());
+            Object processed = processor.postProcessBeforeInitialization(def.getInstance(), def.name);
             if (processed == null) {
-                throw new BeanCreationException(String.format("PostBeanProcessor returns null when process bean '%s' by %s", def.getName(), processor));
+                throw new BeanCreationException(String.format("PostBeanProcessor returns null when process bean '%s' by %s", def.name, processor));
             }
             // 如果一个BeanPostProcessor替换了原始Bean，则更新Bean的引用:
             if (def.getInstance() != processed) {
-                LOGGER.atDebug().log("Bean '{}' was replaced by post processor {}.", def.getName(), processor.getClass().getName());
+                LOGGER.atDebug().log("Bean '{}' was replaced by post processor {}.", def.name, processor.getClass().getName());
                 def.setInstance(processed);
             }
         }
         return def.getInstance();
+    }
+
+    @Nullable
+    private Autowired getAutowired(@NotNull BeanDefinition def, Annotation[] paramAnnos) {
+        final Autowired autowired = ClassUtils.getAnnotation(paramAnnos, Autowired.class);
+        final boolean isConfiguration = isConfigurationDefinition(def);
+        if (isConfiguration && autowired != null) {
+            throw new BeanCreationException(
+                    String.format("Cannot specify @Autowired when create @Configuration bean '%s': %s.", def.name, def.beanClass.getName()));
+        }
+        return autowired;
     }
 
     /**
@@ -290,7 +296,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
         // 获取Bean实例，或被代理的原始实例:
         final Object beanInstance = getProxiedInstance(def);
         try {
-            injectProperties(def, def.getBeanClass(), beanInstance);
+            injectProperties(def, def.beanClass, beanInstance);
         } catch (ReflectiveOperationException e) {
             throw new BeanCreationException(e);
         }
@@ -308,13 +314,15 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
 
         // 调用BeanPostProcessor.postProcessAfterInitialization():
         beanPostProcessors.forEach(beanPostProcessor -> {
-            Object processedInstance = beanPostProcessor.postProcessAfterInitialization(def.getInstance(), def.getName());
+            Object processedInstance = beanPostProcessor.postProcessAfterInitialization(def.getInstance(), def.name);
             if (processedInstance != def.getInstance()) {
                 if (def.getInstance() != null) {
                     LOGGER.atDebug().log("BeanPostProcessor {} return different bean from {} to {}.", beanPostProcessor.getClass().getSimpleName(),
                             def.getInstance().getClass().getName(), Objects.requireNonNull(processedInstance).getClass().getName());
                 }
-                def.setInstance(processedInstance);
+                if (processedInstance != null) {
+                    def.setInstance(processedInstance);
+                }
             }
         });
     }
@@ -358,7 +366,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
             checkFieldOrMethod(m);
             if (m.getParameters().length != 1) {
                 throw new BeanDefinitionException(
-                        String.format("Cannot inject a non-setter method %s for bean '%s': %s", m.getName(), def.getName(), def.getBeanClass().getName()));
+                        String.format("Cannot inject a non-setter method %s for bean '%s': %s", m.getName(), def.name, def.beanClass.getName()));
             }
             m.setAccessible(true);
             method = m;
@@ -375,18 +383,18 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
 
         if (value != null && autowired != null) {
             throw new BeanCreationException(String.format("Cannot specify both @Autowired and @Value when inject %s.%s for bean '%s': %s",
-                    clazz.getSimpleName(), accessibleName, def.getName(), def.getBeanClass().getName()));
+                    clazz.getSimpleName(), accessibleName, def.name, def.beanClass.getName()));
         }
 
         // @Value注入:
         if (value != null) {
             Object propValue = this.propertyResolver.getRequiredProperty(value.value());
             if (field != null) {
-                LOGGER.atDebug().log("Field injection: {}.{} = {}", def.getBeanClass().getName(), null, propValue);
+                LOGGER.atDebug().log("Field injection: {}.{} = {}", def.beanClass.getName(), null, propValue);
                 field.set(bean, propValue);
             }
             if (method != null) {
-                LOGGER.atDebug().log("Method injection: {}.{} ({})", def.getBeanClass().getName(), accessibleName, propValue);
+                LOGGER.atDebug().log("Method injection: {}.{} ({})", def.beanClass.getName(), accessibleName, propValue);
                 method.invoke(bean, propValue);
             }
         }
@@ -398,15 +406,15 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
             Object depends = name.isEmpty() ? findBean(accessibleType) : findBean(name, accessibleType);
             if (required && depends == null) {
                 throw new UnsatisfiedDependencyException(String.format("Dependency bean not found when inject %s.%s for bean '%s': %s", clazz.getSimpleName(),
-                        accessibleName, def.getName(), def.getBeanClass().getName()));
+                        accessibleName, def.name, def.beanClass.getName()));
             }
             if (depends != null) {
                 if (field != null) {
-                    LOGGER.atDebug().log("Field injection: {}.{} = {}", def.getBeanClass().getName(), null, depends);
+                    LOGGER.atDebug().log("Field injection: {}.{} = {}", def.beanClass.getName(), null, depends);
                     field.set(bean, depends);
                 }
                 if (method != null) {
-                    LOGGER.atDebug().log("Mield injection: {}.{} ({})", def.getBeanClass().getName(), accessibleName, depends);
+                    LOGGER.atDebug().log("Mield injection: {}.{} ({})", def.beanClass.getName(), accessibleName, depends);
                     method.invoke(bean, depends);
                 }
             }
@@ -498,8 +506,8 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      * Check and add bean definitions.
      */
     void addBeanDefinitions(@NotNull Map<String, BeanDefinition> defs, BeanDefinition def) {
-        if (defs.put(def.getName(), def) != null) {
-            throw new BeanDefinitionException("Duplicate bean name: " + def.getName());
+        if (defs.put(def.name, def) != null) {
+            throw new BeanDefinitionException("Duplicate bean name: " + def.name);
         }
     }
 
@@ -578,11 +586,11 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
     }
 
     boolean isConfigurationDefinition(@NotNull BeanDefinition def) {
-        return ClassUtils.findAnnotation(def.getBeanClass(), Configuration.class) != null;
+        return ClassUtils.findAnnotation(def.beanClass, Configuration.class) != null;
     }
 
     boolean isBeanPostProcessorDefinition(@NotNull BeanDefinition def) {
-        return BeanPostProcessor.class.isAssignableFrom(def.getBeanClass());
+        return BeanPostProcessor.class.isAssignableFrom(def.beanClass);
     }
 
     /**
@@ -604,9 +612,9 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
         if (def == null) {
             return null;
         }
-        if (!requiredType.isAssignableFrom(def.getBeanClass())) {
+        if (!requiredType.isAssignableFrom(def.beanClass)) {
             throw new BeanNotOfRequiredTypeException(String.format("Autowire required type '%s' but bean '%s' has actual type '%s'.", requiredType.getName(),
-                    name, def.getBeanClass().getName()));
+                    name, def.beanClass.getName()));
         }
         return def;
     }
@@ -618,7 +626,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
     public List<BeanDefinition> findBeanDefinitions(@NotNull Class<?> type) {
         return this.beans.values().stream()
                 // filter by type and sub-type:
-                .filter(def -> type.isAssignableFrom(def.getBeanClass()))
+                .filter(def -> type.isAssignableFrom(def.beanClass))
                 // 排序:
                 .sorted().collect(Collectors.toList());
     }
@@ -765,7 +773,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
         List<BeanPostProcessor> reversedBeanPostProcessors = new ArrayList<>(this.beanPostProcessors);
         Collections.reverse(reversedBeanPostProcessors);
         for (BeanPostProcessor beanPostProcessor : reversedBeanPostProcessors) {
-            Object restoredInstance = beanPostProcessor.postProcessOnSetProperty(beanInstance, def.getName());
+            Object restoredInstance = beanPostProcessor.postProcessOnSetProperty(beanInstance, def.name);
             if (restoredInstance != beanInstance) {
                 if (beanInstance != null) {
                     if (restoredInstance != null) {

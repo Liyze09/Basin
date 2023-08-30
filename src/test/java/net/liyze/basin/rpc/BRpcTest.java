@@ -1,7 +1,7 @@
 package net.liyze.basin.rpc;
 
-import com.itranswarp.summer.AnnotationConfigApplicationContext;
-import com.itranswarp.summer.annotation.Component;
+import net.liyze.basin.context.AnnotationConfigApplicationContext;
+import net.liyze.basin.context.annotation.Component;
 import net.liyze.basin.core.Basin;
 import net.liyze.basin.rpc.annotation.RpcService;
 import org.jetbrains.annotations.NotNull;

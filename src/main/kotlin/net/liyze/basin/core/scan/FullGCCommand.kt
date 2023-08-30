@@ -1,23 +1,17 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Command;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-
-import static net.liyze.basin.core.Basin.LOGGER;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import net.liyze.basin.core.LOGGER
 
 @Component
-public class FullGCCommand implements Command {
-    @Override
-    public void run(@NotNull List<String> args) {
-        System.gc();
-        LOGGER.info("Full GC");
+class FullGCCommand : Command {
+    override fun run(args: List<String?>) {
+        System.gc()
+        LOGGER.info("Full GC")
     }
 
-    @Override
-    public @NotNull String Name() {
-        return "fgc";
+    override fun Name(): String {
+        return "fgc"
     }
 }

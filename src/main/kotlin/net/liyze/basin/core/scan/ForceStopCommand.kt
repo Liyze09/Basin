@@ -1,21 +1,17 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Command;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import kotlin.system.exitProcess
 
 @Component
-public class ForceStopCommand implements Command {
-    @Override
-    public void run(@NotNull List<String> args) {
-        System.exit(0);
+class ForceStopCommand : Command {
+    override fun run(args: List<String?>) {
+        exitProcess(0)
     }
 
-    @SuppressWarnings("SpellCheckingInspection")
-    @Override
-    public @NotNull String Name() {
-        return "forcestop";
+    @Suppress("SpellCheckingInspection")
+    override fun Name(): String {
+        return "forcestop"
     }
 }

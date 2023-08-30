@@ -1,15 +1,11 @@
-package com.itranswarp.summer.annotation;
+package net.liyze.basin.context.annotation
 
-import java.lang.annotation.*;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Documented
-public @interface ComponentScan {
-
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
+@MustBeDocumented
+annotation class ComponentScan(
     /**
      * Package names to scan. Default to current package.
      */
-    String[] value() default {};
-
-}
+    vararg val value: String = []
+)

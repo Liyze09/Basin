@@ -1,11 +1,6 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class NoUniqueBeanDefinitionException extends BeanDefinitionException {
-
-    public NoUniqueBeanDefinitionException() {
-    }
-
-    public NoUniqueBeanDefinitionException(String message) {
-        super(message);
-    }
+class NoUniqueBeanDefinitionException : BeanDefinitionException {
+    constructor()
+    constructor(message: String?) : super(message)
 }

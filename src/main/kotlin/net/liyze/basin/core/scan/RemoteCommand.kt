@@ -1,28 +1,27 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Command;
-import net.liyze.basin.core.remote.Client;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-
-import static net.liyze.basin.core.Basin.*;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import net.liyze.basin.core.envMap
+import net.liyze.basin.core.remote.LOGGER
+import net.liyze.basin.core.remote.send
 
 @Component
-public class RemoteCommand implements Command {
-    @Override
-    public void run(@NotNull List<String> args) {
-        String host = args.remove(0);
+class RemoteCommand : Command {
+    override fun run(args: List<String?>) {
+        val host: String = args[0]!!
         try {
-            Client.send(String.join(" ", args), host, envMap.get("\"" + host + "_token\"").toString());
-        } catch (Exception e) {
-            LOGGER.error(e.toString());
+            send(
+                java.lang.String.join(" ", args.subList(1, args.size)),
+                host,
+                envMap["\"" + host + "_token\""].toString()
+            )
+        } catch (e: Exception) {
+            LOGGER.error(e.toString())
         }
     }
 
-    @Override
-    public @NotNull String Name() {
-        return "remote";
+    override fun Name(): String {
+        return "remote"
     }
 }

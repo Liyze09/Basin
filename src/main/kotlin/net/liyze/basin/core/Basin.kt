@@ -4,11 +4,11 @@
 package net.liyze.basin.core
 
 import com.google.common.base.Splitter
-import com.itranswarp.summer.AnnotationConfigApplicationContext
-import com.itranswarp.summer.ApplicationContext
-import com.itranswarp.summer.BeanDefinition
-import com.itranswarp.summer.annotation.ComponentScan
 import com.moandjiezana.toml.Toml
+import net.liyze.basin.context.AnnotationConfigApplicationContext
+import net.liyze.basin.context.ApplicationContext
+import net.liyze.basin.context.BeanDefinition
+import net.liyze.basin.context.annotation.ComponentScan
 import net.liyze.basin.core.Config.Companion.initConfig
 import net.liyze.basin.core.remote.RemoteServer
 import net.liyze.basin.core.scan.ServerCommand
@@ -126,7 +126,8 @@ fun start() {
                     })
                 })
                 LOGGER.info("Startup method are finished.")
-                app = AnnotationConfigApplicationContext(BasinApplication::class.java)
+                app =
+                    AnnotationConfigApplicationContext(BasinApplication::class.java)
                 (app as AnnotationConfigApplicationContext).findBeanDefinitions(Command::class.java)
                     ?.forEach(Consumer { def: BeanDefinition? ->
                         if (def != null) {
@@ -305,7 +306,8 @@ fun restart() {
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
         servicePool = Executors.newCachedThreadPool()
         app!!.close()
-        app = AnnotationConfigApplicationContext(BasinApplication::class.java)
+        app =
+            AnnotationConfigApplicationContext(BasinApplication::class.java)
         (app as AnnotationConfigApplicationContext).findBeanDefinitions(Command::class.java)
             ?.forEach(Consumer { def: BeanDefinition? ->
                 if (def != null) {

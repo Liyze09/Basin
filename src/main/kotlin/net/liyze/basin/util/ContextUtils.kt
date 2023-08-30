@@ -2,7 +2,7 @@
 
 package net.liyze.basin.util
 
-import com.itranswarp.summer.BeanDefinition
+import net.liyze.basin.context.BeanDefinition
 import net.liyze.basin.core.contexts
 
 fun getBean(name: String): BeanDefinition? {

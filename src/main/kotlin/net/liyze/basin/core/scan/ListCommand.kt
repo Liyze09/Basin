@@ -1,14 +1,10 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Basin;
-import net.liyze.basin.core.Command;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Map;
-
-import static net.liyze.basin.core.Basin.LOGGER;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import net.liyze.basin.core.LOGGER
+import net.liyze.basin.core.commands
+import net.liyze.basin.core.envMap
 
 /**
  * Print all command loaded.
@@ -16,22 +12,20 @@ import static net.liyze.basin.core.Basin.LOGGER;
  * @author Liyze09
  */
 @Component
-public class ListCommand implements Command {
-    @Override
-    public void run(@NotNull List<String> args) {
-        LOGGER.info("Commands");
-        for (String i : Basin.commands.keySet()) {
-            System.out.println(i);
+class ListCommand : Command {
+    override fun run(args: List<String?>) {
+        LOGGER.info("Commands")
+        for (i in commands.keys) {
+            println(i)
         }
-        LOGGER.info("Variables");
-        for (Map.Entry<String, Object> i : Basin.envMap.entrySet()) {
-            System.out.print(i.getKey() + " = ");
-            System.out.println(i.getValue());
+        LOGGER.info("Variables")
+        for ((key, value) in envMap.entries) {
+            print("$key = ")
+            println(value)
         }
     }
 
-    @Override
-    public @NotNull String Name() {
-        return "list";
+    override fun Name(): String {
+        return "list"
     }
 }

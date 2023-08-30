@@ -1,20 +1,8 @@
-package com.itranswarp.summer.exception;
+package net.liyze.basin.context.exception
 
-public class UnsatisfiedDependencyException extends BeanCreationException {
-
-    public UnsatisfiedDependencyException() {
-    }
-
-    public UnsatisfiedDependencyException(String message) {
-        super(message);
-    }
-
-    public UnsatisfiedDependencyException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public UnsatisfiedDependencyException(Throwable cause) {
-        super(cause);
-    }
-
+class UnsatisfiedDependencyException : BeanCreationException {
+    constructor()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
 }

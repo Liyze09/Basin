@@ -1,16 +1,12 @@
-package com.itranswarp.summer.annotation;
+package net.liyze.basin.context.annotation
 
-import java.lang.annotation.*;
-
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
 @Component
-public @interface Configuration {
-
+annotation class Configuration(
     /**
      * Bean name. Default to simple class name with first-letter-lower-case.
      */
-    String value() default "";
-
-}
+    val value: String = ""
+)

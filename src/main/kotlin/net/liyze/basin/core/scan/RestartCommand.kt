@@ -1,21 +1,16 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Basin;
-import net.liyze.basin.core.Command;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import net.liyze.basin.core.restart
 
 @Component
-public class RestartCommand implements Command {
-    @Override
-    public void run(@NotNull List<String> args) {
-        Basin.restart();
+class RestartCommand : Command {
+    override fun run(args: List<String?>) {
+        restart()
     }
 
-    @Override
-    public @NotNull String Name() {
-        return "restart";
+    override fun Name(): String {
+        return "restart"
     }
 }

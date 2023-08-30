@@ -1,34 +1,29 @@
-package net.liyze.basin.core.scan;
+package net.liyze.basin.core.scan
 
-import com.itranswarp.summer.annotation.Component;
-import net.liyze.basin.core.Basin;
-import net.liyze.basin.core.Command;
-import net.liyze.basin.core.Server;
-import net.liyze.basin.http.HttpServer;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import net.liyze.basin.context.annotation.Component
+import net.liyze.basin.core.Command
+import net.liyze.basin.core.LOGGER
+import net.liyze.basin.core.Server
+import net.liyze.basin.http.HttpServer
+import java.util.concurrent.ConcurrentHashMap
 
 @Component
-public class ServerCommand implements Command {
-    public static final Map<String, Server> serverMap = new ConcurrentHashMap<>();
-
-    @Override
-    public void run(@NotNull List<String> args) {
-        String name = args.get(0);
-        if (!args.get(1).equals("stop")) {
-            serverMap.put(name, new HttpServer(name, Integer.parseInt(args.get(1))).start());
+class ServerCommand : Command {
+    override fun run(args: List<String?>) {
+        val name = args[0]!!
+        if (args[1] != "stop") {
+            serverMap[name] = HttpServer(name, args[1]!!.toInt()).start()
         } else {
-            Server server = serverMap.remove(name);
-            if (server != null) server.stop();
-            else Basin.LOGGER.error("Server {} was not exist.", name);
+            val server = serverMap.remove(name)
+            if (server != null) server.stop() else LOGGER.error("Server {} was not exist.", name)
         }
     }
 
-    @Override
-    public @NotNull String Name() {
-        return "server";
+    override fun Name(): String {
+        return "server"
+    }
+
+    companion object {
+        val serverMap: ConcurrentHashMap<String, Server> = ConcurrentHashMap<String, Server>()
     }
 }
