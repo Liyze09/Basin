@@ -31,7 +31,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
     public AnnotationConfigApplicationContext(Class<?> configClass) {
         contexts.add(this);
         PropertyResolver propertyResolver = new PropertyResolver();
-        ApplicationContextUtils.setApplicationContext(this);
+        ApplicationContextUtils.applicationContext = this;
 
         this.propertyResolver = propertyResolver;
 
@@ -312,7 +312,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
             if (processedInstance != def.getInstance()) {
                 if (def.getInstance() != null) {
                     LOGGER.atDebug().log("BeanPostProcessor {} return different bean from {} to {}.", beanPostProcessor.getClass().getSimpleName(),
-                            def.getInstance().getClass().getName(), processedInstance.getClass().getName());
+                            def.getInstance().getClass().getName(), Objects.requireNonNull(processedInstance).getClass().getName());
                 }
                 def.setInstance(processedInstance);
             }
@@ -549,7 +549,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
             LOGGER.atDebug().log("scan package: {}", pkg);
             var rr = new ResourceResolver(pkg);
             List<String> classList = rr.scan(res -> {
-                String name = res.name();
+                String name = res.name;
                 if (name.endsWith(".class")) {
                     return name.substring(0, name.length() - 6).replace("/", ".").replace("\\", ".");
                 }
@@ -590,7 +590,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Nullable
     @Override
-    public BeanDefinition findBeanDefinition(String name) {
+    public BeanDefinition findBeanDefinition(@NotNull String name) {
         return this.beans.get(name);
     }
 
@@ -599,7 +599,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Nullable
     @Override
-    public BeanDefinition findBeanDefinition(String name, Class<?> requiredType) {
+    public BeanDefinition findBeanDefinition(@NotNull String name, Class<?> requiredType) {
         BeanDefinition def = findBeanDefinition(name);
         if (def == null) {
             return null;
@@ -615,7 +615,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      * 根据Type查找若干个BeanDefinition，返回0个或多个。
      */
     @Override
-    public List<BeanDefinition> findBeanDefinitions(Class<?> type) {
+    public List<BeanDefinition> findBeanDefinitions(@NotNull Class<?> type) {
         return this.beans.values().stream()
                 // filter by type and sub-type:
                 .filter(def -> type.isAssignableFrom(def.getBeanClass()))
@@ -628,20 +628,23 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Nullable
     @Override
-    public BeanDefinition findBeanDefinition(Class<?> type) {
+    public BeanDefinition findBeanDefinition(@NotNull Class<?> type) {
         List<BeanDefinition> defs = findBeanDefinitions(type);
-        if (defs.isEmpty()) {
+        if (defs != null && defs.isEmpty()) {
             return null;
         }
-        if (defs.size() == 1) {
+        if (defs != null && defs.size() == 1) {
             return defs.get(0);
         }
         // more than 1 beans, require @Primary:
-        List<BeanDefinition> primaryDefs = defs.stream().filter(BeanDefinition::isPrimary).toList();
-        if (primaryDefs.size() == 1) {
+        List<BeanDefinition> primaryDefs = null;
+        if (defs != null) {
+            primaryDefs = defs.stream().filter(BeanDefinition::isPrimary).toList();
+        }
+        if (primaryDefs != null && primaryDefs.size() == 1) {
             return primaryDefs.get(0);
         }
-        if (primaryDefs.isEmpty()) {
+        if (primaryDefs == null || primaryDefs.isEmpty()) {
             throw new NoUniqueBeanDefinitionException(String.format("Multiple bean with type '%s' found, but no @Primary specified.", type.getName()));
         } else {
             throw new NoUniqueBeanDefinitionException(String.format("Multiple bean with type '%s' found, and multiple @Primary specified.", type.getName()));
@@ -653,7 +656,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getBean(String name) {
+    public <T> T getBean(@NotNull String name) {
         BeanDefinition def = this.beans.get(name);
         if (def == null) {
             throw new NoSuchBeanDefinitionException(String.format("No bean defined with name '%s'.", name));
@@ -665,7 +668,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      * 通过Name和Type查找Bean，不存在抛出NoSuchBeanDefinitionException，存在但与Type不匹配抛出BeanNotOfRequiredTypeException
      */
     @Override
-    public <T> @NotNull T getBean(String name, Class<T> requiredType) {
+    public <T> @NotNull T getBean(@NotNull String name, @NotNull Class<T> requiredType) {
         T t = findBean(name, requiredType);
         if (t == null) {
             throw new NoSuchBeanDefinitionException(String.format("No bean defined with name '%s' and type '%s'.", name, requiredType));
@@ -678,14 +681,19 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<T> getBeans(Class<T> requiredType) {
+    public <T> List<T> getBeans(@NotNull Class<T> requiredType) {
         List<BeanDefinition> defs = findBeanDefinitions(requiredType);
-        if (defs.isEmpty()) {
+        if (defs != null && defs.isEmpty()) {
             return List.of();
         }
-        List<T> list = new ArrayList<>(defs.size());
-        for (var def : defs) {
-            list.add((T) def.getRequiredInstance());
+        List<T> list = null;
+        if (defs != null) {
+            list = new ArrayList<>(defs.size());
+        }
+        if (defs != null) {
+            for (var def : defs) {
+                list.add((T) def.getRequiredInstance());
+            }
         }
         return list;
     }
@@ -695,7 +703,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
+    public <T> T getBean(@NotNull Class<T> requiredType) {
         BeanDefinition def = findBeanDefinition(requiredType);
         if (def == null) {
             throw new NoSuchBeanDefinitionException(String.format("No bean defined with type '%s'.", requiredType));
@@ -707,7 +715,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
      * 检测是否存在指定Name的Bean
      */
     @Override
-    public boolean containsBean(String name) {
+    public boolean containsBean(@NotNull String name) {
         return this.beans.containsKey(name);
     }
 
@@ -736,7 +744,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
     @Nullable
     @SuppressWarnings("unchecked")
     private <T> List<T> findBeans(Class<T> requiredType) {
-        return findBeanDefinitions(requiredType).stream().map(def -> (T) def.getRequiredInstance()).collect(Collectors.toList());
+        return Objects.requireNonNull(findBeanDefinitions(requiredType)).stream().map(def -> (T) def.getRequiredInstance()).collect(Collectors.toList());
     }
 
     @Override
@@ -748,7 +756,7 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
         });
         this.beans.clear();
         LOGGER.info("{} closed.", this.getClass().getName());
-        ApplicationContextUtils.setApplicationContext(null);
+        ApplicationContextUtils.applicationContext = null;
     }
 
     private Object getProxiedInstance(@NotNull BeanDefinition def) {
@@ -760,8 +768,10 @@ public final class AnnotationConfigApplicationContext implements ApplicationCont
             Object restoredInstance = beanPostProcessor.postProcessOnSetProperty(beanInstance, def.getName());
             if (restoredInstance != beanInstance) {
                 if (beanInstance != null) {
-                    LOGGER.atDebug().log("BeanPostProcessor {} specified injection from {} to {}.",
-                            beanPostProcessor.getClass().getSimpleName(), beanInstance.getClass().getSimpleName(), restoredInstance.getClass().getSimpleName());
+                    if (restoredInstance != null) {
+                        LOGGER.atDebug().log("BeanPostProcessor {} specified injection from {} to {}.",
+                                beanPostProcessor.getClass().getSimpleName(), beanInstance.getClass().getSimpleName(), restoredInstance.getClass().getSimpleName());
+                    }
                 }
                 beanInstance = restoredInstance;
             }

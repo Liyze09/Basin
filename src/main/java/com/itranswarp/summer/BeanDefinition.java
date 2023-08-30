@@ -119,7 +119,6 @@ public class BeanDefinition implements Comparable<BeanDefinition> {
         return this.beanClass;
     }
 
-    @Nullable
     public Object getInstance() {
         return this.instance;
     }

@@ -128,7 +128,11 @@ fun start() {
                 LOGGER.info("Startup method are finished.")
                 app = AnnotationConfigApplicationContext(BasinApplication::class.java)
                 (app as AnnotationConfigApplicationContext).findBeanDefinitions(Command::class.java)
-                    .forEach(Consumer { def: BeanDefinition -> registerCommand(def.instance as Command) })
+                    ?.forEach(Consumer { def: BeanDefinition? ->
+                        if (def != null) {
+                            registerCommand(def.instance as Command)
+                        }
+                    })
                 if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parse(cfg.startCommand)
                 if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
                     try {
@@ -303,7 +307,11 @@ fun restart() {
         app!!.close()
         app = AnnotationConfigApplicationContext(BasinApplication::class.java)
         (app as AnnotationConfigApplicationContext).findBeanDefinitions(Command::class.java)
-            .forEach(Consumer { def: BeanDefinition -> registerCommand(def.instance as Command) })
+            ?.forEach(Consumer { def: BeanDefinition? ->
+                if (def != null) {
+                    registerCommand(def.instance as Command)
+                }
+            })
         try {
             loadEnv()
         } catch (e: Exception) {

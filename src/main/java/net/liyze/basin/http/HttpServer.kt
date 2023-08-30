@@ -46,7 +46,7 @@ class HttpServer(val serverName: String, val port: Int) : Server {
                 context.getBeans(
                     WebController::class.java
                 )
-                    .forEach(Consumer { bean: WebController ->
+                    ?.forEach(Consumer { bean: WebController ->
                         val annotation0 = bean.javaClass.getAnnotation(
                             Control::class.java
                         )
