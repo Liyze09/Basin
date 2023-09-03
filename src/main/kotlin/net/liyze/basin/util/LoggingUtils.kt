@@ -18,6 +18,6 @@ fun Logger.printException(throwable: Throwable, level: Level? = Level.ERROR) {
     atLevel(level).log(out.toString())
 }
 
-fun printException(throwable: Throwable) {
-    DEFAULT.printException(throwable)
+fun Throwable.printException() {
+    DEFAULT.printException(this)
 }

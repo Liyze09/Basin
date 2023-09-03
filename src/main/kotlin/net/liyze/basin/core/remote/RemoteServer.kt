@@ -66,7 +66,7 @@ class RemoteServer(token: String, port: Int, remoteParser: CommandParser) : Serv
                 }
                 return@MessageProcessor
             }
-            if (!parser.sync().parse(msg.substring(4))) {
+            if (!parser.sync().parseString(msg.substring(4))) {
                 try {
                     val bytes = "Failed to run the command.".toByteArray(StandardCharsets.UTF_8)
                     outputStream.writeInt(bytes.size)

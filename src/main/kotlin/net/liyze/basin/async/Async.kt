@@ -19,7 +19,7 @@ class SingleResult<T>(
 }
 
 @FunctionalInterface
-interface SingleCallable<T> : Callable<Any, T> {
+fun interface SingleCallable<T> : Callable<Any, T> {
     override fun run(input: Any): T {
         throw UnsupportedOperationException()
     }

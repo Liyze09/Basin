@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'io.github.liyze09'
-version = '2.2-unstable'
+version = '3.0-unstable'
 
 repositories {
     maven {
@@ -49,14 +49,13 @@ dependencies {
     api 'org.smartboot.socket:aio-pro:1.6.5'
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     api 'com.zaxxer:HikariCP:5.0.1'
-    // https://mvnrepository.com/artifact/org.furyio/fury-core/0.1.0
-    api 'org.furyio:fury-core:0.1.0'
     // https://mvnrepository.com/artifact/com.ibeetl/beetl
     api 'com.ibeetl:beetl:3.15.7.RELEASE'
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm
-    runtimeOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3'
+    // https://mvnrepository.com/artifact/org.furyio/fury-core
+    api 'org.furyio:fury-core:0.1.0'
+
 }
 test {
     useJUnitPlatform()

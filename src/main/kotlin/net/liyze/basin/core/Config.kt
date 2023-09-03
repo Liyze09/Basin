@@ -14,9 +14,6 @@ class Config {
     var taskPoolSize = Runtime.getRuntime().availableProcessors() + 1
 
     @JvmField
-    var doLoadJars = true
-
-    @JvmField
     var startCommand = ""
 
     @JvmField
@@ -30,9 +27,6 @@ class Config {
 
     @JvmField
     var remotePort = 32768
-
-    @JvmField
-    var enableParallel = true
 
     companion object {
         /**

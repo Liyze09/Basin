@@ -2,9 +2,8 @@ package net.liyze.basin.core
 
 import com.google.common.base.Splitter
 import com.google.common.collect.Lists
+import net.liyze.basin.util.printException
 import org.slf4j.LoggerFactory
-import java.io.BufferedReader
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
@@ -17,9 +16,10 @@ class CommandParser {
     /**
      * This Parser's vars.
      */
-    @JvmField
     val vars: MutableMap<String, String> = ConcurrentHashMap()
 
+    @Volatile
+    private var latestResult: Boolean = true
     init {
         cs.add(this)
     }
@@ -35,7 +35,7 @@ class CommandParser {
     /**
      * Parse command from String.
      */
-    fun parse(ac: String): Boolean {
+    fun parseString(ac: String): Boolean {
         if (ac.isBlank() || ac.startsWith("#")) return true
         LOGGER.info(ac)
         val sp = Splitter.on(" ").trimResults()
@@ -87,19 +87,19 @@ class CommandParser {
                 } catch (e: IndexOutOfBoundsException) {
                     logger.error("Bad arg input.")
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    logger.printException(e)
                 }
             } else logger.error("Unknown command: $cmdName")
         }
         return false
     }
 
-    @Throws(IOException::class)
-    fun parseScript(script: BufferedReader) {
-        val lines = script.lines()
-        lines.forEach { i: String -> if (!i.isEmpty()) this.parse(i) }
-        script.close()
+    fun parse(ac: String): CommandParser {
+        latestResult = parseString(ac)
+        return this
     }
+
+    fun getLatestResult(): Boolean = latestResult
 
     companion object {
         /**

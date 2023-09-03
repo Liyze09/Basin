@@ -1,12 +1,11 @@
 package net.liyze.basin.core.scan
 
-import net.liyze.basin.context.annotation.Component
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.LOGGER
 import net.liyze.basin.core.cfg
 import java.io.IOException
 
-@Component
+
 class ShellCommand : Command {
     override fun run(args: List<String?>) {
         if (!cfg.enableShellCommand) return
