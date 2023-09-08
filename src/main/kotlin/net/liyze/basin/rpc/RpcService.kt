@@ -4,6 +4,7 @@ import io.fury.Fury
 import io.fury.Language
 import io.fury.ThreadSafeFury
 import net.liyze.basin.core.Server
+import net.liyze.basin.event.Observer
 import org.smartboot.http.common.enums.HttpStatus
 import org.smartboot.http.server.HttpBootstrap
 import org.smartboot.http.server.HttpRequest
@@ -14,7 +15,10 @@ import java.io.IOException
 object RpcService : Server {
     private var port = 8088
     private val bootstrap = HttpBootstrap()
-    private val services: MutableMap<String, Service> = HashMap()
+    private val services: MutableMap<String, Observer> = HashMap()
+    fun subscribe(name: String, body: Observer) {
+        services[name] = body
+    }
     override fun stop() {
         bootstrap.shutdown()
         services.clear()
@@ -34,7 +38,7 @@ object RpcService : Server {
                 }
                 response.write(
                     FURY.serialize(
-                        service.body(
+                        service.run(
                             FURY.deserialize(
                                 request.inputStream.readAllBytes()
                             )
@@ -51,7 +55,7 @@ object RpcService : Server {
         return this
     }
 
-    val FURY: ThreadSafeFury = Fury
+    internal val FURY: ThreadSafeFury = Fury
         .builder()
         .withAsyncCompilation(true)
         .withCodegen(true)

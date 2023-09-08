@@ -15,8 +15,10 @@ fun request(host: String, serviceName: String, arg: Any): Result<Any, *> {
             .post(FURY.serialize(arg).toRequestBody())
             .header("Service-Name", serviceName)
             .build()
-        return@async FURY.deserialize(client.newCall(request).execute().body?.bytes())
+        return@async FURY.deserialize(client.newCall(request).execute().body?.bytes()) ?: throw DeserializeException()
     }
 }
 
 private val client: OkHttpClient = OkHttpClient()
+
+class DeserializeException : Exception()

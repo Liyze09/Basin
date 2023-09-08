@@ -42,11 +42,11 @@ object HttpServer : Server {
         fgt = GroupTemplate(fileLoader, cfg)
     }
 
-    fun handleGet(path: String, handler: HttpHandler) {
+    fun subscribeGet(path: String, handler: HttpHandler) {
         getMappings[path] = handler
     }
 
-    fun handlePost(path: String, handler: HttpHandler) {
+    fun subscribePost(path: String, handler: HttpHandler) {
         postMappings[path] = handler
     }
 

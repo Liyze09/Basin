@@ -10,6 +10,10 @@ fun <T> async(action: SingleCallable<T>): Result<Any, T> {
     return SingleResult(action)
 }
 
+fun <T> await(future: Result<*, T>): T {
+    return future.await()
+}
+
 class SingleResult<T>(
     override val action: SingleCallable<T>
 ) : Result<Any, T>(action, Any()) {
