@@ -7,12 +7,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(DelicateCoroutinesApi::class)
 open class Result<I, T>(
-    open val action: Callable<I, T>,
-    val input: I,
+    protected open val action: Callable<I, T>,
+    protected val input: I,
 ) {
 
     @Volatile
-    var result: T? = null
+    protected var result: T? = null
 
     init {
         GlobalScope.launch(Dispatchers.IO) {

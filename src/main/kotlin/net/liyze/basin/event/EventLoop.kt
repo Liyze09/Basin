@@ -1,28 +1,34 @@
 package net.liyze.basin.event
 
-import java.util.concurrent.*
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 object EventLoop {
-    private val schedule = Executors.newScheduledThreadPool(0)
+    internal val schedule = Executors.newScheduledThreadPool(2)
+    private val events: MutableList<EventAndCondition> = CopyOnWriteArrayList()
+    var loopPeriod: Long = 15
 
     init {
         (schedule as ScheduledThreadPoolExecutor).removeOnCancelPolicy = true
-    }
-
-    private val map: MutableMap<EventAndCondition, ScheduledFuture<*>> = ConcurrentHashMap()
-    fun publish(event: Any, condition: Condition) {
-        map[EventAndCondition(event, condition)] = schedule.scheduleAtFixedRate(
-            {
-                if (condition.test()) {
-                    EventBus.emit(event)
+        schedule.scheduleAtFixedRate({
+            events.forEach {
+                if (it.condition.test()) {
+                    EventBus.emit(it.event, it.condition)
                 }
-            }, 0, 10, TimeUnit.MILLISECONDS
-        )
+            }
+        }, 0, loopPeriod, TimeUnit.MILLISECONDS)
     }
 
-    fun cancel(event: Any, condition: Condition) {
-        map[EventAndCondition(event, condition)]?.cancel(false)
+    fun publish(event: Any, condition: Condition): Int {
+        events.add(EventAndCondition(event, condition))
+        return events.size - 1
     }
 
-    data class EventAndCondition(val event: Any, val condition: Condition)
+    fun cancel(id: Int) {
+        events.removeAt(id)
+    }
+
+    private data class EventAndCondition(val event: Any, val condition: Condition)
 }

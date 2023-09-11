@@ -56,9 +56,9 @@ class DataMapper<T>(val name: String, val pool: JdbcPool, val clazz: Class<T>) {
         val result = pool.query("SELECT * FROM $name WHERE id = ?", listOf(index))
         for (field in fields) {
             if (converters.containsKey(field.type)) {
-                field.set(instance, converters[field.type]?.apply(result.getString(field.name)))
+                field.set(instance, converters[field.type]?.apply(result[0][field.name].toString()))
             }
-            field.set(instance, result.getObject(field.name, field.type))
+            field.set(instance, result[0][field.name])
         }
         return instance
     }

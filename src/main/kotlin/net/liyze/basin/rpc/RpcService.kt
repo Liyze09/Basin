@@ -4,7 +4,7 @@ import io.fury.Fury
 import io.fury.Language
 import io.fury.ThreadSafeFury
 import net.liyze.basin.core.Server
-import net.liyze.basin.event.Observer
+import net.liyze.basin.event.RpcObserver
 import org.smartboot.http.common.enums.HttpStatus
 import org.smartboot.http.server.HttpBootstrap
 import org.smartboot.http.server.HttpRequest
@@ -15,9 +15,10 @@ import java.io.IOException
 object RpcService : Server {
     private var port = 8088
     private val bootstrap = HttpBootstrap()
-    private val services: MutableMap<String, Observer> = HashMap()
-    fun subscribe(name: String, body: Observer) {
+    private val services: MutableMap<String, RpcObserver> = HashMap()
+    fun subscribe(name: String, body: RpcObserver): RpcService {
         services[name] = body
+        return this
     }
     override fun stop() {
         bootstrap.shutdown()

@@ -4,9 +4,9 @@ package net.liyze.basin.jdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import net.liyze.basin.util.toList
 import java.io.Closeable
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 
@@ -37,7 +37,7 @@ class JdbcPool : Closeable {
     fun getConfig() = config
     fun getConnection() = data?.getConnection() ?: throw IllegalStateException("Must connect SQL before use!")
     @JvmOverloads
-    fun query(sql: String, args: List<Any> = listOf()): ResultSet {
+    fun query(sql: String, args: List<Any> = listOf()): List<Map<String, Any>> {
         val connection = getConnection()
         try {
             val ps = connection.prepareStatement(sql)
@@ -46,7 +46,7 @@ class JdbcPool : Closeable {
             }
             val ret = ps.executeQuery()
             connection.commit()
-            return ret
+            return ret.toList()
         } catch (e: SQLException) {
             connection.rollback()
             throw RuntimeException(e)
