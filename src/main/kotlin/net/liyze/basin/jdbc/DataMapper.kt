@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023 Liyze09
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:Suppress("unused")
 
 package net.liyze.basin.jdbc
@@ -40,9 +56,9 @@ class DataMapper<T>(val name: String, val pool: JdbcPool, val clazz: Class<T>) {
             .append(") VALUES (")
         fields.forEach {
             if (Number::class.java.isAssignableFrom(it.type)) {
-                args.add(it.get(obj) ?: 0)
+                args.add(it.get(obj))
             } else {
-                args.add(it.get(obj)?.toString() ?: "null")
+                args.add(it.get(obj).toString())
             }
             sql.append("?,")
         }
@@ -56,9 +72,9 @@ class DataMapper<T>(val name: String, val pool: JdbcPool, val clazz: Class<T>) {
         val result = pool.query("SELECT * FROM $name WHERE id = ?", listOf(index))
         for (field in fields) {
             if (converters.containsKey(field.type)) {
-                field.set(instance, converters[field.type]?.apply(result[0][field.name].toString()))
+                field.set(instance, converters[field.type]?.apply(result.await()[0][field.name].toString()))
             }
-            field.set(instance, result[0][field.name])
+            field.set(instance, result.await()[0][field.name])
         }
         return instance
     }

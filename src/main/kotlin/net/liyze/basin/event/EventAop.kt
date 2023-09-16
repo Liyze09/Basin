@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.resource
+package net.liyze.basin.event
 
-class FactoryBean<T>(
-    override val type: Class<T>,
-    val factory: Factory<T>,
-    val destroy: Runnable = Runnable {}
-) : AbstractBean<T>() {
-    override fun getInstance(): T {
-        return factory.get()
-    }
-
-    override fun destroy() {
-        destroy.run()
-    }
+@FunctionalInterface
+fun interface EventAop {
+    fun proxy(origin: Observer, event: Any)
 }

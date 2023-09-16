@@ -1,9 +1,26 @@
+/*
+ * Copyright (c) 2023 Liyze09
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.liyze.basin.event
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.liyze.basin.event.exception.ConnectFailedException
+import net.liyze.basin.event.exception.NoSuchObserverException
 import net.liyze.basin.http.HttpServer
 import net.liyze.basin.rpc.RpcService
 import net.liyze.basin.rpc.request
@@ -18,6 +35,7 @@ object EventBus {
     private val LOGGER: Logger = LoggerFactory.getLogger(EventBus::class.java)
     private val remotes: MutableList<String> = Vector()
     private val buffer: Queue<EventAndMessage> = ConcurrentLinkedQueue()
+    private var delay: Long = 0
     fun connect(url: String) {
         if (request(url, "_hello", Hello()).await() == 1) remotes.add(url)
         else throw ConnectFailedException(url)
@@ -72,11 +90,26 @@ object EventBus {
         eventLoop.cancel(id)
     }
 
+    fun override(event: Any, eventAop: EventAop) {
+        LOGGER.debug("An aop observer is subscribing.")
+        val observer = map[event] ?: throw NoSuchObserverException(event.toString())
+        map[event] = Observer {
+            eventAop.proxy(observer, it)
+        }
+    }
+
     fun emit(event: Any, message: Any) {
+        val wait = delay - System.currentTimeMillis()
+        if (wait > 0) {
+            Thread.sleep(wait)
+        }
         val em = EventAndMessage(event, message)
         buffer.add(em)
         remotes.forEach {
             request(it, "_emit", em)
+        }
+        if (buffer.size >= eventLoop.maxBufferSize) {
+            delay = System.currentTimeMillis() + eventLoop.loopPeriod
         }
     }
 

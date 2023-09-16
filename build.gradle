@@ -122,8 +122,8 @@ publishing {
                 url = 'https://github.com/Liyze09/Basin'
                 licenses {
                     license {
-                        name = 'GPLv3'
-                        url = ''
+                        name = 'Apache License 2.0'
+                        url = 'http://www.apache.org/licenses/'
                     }
                 }
                 developers {

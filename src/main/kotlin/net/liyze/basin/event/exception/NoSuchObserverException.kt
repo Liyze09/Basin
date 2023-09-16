@@ -14,18 +14,6 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.resource
+package net.liyze.basin.event.exception
 
-class FactoryBean<T>(
-    override val type: Class<T>,
-    val factory: Factory<T>,
-    val destroy: Runnable = Runnable {}
-) : AbstractBean<T>() {
-    override fun getInstance(): T {
-        return factory.get()
-    }
-
-    override fun destroy() {
-        destroy.run()
-    }
-}
+class NoSuchObserverException(name: String) : Exception(name)

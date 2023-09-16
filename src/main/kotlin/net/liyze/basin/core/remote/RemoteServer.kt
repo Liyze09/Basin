@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023 Liyze09
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.liyze.basin.core.remote
 
 import net.liyze.basin.core.CommandParser
@@ -18,27 +34,14 @@ class RemoteServer(token: String, port: Int, remoteParser: CommandParser) : Serv
     private val token: String
     private val port: Int
     private val parser: CommandParser
-    var server: AioQuickServer? = null
+    val server: AioQuickServer
 
     init {
         servers.add(this)
         this.token = token
         this.port = port
         parser = remoteParser
-    }
-
-    /**
-     * Stop remote Server
-     */
-    override fun stop() {
-        server!!.shutdown()
-    }
-
-    /**
-     * Start remote server
-     */
-    override fun start(): RemoteServer {
-        val processor = MessageProcessor { s: AioSession, b: ByteArray? ->
+        val processor = MessageProcessor { s: AioSession, b: ByteArray ->
             val cipher: Cipher
             var msg = ""
             val outputStream = s.writeBuffer()
@@ -86,9 +89,22 @@ class RemoteServer(token: String, port: Int, remoteParser: CommandParser) : Serv
             }
         }
         server = AioQuickServer(port, ByteArrayProtocol(), processor)
-        server!!.setLowMemory(true)
+    }
+
+    /**
+     * Stop remote Server
+     */
+    override fun stop() {
+        server.shutdown()
+    }
+
+    /**
+     * Start remote server
+     */
+    override fun start(): RemoteServer {
+
         try {
-            server!!.start()
+            server.start()
         } catch (e: IOException) {
             LOGGER.error("Failed to start server {}", e.toString())
         }
