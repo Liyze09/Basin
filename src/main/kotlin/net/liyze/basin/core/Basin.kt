@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023 Liyze09
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 @file:JvmName("Basin")
 @file:Suppress("unused")
 
@@ -31,7 +46,7 @@ import kotlin.system.exitProcess
 val LOGGER: Logger = LoggerFactory.getLogger("Basin")
 
 @JvmField
-val commands = HashMap<String, Command?>()
+val commands = HashMap<String, Command>()
 
 @JvmField
 val userHome = File("data" + File.separator + "home")
@@ -101,6 +116,7 @@ fun start() {
             script.mkdirs()
             jars.mkdirs()
             loadEnv()
+            taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
             envMap.forEach { (key: String, value: Any) -> publicVars[key] = value.toString() }
             if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
             if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
@@ -163,10 +179,11 @@ fun loadEnv() {
         } catch (e: IOException) {
             LOGGER.error("Error when create environment variable file: ", e)
         }
-        FileWriter(envFile).use { it.write("# Basin Environment Variables") }
+        FileWriter(envFile).use {
+            it.write("# Basin Environment Variables")
+        }
     }
     envMap.putAll(env.read(envFile).toMap())
-    taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
 }
 
 fun registerCommand(cmd: Command) {

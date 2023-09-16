@@ -13,27 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file: JvmName("LoggingUtils")
 
-package net.liyze.basin.util
+package net.liyze.basin.resource
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
-import java.io.PrintWriter
-import java.io.StringWriter
-
-private val DEFAULT = LoggerFactory.getLogger("EXCEPTION")
-
-@JvmOverloads
-fun Logger.printException(throwable: Throwable, level: Level = Level.ERROR) {
-    val out = StringWriter()
-    val buffer = PrintWriter(out)
-    buffer.println()
-    throwable.printStackTrace(buffer)
-    atLevel(level).log(out.toString())
-}
-
-fun Throwable.printException() {
-    DEFAULT.printException(this)
+class ThreadLocalBean<T>(
+    val singleton: T,
+    override val type: Class<out T> = singleton!!::class.java,
+) : AbstractBean<T>() {
+    val threadLocal: ThreadLocal<T> = ThreadLocal.withInitial { return@withInitial singleton }
+    override fun getInstance(): T {
+        return threadLocal.get()
+    }
 }
