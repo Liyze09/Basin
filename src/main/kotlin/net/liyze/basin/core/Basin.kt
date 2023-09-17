@@ -53,7 +53,7 @@ val commands = HashMap<String, Command>()
 val userHome = File("data" + File.separator + "home")
 val config = File("data" + File.separator + "cfg.json")
 val script = File("data" + File.separator + "script")
-val BootClasses: MutableList<Class<*>> = ArrayList()
+val bootClasses: MutableList<Class<*>> = ArrayList()
 val CONSOLE_COMMAND_PARSER = CommandParser()
 
 @JvmField
@@ -160,7 +160,7 @@ fun start() {
                 }
             }
         }.start()
-        BootClasses.forEach(Consumer {
+        bootClasses.forEach(Consumer {
             GlobalScope.launch {
                 (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()
             }
@@ -210,13 +210,13 @@ val versionNum: Int
     get() = 6
 
 /**
- * Stop basin then all task finished.
+ * Stop basin.
  */
-
+@OptIn(DelicateCoroutinesApi::class)
 fun shutdown() {
-    Thread {
+    GlobalScope.launch {
         LOGGER.info("Stopping\n")
-        BootClasses.forEach(Consumer { i: Class<*> ->
+        bootClasses.forEach(Consumer { i: Class<*> ->
             try {
                 (i.getDeclaredConstructor().newInstance() as BasinBoot).beforeStop()
             } catch (e: Exception) {
@@ -231,7 +231,7 @@ fun shutdown() {
             exitProcess(0)
         }
         exitProcess(0)
-    }.start()
+    }
 }
 
 /**
@@ -240,7 +240,7 @@ fun shutdown() {
 @OptIn(DelicateCoroutinesApi::class)
 fun restart() {
     GlobalScope.launch {
-        BootClasses.forEach(Consumer { i: Class<*> ->
+        bootClasses.forEach(Consumer { i: Class<*> ->
             try {
                 val `in` = i.getDeclaredConstructor().newInstance() as BasinBoot
                 `in`.beforeStop()
@@ -256,14 +256,13 @@ fun restart() {
         HttpServer.stop()
         HttpServer.start()
         commands.clear()
-        BootClasses.clear()
         publicVars.clear()
         loadEnv()
         yield()
         taskPool.awaitTermination(3, TimeUnit.SECONDS)
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
         servicePool = Executors.newCachedThreadPool()
-        BootClasses.forEach(Consumer {
+        bootClasses.forEach(Consumer {
             try {
                 (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()
             } catch (e: Exception) {
