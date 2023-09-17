@@ -24,15 +24,22 @@ import java.util.concurrent.TimeUnit
 object EventLoop {
     internal val schedule = Executors.newScheduledThreadPool(2)
     private val events: MutableList<EventAndCondition> = CopyOnWriteArrayList()
+    private val removed: MutableList<Int> = ArrayList()
     var loopPeriod: Long = 15
     var maxBufferSize: Int = 64
     init {
         (schedule as ScheduledThreadPoolExecutor).removeOnCancelPolicy = true
         schedule.scheduleAtFixedRate({
-            events.forEach {
+            for ((index, it) in events.withIndex()) {
                 if (it.condition.test()) {
                     EventBus.emit(it.event, it.condition)
+                    if (it.isOnce) {
+                        removed.add(index)
+                    }
                 }
+            }
+            removed.forEach {
+                events.removeAt(it)
             }
         }, 0, loopPeriod, TimeUnit.MILLISECONDS)
     }
@@ -42,9 +49,14 @@ object EventLoop {
         return events.size - 1
     }
 
+    fun publishOnce(event: Any, condition: Condition): Int {
+        events.add(EventAndCondition(event, condition, true))
+        return events.size - 1
+    }
+
     fun cancel(id: Int) {
         events.removeAt(id)
     }
 
-    private data class EventAndCondition(val event: Any, val condition: Condition)
+    private data class EventAndCondition(val event: Any, val condition: Condition, val isOnce: Boolean = false)
 }

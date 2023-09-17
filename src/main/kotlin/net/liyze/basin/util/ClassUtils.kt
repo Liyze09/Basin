@@ -17,7 +17,6 @@
 
 package net.liyze.basin.util
 
-import io.fury.Fury
 import net.liyze.basin.rpc.RpcService.FURY
 import org.slf4j.LoggerFactory
 import sun.misc.Unsafe
@@ -37,5 +36,8 @@ fun <T> Class<T>.createInstance(): T {
     return instance
 }
 
-@JvmOverloads
-fun Any.toBytes(fury: Fury = FURY.currentFury): ByteArray = fury.serialize(this)
+fun Any.toBytes(): ByteArray = FURY.serialize(this)
+fun ByteArray.toObject(): Any = FURY.deserialize(this)
+
+@Suppress("UNCHECKED_CAST")
+fun <T> T.deepClone(): T = this?.toBytes()?.toObject() as T

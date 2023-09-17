@@ -22,6 +22,7 @@ import com.moandjiezana.toml.Toml
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import net.liyze.basin.core.Config.Companion.initConfig
 import net.liyze.basin.core.remote.RemoteServer
 import net.liyze.basin.core.scan.*
@@ -209,7 +210,7 @@ val versionNum: Int
     get() = 6
 
 /**
- * Stop basin after all task finished.
+ * Stop basin then all task finished.
  */
 
 fun shutdown() {
@@ -248,7 +249,7 @@ fun restart() {
             }
         })
         CommandParser.cs.forEach(Consumer { c: CommandParser -> c.vars.clear() })
-        taskPool.shutdownNow()
+        taskPool.shutdown()
         servicePool.shutdownNow()
         RemoteServer.servers.forEach(Consumer { obj: Server -> obj.stop() })
         RemoteServer.servers.clear()
@@ -258,6 +259,7 @@ fun restart() {
         BootClasses.clear()
         publicVars.clear()
         loadEnv()
+        yield()
         taskPool.awaitTermination(3, TimeUnit.SECONDS)
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
         servicePool = Executors.newCachedThreadPool()

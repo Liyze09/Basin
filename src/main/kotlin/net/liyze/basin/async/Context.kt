@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.event
+package net.liyze.basin.async
 
-fun interface Condition {
-    fun test(): Boolean
+import net.liyze.basin.util.deepClone
+import java.util.concurrent.ConcurrentHashMap
+
+class Context {
+    val contextMap: MutableMap<Any, Any> = ConcurrentHashMap()
+    private var last: Any = Any()
+    fun get() = last
+    internal fun set(last: Any) {
+        this.last = last
+    }
+
+    fun fork(last: Any): Context {
+        val ret = Context()
+        ret.contextMap.putAll(contextMap)
+        ret.last = last.deepClone()
+        return ret
+    }
 }

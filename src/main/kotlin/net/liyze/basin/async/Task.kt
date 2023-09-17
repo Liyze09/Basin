@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.event
+package net.liyze.basin.async
 
-fun interface Condition {
-    fun test(): Boolean
+fun interface Task {
+    fun run(context: Context): Any
 }

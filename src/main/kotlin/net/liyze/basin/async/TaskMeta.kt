@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file: JvmName("JdbcUtils")
+package net.liyze.basin.async
 
-package net.liyze.basin.util
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
-import java.sql.ResultSet
+internal class TaskMeta {
+    lateinit var name: String
+    lateinit var task: Task
+    val then: MutableList<TaskMeta> = ArrayList()
 
-fun ResultSet.toList(): List<Map<String, Any>> {
-    val ret: MutableList<Map<String, Any>> = ArrayList()
-    val meta = this.metaData
-    val column = meta.columnCount
-    while (this.next()) {
-        val data: MutableMap<String, Any> = HashMap(column)
-        for (i in 1..column) {
-            data[meta.getColumnName(i)] = this.getObject(i)
+    @OptIn(DelicateCoroutinesApi::class)
+    suspend fun start(ctx: Context) {
+        val result = task.run(ctx)
+        yield()
+        then.forEach {
+            GlobalScope.launch { it.start(ctx.fork(result)) }
         }
-        ret.add(data)
     }
-    return ret
 }

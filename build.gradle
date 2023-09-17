@@ -54,7 +54,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3'
     // https://mvnrepository.com/artifact/org.furyio/fury-core
-    api 'org.furyio:fury-core:0.1.0'
+    api 'org.furyio:fury-core:0.1.1'
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-slf4j
+    runtimeOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.7.3'
+
 
 }
 test {

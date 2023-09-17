@@ -27,4 +27,6 @@ val rpcServer = RpcService
 val eventBus = EventBus
 fun startBasin() {
     start()
+    RpcService.start()
+    HttpServer.start()
 }

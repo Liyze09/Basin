@@ -17,33 +17,32 @@
 package net.liyze.basin.async
 
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 
-@OptIn(DelicateCoroutinesApi::class)
-open class Result<I, T>(
-    protected open val action: Callable<I, T>,
-    protected val input: I,
-) {
-
-    @Volatile
-    protected var result: T? = null
+class TaskTree {
+    private val base: TaskMeta = TaskMeta()
+    private val map: MutableMap<String, TaskMeta>
 
     init {
-        GlobalScope.launch(Dispatchers.Default) {
-            result = run()
-        }
+        base.task = Task {}
+        base.name = "base"
+        map = ConcurrentHashMap(mapOf("base" to base))
     }
 
-    protected open fun run(): T {
-        return action run input
+    @JvmOverloads
+    fun fork(name: String, parent: String = "base", task: Task): TaskTree {
+        val current = TaskMeta()
+        current.name = name
+        current.task = task
+        map[parent]?.then?.add(current)
+        map[name] = current
+        return this
     }
 
-    fun await(): T {
-        while (result == null) {
-            Thread.onSpinWait()
-        }
-        return result!!
+    @OptIn(DelicateCoroutinesApi::class)
+    fun start() {
+        GlobalScope.launch { base.start(Context()) }
     }
 }
