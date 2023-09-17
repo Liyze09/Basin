@@ -43,6 +43,6 @@ class TaskTree {
 
     @OptIn(DelicateCoroutinesApi::class)
     fun start() {
-        GlobalScope.launch { base.start(Context()) }
+        GlobalScope.launch { base.start(Context(ConcurrentHashMap())) }
     }
 }

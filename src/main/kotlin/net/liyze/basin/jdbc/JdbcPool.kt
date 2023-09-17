@@ -165,7 +165,7 @@ class JdbcPool : Closeable {
         action: Callable<Connection, T>,
         val connection: Connection
     ) : Result<Connection, T>(action, connection) {
-        override fun run(): T {
+        override suspend fun run(): T {
             try {
                 val ret: T = action run connection
                 connection.commit()

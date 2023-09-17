@@ -36,7 +36,7 @@ open class Result<I, T>(
         }
     }
 
-    protected open fun run(): T {
+    protected open suspend fun run(): T {
         return action run input
     }
 

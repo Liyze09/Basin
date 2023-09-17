@@ -14,36 +14,23 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.event
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class Test {
-
+class EventsTest {
+    @Disabled
     @Test
-    fun taskTreeTest() {
-        val tree = TaskTree()
-        tree.fork(
-            name = "task1"
-        ) {
-            println("task1")
-            Any()
+    fun test() {
+        val event = Any()
+        EventBus.subscribe(event) {
+            Thread.sleep(20)
+            println("get")
         }
-        tree.fork(
-            name = "task2",
-            parent = "task1"
-        ) {
-            println("task2")
-            println(it.get().toString())
+        repeat(1000) {
+            EventBus.emit(event, Any())
+            println("emit")
         }
-        tree.fork(
-            name = "task3",
-            parent = "task1"
-        ) {
-            println("task3")
-            println(it.get().toString())
-        }
-        tree.start()
-        Thread.sleep(800)
     }
 }

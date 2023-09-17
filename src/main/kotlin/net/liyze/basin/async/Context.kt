@@ -17,10 +17,10 @@
 package net.liyze.basin.async
 
 import net.liyze.basin.util.deepClone
-import java.util.concurrent.ConcurrentHashMap
 
-class Context {
-    val contextMap: MutableMap<Any, Any> = ConcurrentHashMap()
+class Context(
+    val contextMap: MutableMap<Any, Any>
+) {
     private var last: Any = Any()
     fun get() = last
     internal fun set(last: Any) {
@@ -28,8 +28,7 @@ class Context {
     }
 
     fun fork(last: Any): Context {
-        val ret = Context()
-        ret.contextMap.putAll(contextMap)
+        val ret = Context(contextMap)
         ret.last = last.deepClone()
         return ret
     }
