@@ -25,8 +25,8 @@ jobs:
       - name: setup_Java
         uses: actions/setup-java@v3
         with:
-          distribution: "temurin"
-          java-version: 21
+          distribution: "zulu"
+          java-version: '21.0'
 
       - name: restore cache
         uses: actions/cache@v3
