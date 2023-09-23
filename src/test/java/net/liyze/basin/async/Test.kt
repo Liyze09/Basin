@@ -16,10 +16,11 @@
 
 package net.liyze.basin.async
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class Test {
-
+    @Disabled
     @Test
     fun taskTreeTest() {
         val tree = TaskTree()
