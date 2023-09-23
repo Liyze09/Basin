@@ -16,6 +16,7 @@
 
 package net.liyze.basin.event
 
+import net.liyze.basin.core.Config
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledThreadPoolExecutor
@@ -25,8 +26,9 @@ object EventLoop {
     internal val schedule = Executors.newScheduledThreadPool(2)
     private val events: MutableList<EventAndCondition> = CopyOnWriteArrayList()
     private val removed: MutableList<Int> = ArrayList()
-    var loopPeriod: Long = 15
-    var maxBufferSize: Int = 64
+    var loopPeriod: Long = Config.loopPeriod
+    var maxBufferSize: Int = Config.maxBufferSize
+
     init {
         (schedule as ScheduledThreadPoolExecutor).removeOnCancelPolicy = true
         schedule.scheduleAtFixedRate({

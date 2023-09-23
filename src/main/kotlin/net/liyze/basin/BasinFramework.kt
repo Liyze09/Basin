@@ -13,20 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file: JvmName("BasinFramework")
-
 package net.liyze.basin
 
 import net.liyze.basin.core.start
 import net.liyze.basin.event.EventBus
+import net.liyze.basin.graal.GraalPolyglot
 import net.liyze.basin.http.HttpServer
 import net.liyze.basin.rpc.RpcService
 
-val httpServer = HttpServer
-val rpcServer = RpcService
-val eventBus = EventBus
-fun startBasin() {
-    start()
-    RpcService.start()
-    HttpServer.start()
+object BasinFramework {
+    @JvmField
+    val httpServer = HttpServer
+
+    @JvmField
+    val rpcServer = RpcService
+
+    @JvmField
+    val eventBus = EventBus
+    fun startBasin() {
+        start()
+        RpcService.start()
+        HttpServer.start()
+    }
+
+    fun loadScript(vararg path: String) {
+        try {
+            Class.forName("org.graalvm.polyglot.Context")
+        } catch (_: Exception) {
+            throw UnsupportedOperationException("Graal polyglot engine not found!")
+        }
+        path.forEach {
+            GraalPolyglot.loadScript(it)
+        }
+    }
 }

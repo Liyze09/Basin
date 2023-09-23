@@ -27,11 +27,11 @@ fun <T> Class<T>.createInstance(): T {
     try {
         instance = getDeclaredConstructor().newInstance()
     } catch (_: Exception) {
-            LOGGER.warn("Using Unsafe to create instance!")
-            val field = Unsafe::class.java.getDeclaredField("theUnsafe")
-            field.setAccessible(true)
-            @Suppress("UNCHECKED_CAST")
-            instance = (field.get(null) as Unsafe).allocateInstance(this) as T
+        LOGGER.warn("Using Unsafe to create instance!")
+        val field = Unsafe::class.java.getDeclaredField("theUnsafe")
+        field.setAccessible(true)
+        @Suppress("UNCHECKED_CAST")
+        instance = (field.get(null) as Unsafe).allocateInstance(this) as T
     }
     return instance
 }

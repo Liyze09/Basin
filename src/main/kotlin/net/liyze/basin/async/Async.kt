@@ -33,14 +33,14 @@ fun <T> await(future: Result<*, T>): T {
 class SingleResult<T>(
     override val action: SingleCallable<T>
 ) : Result<Any, T>(action, Any()) {
-    override suspend fun run(): T {
+    override fun run(): T {
         return action.run()
     }
 }
 
 @FunctionalInterface
 fun interface SingleCallable<T> : Callable<Any, T> {
-    override suspend fun run(input: Any): T {
+    override fun run(input: Any): T {
         throw UnsupportedOperationException()
     }
 

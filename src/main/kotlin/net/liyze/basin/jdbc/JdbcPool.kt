@@ -55,6 +55,7 @@ class JdbcPool : Closeable {
 
     fun getConfig() = config
     fun getConnection() = data?.getConnection() ?: throw IllegalStateException("Must connect SQL before use!")
+
     @JvmOverloads
     fun query(sql: String, args: List<Any> = listOf()): JdbcResult<List<Map<String, Any>>> {
         return execute { connection ->
@@ -165,7 +166,7 @@ class JdbcPool : Closeable {
         action: Callable<Connection, T>,
         val connection: Connection
     ) : Result<Connection, T>(action, connection) {
-        override suspend fun run(): T {
+        override fun run(): T {
             try {
                 val ret: T = action run connection
                 connection.commit()

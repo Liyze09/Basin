@@ -18,12 +18,6 @@
 
 package net.liyze.basin.core
 
-import com.moandjiezana.toml.Toml
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
-import net.liyze.basin.core.Config.Companion.initConfig
 import net.liyze.basin.core.remote.RemoteServer
 import net.liyze.basin.core.scan.*
 import net.liyze.basin.http.HttpServer
@@ -32,8 +26,7 @@ import org.jetbrains.annotations.Contract
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.io.FileWriter
-import java.io.IOException
+import java.io.FileReader
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
@@ -60,17 +53,16 @@ val CONSOLE_COMMAND_PARSER = CommandParser()
 val publicVars: MutableMap<String, String> = ConcurrentHashMap()
 
 val jars = File("data" + File.separator + "jars")
-var env = Toml()
 
 @JvmField
-var servicePool: ExecutorService = Executors.newCachedThreadPool()
+var servicePool: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
 var taskPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1)
 
 @JvmField
-var envMap: MutableMap<String, Any> = HashMap()
+var envMap: MutableMap<String, String> = HashMap()
 
 @JvmField
-var cfg = initConfig()
+var cfg = Config
 
 private var command: String? = null
 
@@ -108,17 +100,16 @@ fun main(args: Array<String>) {
     start()
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 fun start() {
     LOGGER.info("----------------------------------------------\nBasin started.")
-    GlobalScope.launch {
+    Thread.ofVirtual().start {
         try {
             userHome.mkdirs()
             script.mkdirs()
             jars.mkdirs()
             loadEnv()
             taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
-            envMap.forEach { (key: String, value: Any) -> publicVars[key] = value.toString() }
+            envMap.forEach { (key: String, value: Any) -> publicVars[key] = value }
             if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
             if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
                 try {
@@ -150,7 +141,7 @@ fun start() {
             Scanner(System.`in`).use { scanner ->
                 while (true) {
                     command = scanner.nextLine()
-                    GlobalScope.launch {
+                    Thread.ofVirtual().start {
                         try {
                             CONSOLE_COMMAND_PARSER.sync().parseString(command!!)
                         } catch (e: Exception) {
@@ -161,7 +152,7 @@ fun start() {
             }
         }.start()
         bootClasses.forEach(Consumer {
-            GlobalScope.launch {
+            Thread.ofVirtual().start {
                 (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()
             }
         })
@@ -171,20 +162,17 @@ fun start() {
     println(banner)
 }
 
-@Throws(IOException::class)
 fun loadEnv() {
-    val envFile = File("data" + File.separator + "env.toml")
-    if (!envFile.exists()) {
-        try {
-            envFile.createNewFile()
-        } catch (e: IOException) {
-            LOGGER.error("Error when create environment variable file: ", e)
-        }
-        FileWriter(envFile).use {
-            it.write("# Basin Environment Variables")
-        }
+    val envFile = File("data" + File.separator + "env.properties")
+    val props = Properties()
+    if (envFile.exists()) {
+        props.load(FileReader(envFile))
     }
-    envMap.putAll(env.read(envFile).toMap())
+    envMap.putAll(System.getenv())
+    val names = props.stringPropertyNames()
+    for (name in names) {
+        envMap[name] = props.getProperty(name)
+    }
 }
 
 fun registerCommand(cmd: Command) {
@@ -202,19 +190,18 @@ val version: String
     /**
      * Get version version's String.
      */
-    get() = "1.6"
+    get() = "3.0"
 val versionNum: Int
     /**
      * Get version version's int.
      */
-    get() = 6
+    get() = 7
 
 /**
  * Stop basin.
  */
-@OptIn(DelicateCoroutinesApi::class)
 fun shutdown() {
-    GlobalScope.launch {
+    Thread.ofVirtual().start {
         LOGGER.info("Stopping\n")
         bootClasses.forEach(Consumer { i: Class<*> ->
             try {
@@ -237,9 +224,8 @@ fun shutdown() {
 /**
  * Restart basin.
  */
-@OptIn(DelicateCoroutinesApi::class)
 fun restart() {
-    GlobalScope.launch {
+    Thread.ofVirtual().start {
         bootClasses.forEach(Consumer { i: Class<*> ->
             try {
                 val `in` = i.getDeclaredConstructor().newInstance() as BasinBoot
@@ -258,7 +244,6 @@ fun restart() {
         commands.clear()
         publicVars.clear()
         loadEnv()
-        yield()
         taskPool.awaitTermination(3, TimeUnit.SECONDS)
         taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
         servicePool = Executors.newCachedThreadPool()

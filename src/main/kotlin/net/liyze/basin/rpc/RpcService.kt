@@ -37,6 +37,7 @@ object RpcService : Server {
         services[name] = body
         return this
     }
+
     override fun stop() {
         bootstrap.shutdown()
         services.clear()

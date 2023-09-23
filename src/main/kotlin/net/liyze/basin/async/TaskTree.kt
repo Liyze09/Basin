@@ -16,9 +16,6 @@
 
 package net.liyze.basin.async
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 
 class TaskTree {
@@ -41,8 +38,7 @@ class TaskTree {
         return this
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun start() {
-        GlobalScope.launch { base.start(Context(ConcurrentHashMap())) }
+        Thread.ofVirtual().start { base.start(Context(ConcurrentHashMap())) }
     }
 }

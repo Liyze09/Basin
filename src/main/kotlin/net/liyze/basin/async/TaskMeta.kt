@@ -15,22 +15,16 @@
  */
 package net.liyze.basin.async
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 internal class TaskMeta {
     lateinit var name: String
     lateinit var task: Task
     val then: MutableList<TaskMeta> = ArrayList()
 
-    @OptIn(DelicateCoroutinesApi::class)
-    suspend fun start(ctx: Context) {
+    fun start(ctx: Context) {
         val result = task.run(ctx)
-        yield()
         then.forEach {
-            GlobalScope.launch { it.start(ctx.fork(result)) }
+            Thread.ofVirtual().start { it.start(ctx.fork(result)) }
         }
     }
 }

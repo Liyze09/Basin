@@ -16,9 +16,6 @@
 
 package net.liyze.basin.event
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.liyze.basin.event.exception.ConnectFailedException
 import net.liyze.basin.event.exception.NoSuchObserverException
 import net.liyze.basin.http.HttpServer
@@ -30,7 +27,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
-@OptIn(DelicateCoroutinesApi::class)
 object EventBus {
     private val LOGGER: Logger = LoggerFactory.getLogger(EventBus::class.java)
     private val remotes: MutableList<String> = Vector()
@@ -76,7 +72,7 @@ object EventBus {
     fun asyncSubscribe(event: Any, observer: Observer) {
         LOGGER.debug("An async observer is subscribing.")
         map[event] = Observer {
-            GlobalScope.launch {
+            Thread.ofVirtual().start {
                 observer.run(it)
             }
         }
