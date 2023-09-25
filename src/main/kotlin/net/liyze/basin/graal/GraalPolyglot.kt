@@ -23,16 +23,24 @@ import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Source
 import java.io.File
 
-internal object GraalPolyglot {
+internal class GraalPolyglot : Polyglot {
     private val context: Context = Context.newBuilder()
         .allowAllAccess(true)
         .build()
 
     init {
-        context.getBindings("js").putMember("basin", BasinFramework)
+        arrayOf("js", "python", "ruby", "R", "llvm").forEach {
+            try {
+                context.getBindings(it).putMember("basin", BasinFramework)
+            } catch (_: Exception) {
+            }
+        }
+
+
+
     }
 
-    fun loadScript(path: String) {
+    override fun loadScript(path: String) {
         val language = when {
             path.endsWith("rb") -> "ruby"
             path.endsWith("py") -> "python"

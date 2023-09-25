@@ -23,15 +23,14 @@ import net.liyze.basin.rpc.RpcService
 import net.liyze.basin.rpc.request
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.CopyOnWriteArrayList
 
 object EventBus {
     private val LOGGER: Logger = LoggerFactory.getLogger(EventBus::class.java)
-    private val remotes: MutableList<String> = Vector()
-    private val buffer: Queue<EventAndMessage> = ConcurrentLinkedQueue()
-    private var delay: Long = 0
+    private val remotes: MutableList<String> = CopyOnWriteArrayList()
+    private val buffer: BlockingQueue<EventAndMessage> = ArrayBlockingQueue(EventLoop.maxBufferSize)
     fun connect(url: String) {
         if (request(url, "_hello", Hello()).await() == 1) remotes.add(url)
         else throw ConnectFailedException(url)
@@ -45,19 +44,19 @@ object EventBus {
         }
         RpcService.subscribe("_emit") {
             if (it is EventAndMessage) {
-                remoteEmit(it)
+                Thread.ofVirtual().start { remoteEmit(it) }
                 return@subscribe 1
             }
             LOGGER.warn("Illegal '_emit' request!")
             return@subscribe 255
 
         }
-        EventLoop.schedule.scheduleAtFixedRate({
-            val element = buffer.poll()
-            if (element != null) {
+        Thread.ofVirtual().start {
+            while (!Thread.interrupted()) {
+                val element = buffer.take()
                 map[element.event]?.run(element.message)
             }
-        }, 0, EventLoop.loopPeriod, TimeUnit.MILLISECONDS)
+        }
     }
 
     val eventLoop = EventLoop
@@ -95,22 +94,15 @@ object EventBus {
     }
 
     fun emit(event: Any, message: Any) {
-        val wait = delay - System.currentTimeMillis()
-        if (wait > 0) {
-            Thread.sleep(wait)
-        }
         val em = EventAndMessage(event, message)
-        buffer.add(em)
+        buffer.put(em)
         remotes.forEach {
             request(it, "_emit", em)
-        }
-        if (buffer.size >= eventLoop.maxBufferSize) {
-            delay = System.currentTimeMillis() + eventLoop.loopPeriod
         }
     }
 
     private fun remoteEmit(eventAndMessage: EventAndMessage) {
-        buffer.add(eventAndMessage)
+        buffer.put(eventAndMessage)
     }
 
     private class Hello

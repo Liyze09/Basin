@@ -17,9 +17,10 @@ package net.liyze.basin
 
 import net.liyze.basin.core.start
 import net.liyze.basin.event.EventBus
-import net.liyze.basin.graal.GraalPolyglot
+import net.liyze.basin.graal.Polyglot
 import net.liyze.basin.http.HttpServer
 import net.liyze.basin.rpc.RpcService
+import net.liyze.basin.util.createInstance
 
 object BasinFramework {
     @JvmField
@@ -36,14 +37,19 @@ object BasinFramework {
         HttpServer.start()
     }
 
+    private var polyglot: Polyglot? = null
     fun loadScript(vararg path: String) {
+        path.forEach {
+            polyglot?.loadScript(it) ?: throw IllegalStateException("Must init polyglot engine before use!")
+        }
+    }
+
+    fun initPolyglot() {
         try {
             Class.forName("org.graalvm.polyglot.Context")
         } catch (_: Exception) {
             throw UnsupportedOperationException("Graal polyglot engine not found!")
         }
-        path.forEach {
-            GraalPolyglot.loadScript(it)
-        }
+        polyglot = Class.forName("net.liyze.basin.graal.GraalPolyglot").createInstance() as Polyglot
     }
 }
