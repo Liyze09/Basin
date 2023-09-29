@@ -14,27 +14,6 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.async.exception
 
-import java.util.concurrent.ConcurrentHashMap
-
-class Context(
-    val contextMap: MutableMap<Any, Any>,
-    val tree: TaskTree
-) {
-    companion object {
-        val none = Any()
-    }
-
-    private var last: Any = none
-    fun get() = last
-    internal fun set(last: Any) {
-        this.last = last
-    }
-
-    internal fun fork(last: Any): Context {
-        val ret = Context(ConcurrentHashMap(contextMap), tree)
-        ret.last = last
-        return ret
-    }
-}
+class IllegalOriginThreadException(thread: Thread) : Exception(thread.name)

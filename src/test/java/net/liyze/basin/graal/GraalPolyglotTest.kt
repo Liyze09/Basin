@@ -23,6 +23,6 @@ class GraalPolyglotTest {
     @Disabled
     @Test
     fun loadScript() {
-        GraalPolyglot.loadScript("data/test.js")
+        GraalPolyglot().loadScript("data/test.js")
     }
 }

@@ -18,21 +18,18 @@ package net.liyze.basin.http
 
 import net.liyze.basin.core.LOGGER
 import net.liyze.basin.core.Server
+import net.liyze.basin.util.read
 import org.beetl.core.Configuration
 import org.beetl.core.GroupTemplate
 import org.beetl.core.ResourceLoader
 import org.beetl.core.Template
 import org.beetl.core.resource.ClasspathResourceLoader
-import org.beetl.core.resource.FileResourceLoader
 import org.smartboot.http.common.enums.HttpStatus
 import org.smartboot.http.server.HttpBootstrap
 import org.smartboot.http.server.HttpRequest
 import org.smartboot.http.server.HttpResponse
 import org.smartboot.http.server.HttpServerHandler
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
-import java.nio.file.Path
+import java.io.*
 import java.util.*
 
 object HttpServer : Server {
@@ -40,23 +37,14 @@ object HttpServer : Server {
     var port = 8000
     val cfg: Configuration = Configuration.defaultConfiguration()
     private val cgt: GroupTemplate
-    private val fgt: GroupTemplate
     private val bootstrap = HttpBootstrap()
     val root: File = File("data/web/$serverName/root".replace('/', File.separatorChar))
     val getMappings: MutableMap<String, HttpHandler> = HashMap()
     val postMappings: MutableMap<String, HttpHandler> = HashMap()
 
     init {
-        root.mkdirs()
-        val temp = Path.of(root.path).resolve("template").toFile()
-        temp.mkdirs()
-        cfg.isDirectByteOutput = true
-        val fileLoader: ResourceLoader<String> = FileResourceLoader(
-            "data" + File.separator + "web" + File.separator + serverName + "template"
-        )
         val classpathLoader: ResourceLoader<String> = ClasspathResourceLoader("static/" + serverName + "template")
         cgt = GroupTemplate(classpathLoader, cfg)
-        fgt = GroupTemplate(fileLoader, cfg)
     }
 
     fun subscribeGet(path: String, handler: HttpHandler) {
@@ -129,8 +117,6 @@ object HttpServer : Server {
         val temp = view.view
         val template: Template = if (temp.startsWith("classpath:")) {
             cgt.getTemplate(view.view)
-        } else if (temp.startsWith("file:")) {
-            fgt.getTemplate(view.view)
         } else {
             throw RuntimeException("Illegal view path: " + view.view)
         }
@@ -199,15 +185,15 @@ object HttpServer : Server {
                 "/static$uri"
             ).use { tmp1 ->
                 val tmp2 = File(
-                    "data" + File.separator + "web" + File.separator
+                    "static" + File.separator
                             + serverName + uri.replace('/', File.separatorChar)
                 )
                 if (tmp0 != null) {
-                    response.write(tmp0.readAllBytes())
+                    read(tmp0, response.outputStream)
                 } else if (tmp2.exists()) {
-                    FileInputStream(tmp2).use { input -> response.write(input.readAllBytes()) }
+                    FileInputStream(tmp2).use { read(it, response.outputStream) }
                 } else if (tmp1 != null) {
-                    response.write(tmp1.readAllBytes())
+                    read(tmp1, response.outputStream)
                 } else {
                     response.setHttpStatus(HttpStatus.NOT_FOUND)
                     getFileResource("/404.html", response)

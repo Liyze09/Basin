@@ -29,9 +29,6 @@ import java.io.File
 import java.io.FileReader
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import kotlin.system.exitProcess
 
@@ -41,22 +38,11 @@ val LOGGER: Logger = LoggerFactory.getLogger("Basin")
 
 @JvmField
 val commands = HashMap<String, Command>()
-
-@JvmField
-val userHome = File("data" + File.separator + "home")
-val config = File("data" + File.separator + "cfg.json")
-val script = File("data" + File.separator + "script")
 val bootClasses: MutableList<Class<*>> = ArrayList()
 val CONSOLE_COMMAND_PARSER = CommandParser()
 
 @JvmField
 val publicVars: MutableMap<String, String> = ConcurrentHashMap()
-
-val jars = File("data" + File.separator + "jars")
-
-@JvmField
-var servicePool: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
-var taskPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1)
 
 @JvmField
 var envMap: MutableMap<String, String> = HashMap()
@@ -104,11 +90,7 @@ fun start() {
     LOGGER.info("----------------------------------------------\nBasin started.")
     Thread.ofVirtual().start {
         try {
-            userHome.mkdirs()
-            script.mkdirs()
-            jars.mkdirs()
             loadEnv()
-            taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
             envMap.forEach { (key: String, value: Any) -> publicVars[key] = value }
             if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
             if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
@@ -125,7 +107,6 @@ fun start() {
     try {
         registerListOfCommand(
             listOf(
-                ExecuteCommand(),
                 ForceStopCommand(),
                 FullGCCommand(),
                 ListCommand(),
@@ -137,7 +118,7 @@ fun start() {
                 StopCommand(),
             )
         )
-        Thread {
+        Thread.ofVirtual().start {
             Scanner(System.`in`).use { scanner ->
                 while (true) {
                     command = scanner.nextLine()
@@ -150,7 +131,7 @@ fun start() {
                     }
                 }
             }
-        }.start()
+        }
         bootClasses.forEach(Consumer {
             Thread.ofVirtual().start {
                 (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()
@@ -210,13 +191,6 @@ fun shutdown() {
                 LOGGER.printException(e)
             }
         })
-        taskPool.shutdown()
-        servicePool.shutdownNow()
-        try {
-            taskPool.awaitTermination(4, TimeUnit.SECONDS)
-        } catch (e: InterruptedException) {
-            exitProcess(0)
-        }
         exitProcess(0)
     }
 }
@@ -235,8 +209,6 @@ fun restart() {
             }
         })
         CommandParser.cs.forEach(Consumer { c: CommandParser -> c.vars.clear() })
-        taskPool.shutdown()
-        servicePool.shutdownNow()
         RemoteServer.servers.forEach(Consumer { obj: Server -> obj.stop() })
         RemoteServer.servers.clear()
         HttpServer.stop()
@@ -244,9 +216,6 @@ fun restart() {
         commands.clear()
         publicVars.clear()
         loadEnv()
-        taskPool.awaitTermination(3, TimeUnit.SECONDS)
-        taskPool = Executors.newFixedThreadPool(cfg.taskPoolSize)
-        servicePool = Executors.newCachedThreadPool()
         bootClasses.forEach(Consumer {
             try {
                 (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()

@@ -16,39 +16,50 @@
 
 package net.liyze.basin.graal
 
-
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
+import com.google.common.io.Files
 import net.liyze.basin.BasinFramework
 import net.liyze.basin.graal.exception.UnsupportedLanguageException
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Source
+import org.graalvm.polyglot.Value
 import java.io.File
 
 internal class GraalPolyglot : Polyglot {
     private val context: Context = Context.newBuilder()
         .allowAllAccess(true)
         .build()
-
+    private val languageMap: BiMap<String, String> = HashBiMap.create(
+        mapOf(
+            "rb" to "ruby",
+            "py" to "python",
+            "js" to "js",
+            "r" to "R",
+            "bc" to "llvm"
+        )
+    )
     init {
         arrayOf("js", "python", "ruby", "R", "llvm").forEach {
+            val binding: Value
             try {
-                context.getBindings(it).putMember("basin", BasinFramework)
+                binding = context.getBindings(it)
+            } catch (_: IllegalArgumentException) {
+                languageMap.inverse().remove(it)
+                return@forEach
+            } catch (_: Throwable) {
+                return@forEach
+            }
+            try {
+                binding.putMember("basin", BasinFramework)
             } catch (_: Exception) {
             }
         }
-
-
-
     }
 
     override fun loadScript(path: String) {
-        val language = when {
-            path.endsWith("rb") -> "ruby"
-            path.endsWith("py") -> "python"
-            path.endsWith("js") -> "js"
-            path.endsWith("R", true) -> "R"
-            path.endsWith("bc") -> "llvm"
-            else -> throw UnsupportedLanguageException(path)
-        }
+        val language: String = languageMap[Files.getFileExtension(path).lowercase()]
+            ?: throw UnsupportedLanguageException(path)
         context.eval(
             Source.newBuilder(
                 language,

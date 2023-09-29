@@ -17,6 +17,9 @@
 
 package net.liyze.basin.util
 
+import okio.buffer
+import okio.sink
+import okio.source
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.InputStream
@@ -50,4 +53,8 @@ fun OutputStream.toDataOutput(): DataOutputStream {
 @JvmOverloads
 fun ByteArray.getString(charset: Charset = StandardCharsets.UTF_8): String {
     return String(this, charset)
+}
+
+fun read(input: InputStream, out: OutputStream) {
+    input.source().buffer().readAll(out.sink())
 }

@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap
 class TaskTree {
     private val base: TaskMeta = TaskMeta()
     private val map: MutableMap<String, TaskMeta>
-
     init {
         base.task = Task {}
         base.name = "base"
@@ -38,7 +37,22 @@ class TaskTree {
         return this
     }
 
+    @JvmOverloads
+    fun <T> fork(name: String, parent: String = "base", task: FlowTask.Flowable<T>): AbstractDataFlow<T> {
+        val flow = object : AbstractDataFlow<T>() {
+            override fun put(value: T) {
+                queue.put(value!!)
+            }
+        }
+        val current = TaskMeta()
+        current.name = name
+        current.task = FlowTask(task, flow)
+        map[parent]?.then?.add(current)
+        map[name] = current
+        return flow
+    }
+
     fun start() {
-        Thread.ofVirtual().start { base.start(Context(ConcurrentHashMap())) }
+        Thread.ofVirtual().start { base.start(Context(ConcurrentHashMap(), this)) }
     }
 }

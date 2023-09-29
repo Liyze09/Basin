@@ -15,6 +15,7 @@
  */
 package net.liyze.basin
 
+import net.liyze.basin.core.Config
 import net.liyze.basin.core.start
 import net.liyze.basin.event.EventBus
 import net.liyze.basin.graal.Polyglot
@@ -31,6 +32,9 @@ object BasinFramework {
 
     @JvmField
     val eventBus = EventBus
+
+    @JvmField
+    val config = Config
     fun startBasin() {
         start()
         RpcService.start()
@@ -48,7 +52,7 @@ object BasinFramework {
         try {
             Class.forName("org.graalvm.polyglot.Context")
         } catch (_: Exception) {
-            throw UnsupportedOperationException("Graal polyglot engine not found!")
+            throw UnsupportedOperationException("GraalVM polyglot engine not found!")
         }
         polyglot = Class.forName("net.liyze.basin.graal.GraalPolyglot").createInstance() as Polyglot
     }

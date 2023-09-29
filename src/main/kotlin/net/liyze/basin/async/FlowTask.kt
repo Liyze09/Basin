@@ -16,25 +16,16 @@
 
 package net.liyze.basin.async
 
-import java.util.concurrent.ConcurrentHashMap
-
-class Context(
-    val contextMap: MutableMap<Any, Any>,
-    val tree: TaskTree
-) {
-    companion object {
-        val none = Any()
+class FlowTask<T>(
+    val flow: Flowable<T>,
+    val data: AbstractDataFlow<T>
+) : Task {
+    override fun run(context: Context): Collection<T> {
+        this.flow.flow(data)
+        return data.queue
     }
 
-    private var last: Any = none
-    fun get() = last
-    internal fun set(last: Any) {
-        this.last = last
-    }
-
-    internal fun fork(last: Any): Context {
-        val ret = Context(ConcurrentHashMap(contextMap), tree)
-        ret.last = last
-        return ret
+    fun interface Flowable<T> {
+        fun flow(flow: AbstractDataFlow<T>)
     }
 }

@@ -16,4 +16,4 @@
 
 package net.liyze.basin.graal.exception
 
-class UnsupportedLanguageException(path: String) : Exception(path)
+class UnsupportedLanguageException(path: String) : UnsupportedOperationException(path)
