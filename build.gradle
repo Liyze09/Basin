@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'java-library'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.20-Beta2'
 }
 
 group = 'io.github.liyze09'
@@ -80,7 +80,7 @@ java {
     withSourcesJar()
 }
 kotlin {
-    jvmToolchain(20)
+    jvmToolchain(21)
 }
 publishing {
     publications {
