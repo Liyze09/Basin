@@ -39,6 +39,7 @@ internal class GraalPolyglot : Polyglot {
             "bc" to "llvm"
         )
     )
+
     init {
         arrayOf("js", "python", "ruby", "R", "llvm").forEach {
             val binding: Value

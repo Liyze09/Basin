@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
 class TaskTree {
     private val base: TaskMeta = TaskMeta()
     private val map: MutableMap<String, TaskMeta>
+
     init {
         base.task = Task {}
         base.name = "base"

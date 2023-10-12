@@ -30,6 +30,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 object EventBus {
     private val LOGGER: Logger = LoggerFactory.getLogger(EventBus::class.java)
     private val remotes: MutableList<String> = CopyOnWriteArrayList()
+    fun getRemotes() = remotes
+
     private val buffer: BlockingQueue<EventAndMessage> = ArrayBlockingQueue(EventLoop.maxBufferSize)
     fun connect(url: String) {
         if (request(url, "_hello", Hello()).await() == 1) remotes.add(url)
@@ -101,10 +103,40 @@ object EventBus {
         }
     }
 
+    @JvmOverloads
+    fun defineClusterRelay(topic: Any, vararg targets: String = remotes.toTypedArray()) {
+        val cluster = Cluster(topic, targets.toList())
+        subscribe(topic) {
+            cluster.whenReceive(it)
+        }
+    }
+
+    @JvmOverloads
+    fun defineRelay(topic: Any, vararg targets: String = remotes.toTypedArray()) {
+        subscribe(topic) { msg ->
+            targets.forEach {
+                request(it, "_emit", EventAndMessage(topic, msg))
+            }
+        }
+    }
+
     private fun remoteEmit(eventAndMessage: EventAndMessage) {
         buffer.put(eventAndMessage)
     }
 
     private class Hello
     private data class EventAndMessage(val event: Any, val message: Any)
+    private data class Cluster(val topic: Any, val target: List<String>) {
+        @Volatile
+        var currentTarget = 0
+
+        @Synchronized
+        fun whenReceive(msg: Any) {
+            request(target[currentTarget], "_emit", EventAndMessage(topic, msg))
+            if (currentTarget == target.size - 1) {
+                currentTarget = 0
+            }
+            currentTarget++
+        }
+    }
 }

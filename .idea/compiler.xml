@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="20" />
+    <bytecodeTargetLevel target="20">
+      <module name="io.github.liyze09.Basin" target="21" />
+      <module name="io.github.liyze09.Basin.main" target="21" />
+      <module name="io.github.liyze09.Basin.test" target="21" />
+    </bytecodeTargetLevel>
   </component>
 </project>
