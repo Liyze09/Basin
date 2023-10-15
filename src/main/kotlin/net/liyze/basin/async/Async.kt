@@ -15,20 +15,16 @@
  */
 
 @file:JvmName("Async")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package net.liyze.basin.async
 
-fun <I, T> async(args: I, action: Callable<I, T>): Result<I, T> {
-    return Result(action, args)
-}
+inline fun <I, T> async(args: I, action: Callable<I, T>): Result<I, T> = Result(action, args)
 
-fun <T> async(action: SingleCallable<T>): Result<Any, T> {
-    return SingleResult(action)
-}
+inline fun <T> async(action: SingleCallable<T>): Result<Any, T> = SingleResult(action)
 
-fun <T> await(future: Result<*, T>): T {
-    return future.await()
-}
+inline fun <T> await(future: Result<*, T>): T = future.await()
+
 
 class SingleResult<T>(
     override val action: SingleCallable<T>

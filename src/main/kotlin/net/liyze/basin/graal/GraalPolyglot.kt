@@ -16,55 +16,34 @@
 
 package net.liyze.basin.graal
 
-import com.google.common.collect.BiMap
-import com.google.common.collect.HashBiMap
-import com.google.common.io.Files
-import net.liyze.basin.BasinFramework
-import net.liyze.basin.graal.exception.UnsupportedLanguageException
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Source
-import org.graalvm.polyglot.Value
-import java.io.File
+import java.io.FileNotFoundException
+
 
 internal class GraalPolyglot : Polyglot {
     private val context: Context = Context.newBuilder()
         .allowAllAccess(true)
+        .option("js.strict", "true")
         .build()
-    private val languageMap: BiMap<String, String> = HashBiMap.create(
-        mapOf(
-            "rb" to "ruby",
-            "py" to "python",
-            "js" to "js",
-            "r" to "R",
-            "bc" to "llvm"
-        )
-    )
 
     init {
-        arrayOf("js", "python", "ruby", "R", "llvm").forEach {
-            val binding: Value
-            try {
-                binding = context.getBindings(it)
-            } catch (_: IllegalArgumentException) {
-                languageMap.inverse().remove(it)
-                return@forEach
-            } catch (_: Throwable) {
-                return@forEach
-            }
-            try {
-                binding.putMember("basin", BasinFramework)
-            } catch (_: Exception) {
+        arrayOf("java", "fs").forEach {
+            GraalPolyglot::class.java.getResourceAsStream("/std/$it.mjs")?.reader()?.use { reader ->
+                context.eval(
+                    Source.newBuilder("js", reader.readText(), it)
+                        .mimeType("application/javascript+module")
+                        .build()
+                )
             }
         }
     }
 
     override fun loadScript(path: String) {
-        val language: String = languageMap[Files.getFileExtension(path).lowercase()]
-            ?: throw UnsupportedLanguageException(path)
         context.eval(
             Source.newBuilder(
-                language,
-                File(path.replace('/', File.separatorChar))
+                "js",
+                GraalPolyglot::class.java.getResource(path) ?: throw FileNotFoundException(path)
             ).build()
         )
     }

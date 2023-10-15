@@ -38,12 +38,11 @@ object HttpServer : Server {
     val cfg: Configuration = Configuration.defaultConfiguration()
     private val cgt: GroupTemplate
     private val bootstrap = HttpBootstrap()
-    val root: File = File("data/web/$serverName/root".replace('/', File.separatorChar))
     val getMappings: MutableMap<String, HttpHandler> = HashMap()
     val postMappings: MutableMap<String, HttpHandler> = HashMap()
 
     init {
-        val classpathLoader: ResourceLoader<String> = ClasspathResourceLoader("static/" + serverName + "template")
+        val classpathLoader: ResourceLoader<String> = ClasspathResourceLoader("static/template")
         cgt = GroupTemplate(classpathLoader, cfg)
     }
 
@@ -86,7 +85,7 @@ object HttpServer : Server {
             staticResource(request, response)
             return
         }
-        val dispatcher = getGetDispatcher(request.requestURI)
+        val dispatcher = getMappings[request.requestURI]
         if (dispatcher == null) {
             staticResource(request, response)
             return
@@ -115,7 +114,7 @@ object HttpServer : Server {
 
     private fun render(view: ModelAndView, response: HttpResponse) {
         val temp = view.view
-        val template: Template = if (temp.startsWith("classpath:")) {
+        val template: Template = if (temp.startsWith("/")) {
             cgt.getTemplate(view.view)
         } else {
             throw RuntimeException("Illegal view path: " + view.view)
@@ -124,7 +123,7 @@ object HttpServer : Server {
     }
 
     private fun postDispatch(request: HttpRequest, response: HttpResponse) {
-        val dispatcher = getPostDispatcher(request.requestURI)
+        val dispatcher = postMappings[request.requestURI]
         if (dispatcher == null) {
             response.setHttpStatus(HttpStatus.NOT_FOUND)
             getFileResource("/404.html", response)
@@ -150,24 +149,6 @@ object HttpServer : Server {
                 else -> render(view, response)
             }
         }
-    }
-
-    private fun getGetDispatcher(uri: String): HttpHandler? {
-        var result = getMappings[uri]
-        if (!uri.contains("/")) return null
-        if (result == null) {
-            result = getGetDispatcher(uri.substring(0, uri.lastIndexOf("/")))
-        }
-        return result
-    }
-
-    private fun getPostDispatcher(uri: String): HttpHandler? {
-        var result = postMappings[uri]
-        if (!uri.contains("/")) return null
-        if (result == null) {
-            result = getPostDispatcher(uri.substring(0, uri.lastIndexOf("/")))
-        }
-        return result
     }
 
     @Throws(IOException::class)
