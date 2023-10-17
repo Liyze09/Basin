@@ -1,8 +1,8 @@
 "use strict";
-import * as java from './java.mjs'
-export function readFile(fileName, callback) {
+var java = this.require("java")
+function readFile(fileName, callback) {
     fileName = fileName.replace('/', java.File.separator)
-    java.Thread.ofVirtual().start(function() {
+    java.Basin.run(function() {
         var src = null
         try {
             src = new java.FileInputStream(new java.File(fileName));
@@ -20,10 +20,9 @@ export function readFile(fileName, callback) {
         }
     });
 }
-
-export function writeFile(fileName, data, whenError) {
+function writeFile(fileName, data, whenError) {
     fileName = fileName.replace('/', java.File.separator)
-    java.Thread.ofVirtual().start(function() {
+    java.Basin.run(function() {
         var src = null
         try {
             var file = new java.File(fileName)
@@ -41,7 +40,7 @@ export function writeFile(fileName, data, whenError) {
     })
 }
 
-export function readFileSync(fileName) {
+function readFileSync(fileName) {
     fileName = fileName.replace('/', java.File.separator)
     var src = null
     var bytes = null
@@ -54,7 +53,7 @@ export function readFileSync(fileName) {
     return bytes
 }
 
-export function writeFileSync(fileName, data) {
+function writeFileSync(fileName, data) {
     fileName = fileName.replace('/', java.File.separator)
     var src = null
     try {
@@ -64,3 +63,10 @@ export function writeFileSync(fileName, data) {
         src.close()
     }
 }
+
+this.export("fs", {
+    writeFile: writeFile,
+    writeFileSync: writeFileSync,
+    readFile: readFile,
+    readFileSync: readFileSync
+})

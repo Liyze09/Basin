@@ -22,6 +22,8 @@ import net.liyze.basin.graal.Polyglot
 import net.liyze.basin.http.HttpServer
 import net.liyze.basin.rpc.RpcService
 import net.liyze.basin.util.createInstance
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 object BasinFramework {
     @JvmField
@@ -55,5 +57,10 @@ object BasinFramework {
             throw UnsupportedOperationException("GraalVM polyglot engine not found!")
         }
         polyglot = Class.forName("net.liyze.basin.graal.GraalPolyglot").createInstance() as Polyglot
+    }
+
+    val threadPool: ExecutorService = Executors.newCachedThreadPool()
+    fun run(run: Runnable) {
+        threadPool.submit(run)
     }
 }

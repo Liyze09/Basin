@@ -28,11 +28,11 @@ internal class GraalPolyglot : Polyglot {
         .build()
 
     init {
-        arrayOf("java", "fs").forEach {
-            GraalPolyglot::class.java.getResourceAsStream("/std/$it.mjs")?.reader()?.use { reader ->
+        arrayOf("module", "java", "fs").forEach {
+            GraalPolyglot::class.java.getResourceAsStream("/std/$it.js")?.reader()?.use { reader ->
                 context.eval(
-                    Source.newBuilder("js", reader.readText(), it)
-                        .mimeType("application/javascript+module")
+                    Source.newBuilder("js", reader, it)
+                        .mimeType("application/javascript")
                         .build()
                 )
             }

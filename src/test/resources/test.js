@@ -1,8 +1,6 @@
-import * as fs from "fs";
-import * as java from "java";
-fs.writeFileSync('data/file', java.JString("Test").getBytes());
+var fs = this.require("fs");
+var java = this.require("java");
+fs.writeFileSync('data/file', [0]);
 fs.readFile('data/file', function(err, data) {
-    if(!err) {
-        console.log(data)
-    }
+     Java.type("java.lang.System").out.println(data)
 });
