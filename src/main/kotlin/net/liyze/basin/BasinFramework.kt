@@ -37,19 +37,25 @@ object BasinFramework {
 
     @JvmField
     val config = Config
+
+    @JvmStatic
     fun startBasin() {
         start()
         RpcService.start()
         HttpServer.start()
     }
 
+    @JvmStatic
     private var polyglot: Polyglot? = null
+
+    @JvmStatic
     fun loadScript(vararg path: String) {
         path.forEach {
             polyglot?.loadScript(it) ?: throw IllegalStateException("Must init polyglot engine before use!")
         }
     }
 
+    @JvmStatic
     fun initPolyglot() {
         try {
             Class.forName("org.graalvm.polyglot.Context")
@@ -59,7 +65,10 @@ object BasinFramework {
         polyglot = Class.forName("net.liyze.basin.graal.GraalPolyglot").createInstance() as Polyglot
     }
 
+    @JvmField
     val threadPool: ExecutorService = Executors.newCachedThreadPool()
+
+    @JvmStatic
     fun run(run: Runnable) {
         threadPool.submit(run)
     }

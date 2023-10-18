@@ -91,7 +91,7 @@ object HttpServer : Server {
             return
         }
         val view = dispatcher.handle(HttpJob(request, response))
-        if (view.model !is Processed) {
+        if (view.model !== Processed) {
             if (view.view.startsWith("redirect:")) {
                 response.setHeader("Location", view.view.substring(9).trim())
                 if (response.httpStatus == 200) {
