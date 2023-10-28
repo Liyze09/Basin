@@ -16,6 +16,7 @@
 
 package net.liyze.basin.async
 
+import net.liyze.basin.common.async.TaskTree
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 

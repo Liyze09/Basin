@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.event.exception
+package net.liyze.basin.common.async
 
-class IllegalRequestException(message: String) : RuntimeException(message)
+fun interface Task {
+    fun run(context: Context): Any
+}

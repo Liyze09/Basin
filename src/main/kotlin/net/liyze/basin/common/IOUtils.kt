@@ -15,7 +15,7 @@
  */
 @file: JvmName("IOUtils")
 
-package net.liyze.basin.util
+package net.liyze.basin.common
 
 import okio.buffer
 import okio.sink

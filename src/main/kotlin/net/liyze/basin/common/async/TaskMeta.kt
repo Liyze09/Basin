@@ -13,7 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.liyze.basin.common.async
 
-package net.liyze.basin.event.exception
 
-class IllegalRequestException(message: String) : RuntimeException(message)
+internal class TaskMeta {
+    lateinit var name: String
+    lateinit var task: Task
+    val then: MutableList<TaskMeta> = ArrayList()
+
+    fun start(ctx: Context) {
+        val result = task.run(ctx)
+        then.forEach {
+            Thread.ofVirtual().start { it.start(ctx.fork(result)) }
+        }
+    }
+}

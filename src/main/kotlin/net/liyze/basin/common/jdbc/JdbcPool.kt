@@ -16,13 +16,13 @@
 
 @file:Suppress("unused")
 
-package net.liyze.basin.jdbc
+package net.liyze.basin.common.jdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import net.liyze.basin.async.Callable
-import net.liyze.basin.async.Result
-import net.liyze.basin.util.toList
+import net.liyze.basin.common.async.Callable
+import net.liyze.basin.common.async.Result
+import net.liyze.basin.common.toList
 import java.io.Closeable
 import java.sql.Connection
 import java.sql.PreparedStatement

@@ -13,28 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.liyze.basin.common.resource
 
-package net.liyze.basin.async
+import net.liyze.basin.common.createInstance
 
-import java.util.concurrent.ConcurrentHashMap
-
-class Context(
-    val contextMap: MutableMap<Any, Any>,
-    val tree: TaskTree
-) {
-    companion object {
-        val none = Any()
-    }
-
-    private var last: Any = none
-    fun get() = last
-    internal fun set(last: Any) {
-        this.last = last
-    }
-
-    internal fun fork(last: Any): Context {
-        val ret = Context(ConcurrentHashMap(contextMap), tree)
-        ret.last = last
-        return ret
+class UniqueBean<T>(
+    override val type: Class<T>,
+) : AbstractBean<T>() {
+    override fun getInstance(): T {
+        return type.createInstance()
     }
 }

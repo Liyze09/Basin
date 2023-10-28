@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.common.resource
 
-class FlowTask<T>(
-    val flow: Flowable<T>,
-    val data: AbstractDataFlow<T>
-) : Task {
-    override fun run(context: Context): Collection<T> {
-        this.flow.flow(data)
-        return data.queue
-    }
-
-    fun interface Flowable<T> {
-        fun flow(flow: AbstractDataFlow<T>)
-    }
+@FunctionalInterface
+fun interface Factory<T> {
+    fun get(): T
 }

@@ -16,5 +16,8 @@
 
 package net.liyze.basin.http
 
-data class ModelAndView(val model: Any, @JvmField val view: String = "")
+@Suppress("unused")
+data class ModelAndView(val model: Any, val view: String) {
+    constructor(model: Any) : this(model, "")
+}
 object Processed

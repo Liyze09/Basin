@@ -14,30 +14,10 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.common.resource
 
-open class Result<I, T>(
-    protected open val action: Callable<I, T>,
-    protected val input: I,
-) {
-
-    @Volatile
-    protected var result: T? = null
-
-    init {
-        Thread.ofVirtual().start {
-            result = run()
-        }
-    }
-
-    protected open fun run(): T {
-        return action run input
-    }
-
-    fun await(): T {
-        while (result == null) {
-            Thread.onSpinWait()
-        }
-        return result!!
-    }
+sealed class AbstractBean<T> {
+    abstract val type: Class<out T>
+    abstract fun getInstance(): T
+    open fun destroy() {}
 }

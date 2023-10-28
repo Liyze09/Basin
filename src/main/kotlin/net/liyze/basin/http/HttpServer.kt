@@ -16,14 +16,17 @@
 
 package net.liyze.basin.http
 
-import net.liyze.basin.core.LOGGER
+import net.liyze.basin.common.printException
+import net.liyze.basin.common.read
 import net.liyze.basin.core.Server
-import net.liyze.basin.util.read
+import net.liyze.basin.http.Status.*
 import org.beetl.core.Configuration
 import org.beetl.core.GroupTemplate
 import org.beetl.core.ResourceLoader
 import org.beetl.core.Template
 import org.beetl.core.resource.ClasspathResourceLoader
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.smartboot.http.common.enums.HttpStatus
 import org.smartboot.http.server.HttpBootstrap
 import org.smartboot.http.server.HttpRequest
@@ -31,27 +34,35 @@ import org.smartboot.http.server.HttpResponse
 import org.smartboot.http.server.HttpServerHandler
 import java.io.*
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 object HttpServer : Server {
+    val LOGGER: Logger = LoggerFactory.getLogger("Basin.HTTP")
     var serverName = "Basin.HTTP"
     var port = 8000
     val cfg: Configuration = Configuration.defaultConfiguration()
     private val cgt: GroupTemplate
     private val bootstrap = HttpBootstrap()
-    val getMappings: MutableMap<String, HttpHandler> = HashMap()
-    val postMappings: MutableMap<String, HttpHandler> = HashMap()
+    val getMappings: MutableMap<String, HttpHandler> = ConcurrentHashMap()
+    val postMappings: MutableMap<String, HttpHandler> = ConcurrentHashMap()
+    val filters: MutableList<HttpFilter> = CopyOnWriteArrayList()
 
     init {
         val classpathLoader: ResourceLoader<String> = ClasspathResourceLoader("static/template")
         cgt = GroupTemplate(classpathLoader, cfg)
     }
 
-    fun subscribeGet(path: String, handler: HttpHandler) {
+    fun whenGet(path: String, handler: HttpHandler) {
         getMappings[path] = handler
     }
 
-    fun subscribePost(path: String, handler: HttpHandler) {
+    fun whenPost(path: String, handler: HttpHandler) {
         postMappings[path] = handler
+    }
+
+    fun addFilter(filter: HttpFilter) {
+        filters.add(filter)
     }
 
     override fun stop() {
@@ -65,13 +76,20 @@ object HttpServer : Server {
             @Throws(IOException::class)
             override fun handle(request: HttpRequest, response: HttpResponse) {
                 try {
+                    for (filter in filters) {
+                        when (filter.filter(HttpJob(request, response))) {
+                            SKIP_ALL -> return
+                            SKIP_FILTER -> break
+                            PASS -> {}
+                        }
+                    }
                     if (request.method.equals("get", ignoreCase = true)) {
                         getDispatch(request, response)
                     } else if (request.method.equals("post", ignoreCase = true)) {
                         postDispatch(request, response)
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    LOGGER.printException(e)
                     response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                     getFileResource("/500.html", response)
                 }
@@ -98,16 +116,18 @@ object HttpServer : Server {
                     response.setHttpStatus(HttpStatus.TEMPORARY_REDIRECT)
                 }
             }
-            when (view.model) {
-                is ByteArray -> {
-                    response.write(view.model)
-                }
+            if (view.view == "") {
+                when (view.model) {
+                    is ByteArray -> {
+                        response.write(view.model)
+                    }
 
-                is String -> {
-                    response.write(view.model.encodeToByteArray())
+                    is String -> {
+                        response.write(view.model.encodeToByteArray())
+                    }
                 }
-
-                else -> render(view, response)
+            } else {
+                render(view, response)
             }
         }
     }

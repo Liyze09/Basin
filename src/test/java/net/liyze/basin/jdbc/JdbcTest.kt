@@ -16,6 +16,7 @@
 
 package net.liyze.basin.jdbc
 
+import net.liyze.basin.common.jdbc.JdbcPool
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 

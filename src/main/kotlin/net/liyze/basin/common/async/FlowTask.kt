@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.event.exception
+package net.liyze.basin.common.async
 
-class IllegalRequestException(message: String) : RuntimeException(message)
+class FlowTask<T>(
+    val flow: Flowable<T>,
+    val data: AbstractDataFlow<T>
+) : Task {
+    override fun run(context: Context): Collection<T> {
+        this.flow.flow(data)
+        return data.queue
+    }
+
+    fun interface Flowable<T> {
+        fun flow(flow: AbstractDataFlow<T>)
+    }
+}

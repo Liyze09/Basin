@@ -13,18 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.liyze.basin.async
 
+package net.liyze.basin.common.async
 
-internal class TaskMeta {
-    lateinit var name: String
-    lateinit var task: Task
-    val then: MutableList<TaskMeta> = ArrayList()
+import java.util.concurrent.ConcurrentHashMap
 
-    fun start(ctx: Context) {
-        val result = task.run(ctx)
-        then.forEach {
-            Thread.ofVirtual().start { it.start(ctx.fork(result)) }
-        }
+class Context(
+    val contextMap: MutableMap<Any, Any>,
+    val tree: TaskTree
+) {
+    companion object {
+        val none = Any()
+    }
+
+    private var last: Any = none
+    fun get() = last
+    internal fun set(last: Any) {
+        this.last = last
+    }
+
+    internal fun fork(last: Any): Context {
+        val ret = Context(ConcurrentHashMap(contextMap), tree)
+        ret.last = last
+        return ret
     }
 }

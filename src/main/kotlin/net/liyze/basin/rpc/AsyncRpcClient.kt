@@ -16,8 +16,8 @@
 
 package net.liyze.basin.rpc
 
-import net.liyze.basin.async.Result
-import net.liyze.basin.async.async
+import net.liyze.basin.common.async.Result
+import net.liyze.basin.common.async.async
 import net.liyze.basin.rpc.RpcService.FURY
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient

@@ -15,13 +15,13 @@
  */
 package net.liyze.basin
 
+import net.liyze.basin.common.createInstance
 import net.liyze.basin.core.Config
 import net.liyze.basin.core.start
 import net.liyze.basin.event.EventBus
 import net.liyze.basin.graal.Polyglot
 import net.liyze.basin.http.HttpServer
 import net.liyze.basin.rpc.RpcService
-import net.liyze.basin.util.createInstance
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

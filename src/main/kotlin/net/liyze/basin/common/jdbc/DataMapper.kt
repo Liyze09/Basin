@@ -16,9 +16,9 @@
 
 @file:Suppress("unused")
 
-package net.liyze.basin.jdbc
+package net.liyze.basin.common.jdbc
 
-import net.liyze.basin.util.createInstance
+import net.liyze.basin.common.createInstance
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Field

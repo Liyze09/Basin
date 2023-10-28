@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.resource
+package net.liyze.basin.common.resource
 
-class ThreadLocalBean<T>(
-    val singleton: T,
-    override val type: Class<out T> = singleton!!::class.java,
+class FactoryBean<T>(
+    override val type: Class<T>,
+    val factory: Factory<T>,
+    val destroy: Runnable = Runnable {}
 ) : AbstractBean<T>() {
-    val threadLocal: ThreadLocal<T> = ThreadLocal.withInitial { return@withInitial singleton }
     override fun getInstance(): T {
-        return threadLocal.get()
+        return factory.get()
+    }
+
+    override fun destroy() {
+        destroy.run()
     }
 }

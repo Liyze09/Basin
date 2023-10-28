@@ -15,7 +15,7 @@
  */
 @file: JvmName("LoggingUtils")
 
-package net.liyze.basin.util
+package net.liyze.basin.common
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

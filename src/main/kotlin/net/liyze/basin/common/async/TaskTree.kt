@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.common.async
 
 import java.util.concurrent.ConcurrentHashMap
 

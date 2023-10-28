@@ -15,7 +15,7 @@
  */
 @file: JvmName("ClassUtils")
 
-package net.liyze.basin.util
+package net.liyze.basin.common
 
 import net.liyze.basin.rpc.RpcService.FURY
 import org.slf4j.LoggerFactory

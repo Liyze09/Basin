@@ -16,10 +16,10 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.common.printException
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.envMap
 import net.liyze.basin.core.remote.send
-import net.liyze.basin.util.printException
 
 
 class RemoteCommand : Command {

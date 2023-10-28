@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.common.async
 
-fun interface Task {
-    fun run(context: Context): Any
+@FunctionalInterface
+fun interface Callable<I, T> {
+    infix fun run(input: I): T
 }

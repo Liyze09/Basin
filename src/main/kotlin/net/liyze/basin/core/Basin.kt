@@ -18,10 +18,10 @@
 
 package net.liyze.basin.core
 
+import net.liyze.basin.common.printException
 import net.liyze.basin.core.remote.RemoteServer
 import net.liyze.basin.core.scan.*
 import net.liyze.basin.http.HttpServer
-import net.liyze.basin.util.printException
 import org.jetbrains.annotations.Contract
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -58,7 +58,6 @@ private var command: String? = null
 @Suppress("SpellCheckingInspection")
 var banner =
     """
-                    ${'\r'}
                     BBBBBBBBBBBBBBBBB                                         iiii
                     B::::::::::::::::B                                       i::::i
                     B::::::BBBBBB:::::B                                       iiii

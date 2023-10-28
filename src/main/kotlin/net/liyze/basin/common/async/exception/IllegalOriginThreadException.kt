@@ -13,14 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.liyze.basin.resource
 
-import net.liyze.basin.util.createInstance
+package net.liyze.basin.common.async.exception
 
-class UniqueBean<T>(
-    override val type: Class<T>,
-) : AbstractBean<T>() {
-    override fun getInstance(): T {
-        return type.createInstance()
-    }
-}
+class IllegalOriginThreadException(thread: Thread) : Exception(thread.name)

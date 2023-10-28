@@ -18,7 +18,7 @@ package net.liyze.basin.core
 
 import com.google.common.base.Splitter
 import com.google.common.collect.Lists
-import net.liyze.basin.util.printException
+import net.liyze.basin.common.printException
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.resource
+package net.liyze.basin.common.resource
 
-import net.liyze.basin.resource.exception.BeanNotFoundException
+import net.liyze.basin.common.resource.exception.BeanNotFoundException
 
 @Suppress("UNCHECKED_CAST")
 object BeanManager {

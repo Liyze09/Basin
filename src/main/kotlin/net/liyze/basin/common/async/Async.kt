@@ -17,7 +17,7 @@
 @file:JvmName("Async")
 @file:Suppress("NOTHING_TO_INLINE")
 
-package net.liyze.basin.async
+package net.liyze.basin.common.async
 
 inline fun <I, T> async(args: I, action: Callable<I, T>): Result<I, T> = Result(action, args)
 

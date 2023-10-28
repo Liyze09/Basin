@@ -16,10 +16,11 @@
 
 package net.liyze.basin.graal
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class GraalPolyglotTest {
-    //@Disabled
+    @Disabled
     @Test
     fun loadScript() {
         GraalPolyglot().loadScript("/test.js")

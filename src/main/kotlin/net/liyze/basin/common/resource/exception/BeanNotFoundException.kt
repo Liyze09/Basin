@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.common.resource.exception
 
-@FunctionalInterface
-fun interface Callable<I, T> {
-    infix fun run(input: I): T
-}
+class BeanNotFoundException(beanName: String) : RuntimeException(beanName)

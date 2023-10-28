@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.async
+package net.liyze.basin.common.async
 
-import net.liyze.basin.async.exception.IllegalOriginThreadException
+import net.liyze.basin.common.async.exception.IllegalOriginThreadException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
