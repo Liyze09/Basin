@@ -18,6 +18,7 @@ package net.liyze.basin.core.scan
 
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.shutdown
+import org.slf4j.Logger
 
 /**
  * Stop basin then all task finished.
@@ -26,11 +27,11 @@ import net.liyze.basin.core.shutdown
  */
 
 class StopCommand : Command {
-    override fun run(args: List<String?>) {
+    override fun run(args: List<String?>, logger: Logger) {
         shutdown()
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "stop"
     }
 }

@@ -20,10 +20,11 @@ import net.liyze.basin.common.printException
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.envMap
 import net.liyze.basin.core.remote.send
+import org.slf4j.Logger
 
 
 class RemoteCommand : Command {
-    override fun run(args: List<String?>) {
+    override fun run(args: List<String?>, logger: Logger) {
         val host: String = args[0]!!
         try {
             envMap["\"" + host + "_token\""]?.let {
@@ -38,7 +39,7 @@ class RemoteCommand : Command {
         }
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "remote"
     }
 }

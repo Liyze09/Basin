@@ -17,17 +17,16 @@
 package net.liyze.basin.core.scan
 
 import net.liyze.basin.core.Command
+import net.liyze.basin.rpc.RpcService
 import org.slf4j.Logger
-import kotlin.system.exitProcess
 
-
-class ForceStopCommand : Command {
+class RpcServerCommand : Command {
     override fun run(args: List<String?>, logger: Logger) {
-        exitProcess(0)
+        if (args.isNotEmpty()) RpcService.stop()
+        else RpcService.start()
     }
 
-    @Suppress("SpellCheckingInspection")
     override fun getName(): String {
-        return "forcestop"
+        return "rpc"
     }
 }

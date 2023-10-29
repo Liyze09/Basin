@@ -17,9 +17,11 @@
 package net.liyze.basin.core.scan
 
 import net.liyze.basin.core.Command
-import net.liyze.basin.core.LOGGER
 import net.liyze.basin.core.commands
 import net.liyze.basin.core.envMap
+import org.slf4j.Logger
+import java.io.PrintWriter
+import java.io.StringWriter
 
 /**
  * Print all command loaded.
@@ -28,19 +30,24 @@ import net.liyze.basin.core.envMap
  */
 
 class ListCommand : Command {
-    override fun run(args: List<String?>) {
-        LOGGER.info("Commands")
+    override fun run(args: List<String?>, logger: Logger) {
+        val writer = StringWriter()
+        val print = PrintWriter(writer)
+        print.println()
+        print.println("Commands")
         for (i in commands.keys) {
-            println(i)
+            print.print(" ")
+            print.println(i)
         }
-        LOGGER.info("Variables")
+        print.println("Variables")
         for ((key, value) in envMap.entries) {
-            print("$key = ")
-            println(value)
+            print.print(" $key = ")
+            print.println(value)
         }
+        logger.info(writer.toString())
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "list"
     }
 }

@@ -99,7 +99,7 @@ class CommandParser {
             if (run != null) {
                 try {
                     logger.debug("$cmdName started.")
-                    run.run(args)
+                    run.run(args, logger)
                     return true
                 } catch (e: IndexOutOfBoundsException) {
                     logger.error("Bad arg input.")

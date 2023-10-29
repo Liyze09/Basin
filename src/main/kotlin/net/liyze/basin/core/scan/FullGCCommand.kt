@@ -17,16 +17,16 @@
 package net.liyze.basin.core.scan
 
 import net.liyze.basin.core.Command
-import net.liyze.basin.core.LOGGER
+import org.slf4j.Logger
 
 
 class FullGCCommand : Command {
-    override fun run(args: List<String?>) {
+    override fun run(args: List<String?>, logger: Logger) {
         System.gc()
-        LOGGER.info("Full GC")
+        logger.info("Full GC")
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "fgc"
     }
 }

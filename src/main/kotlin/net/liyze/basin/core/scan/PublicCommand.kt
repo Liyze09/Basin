@@ -19,15 +19,16 @@ package net.liyze.basin.core.scan
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.CommandParser
 import net.liyze.basin.core.publicVars
+import org.slf4j.Logger
 
 class PublicCommand : Command {
-    override fun run(args: List<String?>) {
+    override fun run(args: List<String?>, logger: Logger) {
         val parser = CommandParser()
         parser.sync().parse(args.requireNoNulls())
         publicVars.putAll(parser.vars)
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "public"
     }
 }

@@ -19,12 +19,16 @@ package net.liyze.basin.core.scan
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.LOGGER
 import net.liyze.basin.core.cfg
+import org.slf4j.Logger
 import java.io.IOException
 
 
 class ShellCommand : Command {
-    override fun run(args: List<String?>) {
-        if (!cfg.enableShellCommand) return
+    override fun run(args: List<String?>, logger: Logger) {
+        if (!cfg.enableShellCommand) {
+            logger.warn("Shell execution is disabled!")
+            return
+        }
         try {
             LOGGER.info(Runtime.getRuntime().exec(args.toTypedArray<String?>()).toString())
         } catch (e: IOException) {
@@ -32,7 +36,7 @@ class ShellCommand : Command {
         }
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "exec"
     }
 }

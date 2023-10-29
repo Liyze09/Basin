@@ -16,6 +16,8 @@
 
 package net.liyze.basin.core
 
+import org.slf4j.Logger
+
 /**
  * Basin Command's SPI
  */
@@ -25,10 +27,10 @@ interface Command {
      *
      * @author Liyze09
      */
-    fun run(args: List<String?>)
+    fun run(args: List<String?>, logger: Logger)
 
     /**
      * The Name of the command
      */
-    fun Name(): String
+    fun getName(): String
 }

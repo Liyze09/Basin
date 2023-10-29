@@ -18,15 +18,16 @@ package net.liyze.basin.core.scan
 
 import net.liyze.basin.core.Command
 import net.liyze.basin.http.HttpServer
+import org.slf4j.Logger
 
 
 class ServerCommand : Command {
-    override fun run(args: List<String?>) {
+    override fun run(args: List<String?>, logger: Logger) {
         if (args.isNotEmpty()) HttpServer.stop()
         else HttpServer.start()
     }
 
-    override fun Name(): String {
+    override fun getName(): String {
         return "server"
     }
 }

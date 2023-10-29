@@ -19,7 +19,6 @@ package net.liyze.basin.rpc
 import io.fury.Fury
 import io.fury.Language
 import io.fury.ThreadLocalFury
-import net.liyze.basin.common.async.Context
 import net.liyze.basin.core.Server
 import net.liyze.basin.event.RpcObserver
 import org.smartboot.http.common.enums.HttpStatus
@@ -28,6 +27,7 @@ import org.smartboot.http.server.HttpRequest
 import org.smartboot.http.server.HttpResponse
 import org.smartboot.http.server.HttpServerHandler
 import java.io.IOException
+import java.util.*
 
 object RpcService : Server {
     private var port = 8088
@@ -74,17 +74,25 @@ object RpcService : Server {
         return this
     }
 
-    internal val FURY = ThreadLocalFury {
+    val FURY = ThreadLocalFury {
         val ret = Fury.builder()
             .withLanguage(Language.JAVA)
             .withRefTracking(true)
             .withClassLoader(it)
             .withAsyncCompilation(true)
             .withCodegen(true)
-            .requireClassRegistration(false)
+            .requireClassRegistration(requireClassRegistration)
             .withJdkClassSerializableCheck(false)
             .build()
-        ret.register(Context::class.java)
+        registeredClass.forEach { clazz ->
+            ret.register(clazz)
+        }
         ret
+    }
+    private val registeredClass: MutableList<Class<*>> = ArrayList()
+
+    var requireClassRegistration = true
+    fun registerClass(clazz: Class<*>) {
+        registeredClass.add(clazz)
     }
 }

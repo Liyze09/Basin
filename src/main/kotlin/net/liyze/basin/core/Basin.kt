@@ -112,12 +112,13 @@ fun start() {
                 PublicCommand(),
                 RemoteCommand(),
                 RestartCommand(),
+                RpcServerCommand(),
                 ServerCommand(),
                 ShellCommand(),
                 StopCommand(),
             )
         )
-        Thread.ofVirtual().start {
+        Thread.ofPlatform().name("MainLoop").start {
             Scanner(System.`in`).use { scanner ->
                 while (true) {
                     command = scanner.nextLine()
@@ -156,12 +157,12 @@ fun loadEnv() {
 }
 
 fun registerCommand(cmd: Command) {
-    commands[cmd.Name()] = cmd
+    commands[cmd.getName()] = cmd
 }
 
 fun registerListOfCommand(list: List<Command>) {
     list.forEach {
-        commands[it.Name()] = it
+        commands[it.getName()] = it
     }
 }
 
