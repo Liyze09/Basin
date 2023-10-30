@@ -28,6 +28,6 @@ class ServerCommand : Command {
     }
 
     override fun getName(): String {
-        return "server"
+        return "http"
     }
 }

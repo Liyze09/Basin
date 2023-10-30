@@ -74,6 +74,8 @@ object RpcService : Server {
         return this
     }
 
+    private val registeredClass: MutableList<Class<*>> = ArrayList()
+
     val FURY = ThreadLocalFury {
         val ret = Fury.builder()
             .withLanguage(Language.JAVA)
@@ -89,7 +91,6 @@ object RpcService : Server {
         }
         ret
     }
-    private val registeredClass: MutableList<Class<*>> = ArrayList()
 
     var requireClassRegistration = true
     fun registerClass(clazz: Class<*>) {

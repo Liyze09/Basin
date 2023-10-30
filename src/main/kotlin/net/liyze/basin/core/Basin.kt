@@ -38,7 +38,7 @@ val LOGGER: Logger = LoggerFactory.getLogger("Basin")
 
 @JvmField
 val commands = HashMap<String, Command>()
-val bootClasses: MutableList<Class<*>> = ArrayList()
+val bootClasses: MutableList<BasinBoot> = ArrayList()
 val CONSOLE_COMMAND_PARSER = CommandParser()
 
 @JvmField
@@ -56,7 +56,7 @@ private var command: String? = null
  * Basin's ASCII banner
  */
 @Suppress("SpellCheckingInspection")
-var banner =
+val banner =
     """
                     BBBBBBBBBBBBBBBBB                                         iiii
                     B::::::::::::::::B                                       i::::i
@@ -75,7 +75,6 @@ var banner =
                     B::::::::::::::::B   a::::::::::aa:::a  s:::::::::::ss   i::::::i  n::::n    n::::n
                     BBBBBBBBBBBBBBBBB     aaaaaaaaaa  aaaa   sssssssssss     iiiiiiii  nnnnnn    nnnnnn
                     :: Basin :: ($version)
-                    
                     """.trimIndent()
 
 lateinit var startArgs: Array<String>
@@ -86,61 +85,57 @@ fun main(args: Array<String>) {
 }
 
 fun start() {
-    LOGGER.info("----------------------------------------------\nBasin started.")
-    Thread.ofVirtual().start {
-        try {
-            loadEnv()
-            envMap.forEach { (key: String, value: Any) -> publicVars[key] = value }
-            if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
-            if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
-                try {
-                    RemoteServer(cfg.accessToken, cfg.remotePort, CommandParser()).start()
-                } catch (e: Exception) {
-                    LOGGER.printException(e)
-                }
-            }
-        } catch (e: Exception) {
-            LOGGER.printException(e)
-        }
-    }
+    val t0 = System.currentTimeMillis()
+    LOGGER.info("----------------------------------------------\n${banner}")
     try {
-        registerListOfCommand(
-            listOf(
-                ForceStopCommand(),
-                FullGCCommand(),
-                ListCommand(),
-                PublicCommand(),
-                RemoteCommand(),
-                RestartCommand(),
-                RpcServerCommand(),
-                ServerCommand(),
-                ShellCommand(),
-                StopCommand(),
-            )
+        loadEnv()
+        envMap.forEach { (key: String, value: Any) -> publicVars[key] = value }
+        if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
+        if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
+            try {
+                RemoteServer(cfg.accessToken, cfg.remotePort, CommandParser()).start()
+                LOGGER.info("Remote server started.")
+            } catch (e: Exception) {
+                LOGGER.printException(e)
+            }
+        }
+    } catch (e: Exception) {
+        LOGGER.printException(e)
+    }
+    registerListOfCommand(
+        listOf(
+            ForceStopCommand(),
+            FullGCCommand(),
+            ListCommand(),
+            PublicCommand(),
+            RemoteCommand(),
+            RestartCommand(),
+            RpcServerCommand(),
+            ServerCommand(),
+            ShellCommand(),
+            StopCommand(),
         )
-        Thread.ofPlatform().name("MainLoop").start {
-            Scanner(System.`in`).use { scanner ->
-                while (true) {
-                    command = scanner.nextLine()
-                    Thread.ofVirtual().start {
-                        try {
-                            CONSOLE_COMMAND_PARSER.sync().parseString(command!!)
-                        } catch (e: Exception) {
-                            LOGGER.printException(e)
-                        }
+    )
+    Thread.ofPlatform().name("MainLoop").start {
+        Scanner(System.`in`).use { scanner ->
+            while (true) {
+                command = scanner.nextLine()
+                Thread.ofVirtual().start {
+                    try {
+                        CONSOLE_COMMAND_PARSER.sync().parseString(command!!)
+                    } catch (e: Exception) {
+                        LOGGER.printException(e)
                     }
                 }
             }
         }
-        bootClasses.forEach(Consumer {
-            Thread.ofVirtual().start {
-                (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()
-            }
-        })
-    } catch (throwable: Throwable) {
-        throwable.printStackTrace()
     }
-    println(banner)
+    bootClasses.forEach(Consumer {
+        Thread.ofVirtual().start {
+            it.afterStart()
+        }
+    })
+    LOGGER.info("Basin started, took {} ms.", System.currentTimeMillis() - t0)
 }
 
 fun loadEnv() {
@@ -148,6 +143,7 @@ fun loadEnv() {
     val props = Properties()
     if (envFile.exists()) {
         props.load(FileReader(envFile))
+        LOGGER.info("Loading an environment variable file.")
     }
     envMap.putAll(System.getenv())
     val names = props.stringPropertyNames()
@@ -184,12 +180,8 @@ val versionNum: Int
 fun shutdown() {
     Thread.ofVirtual().start {
         LOGGER.info("Stopping\n")
-        bootClasses.forEach(Consumer { i: Class<*> ->
-            try {
-                (i.getDeclaredConstructor().newInstance() as BasinBoot).beforeStop()
-            } catch (e: Exception) {
-                LOGGER.printException(e)
-            }
+        bootClasses.forEach(Consumer {
+            it.beforeStop()
         })
         exitProcess(0)
     }
@@ -200,13 +192,8 @@ fun shutdown() {
  */
 fun restart() {
     Thread.ofVirtual().start {
-        bootClasses.forEach(Consumer { i: Class<*> ->
-            try {
-                val `in` = i.getDeclaredConstructor().newInstance() as BasinBoot
-                `in`.beforeStop()
-            } catch (e: Exception) {
-                LOGGER.printException(e)
-            }
+        bootClasses.forEach(Consumer {
+            it.beforeStop()
         })
         CommandParser.cs.forEach(Consumer { c: CommandParser -> c.vars.clear() })
         RemoteServer.servers.forEach(Consumer { obj: Server -> obj.stop() })
@@ -217,11 +204,7 @@ fun restart() {
         publicVars.clear()
         loadEnv()
         bootClasses.forEach(Consumer {
-            try {
-                (it.getDeclaredConstructor().newInstance() as BasinBoot).afterStart()
-            } catch (e: Exception) {
-                LOGGER.printException(e)
-            }
+            it.afterStart()
         })
         if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
         if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
