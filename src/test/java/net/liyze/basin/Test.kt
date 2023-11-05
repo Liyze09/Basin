@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.event
+package net.liyze.basin
 
+import net.liyze.basin.BasinFramework.startBasin
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class EventsTest {
+class Test {
     @Disabled
     @Test
     fun test() {
-        val event = Any()
-        EventBus.enableAgent = true
-        EventBus.asyncSubscribe(event) {
-            Thread.sleep(20)
-            println("get")
-        }
-        repeat(1000) {
-            EventBus.emit(event, Any())
-            println("emit")
-        }
-        Thread.sleep(500)
-        println(EventBus.agentResult)
+        startBasin()
     }
 }

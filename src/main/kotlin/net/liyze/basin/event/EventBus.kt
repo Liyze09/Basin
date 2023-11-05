@@ -24,15 +24,18 @@ import net.liyze.basin.rpc.request
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.BlockingQueue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
 object EventBus {
     private val LOGGER: Logger = LoggerFactory.getLogger(EventBus::class.java)
     private val remotes: MutableList<String> = CopyOnWriteArrayList()
     fun getRemotes() = remotes
+    var enableAgent = false
+    private val buffer = ArrayBlockingQueue<EventAndMessage>(EventLoop.maxBufferSize)
+    val agentResult: MutableMap<Any, Agent> = ConcurrentHashMap()
 
-    private val buffer: BlockingQueue<EventAndMessage> = ArrayBlockingQueue(EventLoop.maxBufferSize)
+    data class Agent(var callTime: Long, var avgTime: Long)
     fun connect(url: String) {
         if (request(url, "_hello", Hello()).await() == 1) remotes.add(url)
         else throw ConnectFailedException(url)
@@ -67,15 +70,42 @@ object EventBus {
     private val map: MutableMap<Any, Observer> = HashMap()
     fun subscribe(event: Any, observer: Observer) {
         LOGGER.debug("An observer is subscribing.")
-        map[event] = observer
+        var obs = observer
+        if (enableAgent) {
+            obs = addAgent(event, obs)
+        }
+        map[event] = obs
+        agentResult[event] = Agent(0, 0)
     }
 
     fun asyncSubscribe(event: Any, observer: Observer) {
         LOGGER.debug("An async observer is subscribing.")
+        var obs = observer
+        if (enableAgent) {
+            obs = addAgent(event, obs)
+        }
         map[event] = Observer {
             Thread.ofVirtual().start {
-                observer.run(it)
+                obs.run(it)
             }
+        }
+        agentResult[event] = Agent(0, 0)
+    }
+
+    fun addAgent(event: Any, observer: Observer): Observer {
+        return Observer {
+            val t0 = System.nanoTime()
+            observer.run(it)
+            val t1 = System.nanoTime() - t0
+            val e = agentResult[event]!!
+            val ct = e.callTime
+            val nct = ct + 1
+            var avg = e.avgTime
+            avg *= ct
+            avg += t1
+            avg /= nct
+            agentResult[event]!!.callTime = nct
+            agentResult[event]!!.avgTime = avg
         }
     }
 
