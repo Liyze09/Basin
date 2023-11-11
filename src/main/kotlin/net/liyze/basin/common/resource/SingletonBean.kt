@@ -18,7 +18,7 @@ package net.liyze.basin.common.resource
 
 class SingletonBean<T>(
     val singleton: T,
-    override val type: Class<out T> = singleton!!::class.java,
+    @Suppress("UNCHECKED_CAST") override val type: Class<in T> = singleton!!::class.java as Class<T>,
     val destroy: Destroy<T> = Destroy {}
 ) : AbstractBean<T>() {
     override fun getInstance(): T {

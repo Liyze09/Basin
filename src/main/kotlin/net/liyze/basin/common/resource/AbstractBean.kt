@@ -17,7 +17,7 @@
 package net.liyze.basin.common.resource
 
 sealed class AbstractBean<T> {
-    abstract val type: Class<out T>
+    abstract val type: Class<in T>
     abstract fun getInstance(): T
     open fun destroy() {}
 }

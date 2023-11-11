@@ -16,7 +16,14 @@
 
 package net.liyze.basin.common.resource
 
-@FunctionalInterface
-fun interface Factory<T> {
-    fun get(): T
+import net.liyze.basin.common.deepClone
+
+class InitialedBean<T>(
+    val initial: T,
+    @Suppress("UNCHECKED_CAST") override val type: Class<in T> = initial!!::class.java as Class<T>,
+) : AbstractBean<T>() {
+    override fun getInstance(): T = initial.deepClone()
+    override fun destroy() {
+
+    }
 }

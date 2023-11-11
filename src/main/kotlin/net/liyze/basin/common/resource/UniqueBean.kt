@@ -18,9 +18,10 @@ package net.liyze.basin.common.resource
 import net.liyze.basin.common.createInstance
 
 class UniqueBean<T>(
-    override val type: Class<T>,
+    override val type: Class<in T>,
 ) : AbstractBean<T>() {
+    @Suppress("UNCHECKED_CAST")
     override fun getInstance(): T {
-        return type.createInstance()
+        return type.createInstance() as T
     }
 }

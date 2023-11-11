@@ -16,9 +16,11 @@
 
 package net.liyze.basin.common.resource
 
+import java.util.function.Supplier
+
 class FactoryBean<T>(
-    override val type: Class<T>,
-    val factory: Factory<T>,
+    override val type: Class<in T>,
+    val factory: Supplier<T>,
     val destroy: Runnable = Runnable {}
 ) : AbstractBean<T>() {
     override fun getInstance(): T {

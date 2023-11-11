@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package net.liyze.basin.common.resource
 
-import java.util.function.Supplier
+import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 
-class ThreadLocalBean<T>(
-    val singleton: Supplier<T>,
-    override val type: Class<in T>
-) : AbstractBean<T>() {
-    @Suppress("UNCHECKED_CAST")
-    constructor(singleton: T, type: Class<in T> = singleton!!::class.java as Class<T>) : this(
-        Supplier { singleton },
-        type
-    )
-
-    val threadLocal: ThreadLocal<T> = ThreadLocal.withInitial { return@withInitial singleton.get() }
-    override fun getInstance(): T {
-        return threadLocal.get()
+class BeanTest {
+    @Test
+    fun test() {
+        BeanManager.addBean(SingletonBean(LoggerFactory.getLogger("Test")))
     }
 }
