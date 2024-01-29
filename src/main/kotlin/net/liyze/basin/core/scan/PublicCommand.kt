@@ -16,14 +16,15 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.CommandParser
 import net.liyze.basin.core.publicVars
 import org.slf4j.Logger
 
 class PublicCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
-        val parser = CommandParser()
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
+        val parser = CommandParser(context)
         parser.sync().parse(args.requireNoNulls())
         publicVars.putAll(parser.vars)
     }

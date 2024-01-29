@@ -16,30 +16,18 @@
 
 package net.liyze.basin.core.scan
 
-import net.liyze.basin.common.printException
+import net.liyze.basin.Article
+import net.liyze.basin.core.CONSOLE_COMMAND_PARSER
 import net.liyze.basin.core.Command
-import net.liyze.basin.core.envMap
-import net.liyze.basin.core.remote.send
+import net.liyze.basin.core.articles
 import org.slf4j.Logger
 
-
-class RemoteCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
-        val host: String = args[0]!!
-        try {
-            envMap["\"" + host + "_token\""]?.let {
-                send(
-                    java.lang.String.join(" ", args.subList(1, args.size)),
-                    host,
-                    it
-                )
-            } ?: throw RuntimeException("Remote token not found: $host")
-        } catch (e: Exception) {
-            e.printException()
-        }
+class SwitchCommand : Command {
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
+        CONSOLE_COMMAND_PARSER =
+            articles[args[0]]?.commandParser ?: throw RuntimeException("Didn't find the Article: ${args[0]}")
+        logger.info("Switched to ${args[0]}")
     }
 
-    override fun getName(): String {
-        return "remote"
-    }
+    override fun getName(): String = "switch"
 }

@@ -20,17 +20,11 @@ package net.liyze.basin.core
  * Basin Config Bean
  */
 object Config {
-    var taskPoolSize = Runtime.getRuntime().availableProcessors() + 1
-
     var startCommand = ""
 
-    var enableRemote = false
+    var defaultArticle = "default"
 
     var enableShellCommand = false
-
-    var accessToken = ""
-
-    var remotePort = 32768
 
     var loopPeriod: Long = 15
 

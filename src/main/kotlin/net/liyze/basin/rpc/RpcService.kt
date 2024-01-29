@@ -29,7 +29,7 @@ import org.smartboot.http.server.HttpServerHandler
 import java.io.IOException
 import java.util.*
 
-object RpcService : Server {
+class RpcService : Server {
     private var port = 8088
     private val bootstrap = HttpBootstrap()
     private val services: MutableMap<String, RpcObserver> = HashMap()
@@ -74,26 +74,28 @@ object RpcService : Server {
         return this
     }
 
-    private val registeredClass: MutableList<Class<*>> = ArrayList()
+    companion object {
+        private val registeredClass: MutableList<Class<*>> = ArrayList()
 
-    val FURY = ThreadLocalFury {
-        val ret = Fury.builder()
-            .withLanguage(Language.JAVA)
-            .withRefTracking(true)
-            .withClassLoader(it)
-            .withAsyncCompilation(true)
-            .withCodegen(true)
-            .requireClassRegistration(requireClassRegistration)
-            .withJdkClassSerializableCheck(false)
-            .build()
-        registeredClass.forEach { clazz ->
-            ret.register(clazz)
+        val FURY = ThreadLocalFury {
+            val ret = Fury.builder()
+                .withLanguage(Language.JAVA)
+                .withRefTracking(true)
+                .withClassLoader(it)
+                .withAsyncCompilation(true)
+                .withCodegen(true)
+                .requireClassRegistration(requireClassRegistration)
+                .withJdkClassSerializableCheck(false)
+                .build()
+            registeredClass.forEach { clazz ->
+                ret.register(clazz)
+            }
+            ret
         }
-        ret
-    }
 
-    var requireClassRegistration = true
-    fun registerClass(clazz: Class<*>) {
-        registeredClass.add(clazz)
+        var requireClassRegistration = true
+        fun registerClass(clazz: Class<*>) {
+            registeredClass.add(clazz)
+        }
     }
 }

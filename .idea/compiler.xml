@@ -2,6 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="20">
+      <module name="Basin" target="21" />
+      <module name="Basin.main" target="21" />
+      <module name="Basin.test" target="21" />
       <module name="io.github.liyze09.Basin" target="21" />
       <module name="io.github.liyze09.Basin.main" target="21" />
       <module name="io.github.liyze09.Basin.test" target="21" />

@@ -18,6 +18,7 @@ package net.liyze.basin.core
 
 import com.google.common.base.Splitter
 import com.google.common.collect.Lists
+import net.liyze.basin.Article
 import net.liyze.basin.common.printException
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference
  * Basin Command Parser
  */
 @Suppress("unused")
-class CommandParser {
+class CommandParser(val context: Article) {
     /**
      * This Parser's vars.
      */
@@ -54,7 +55,7 @@ class CommandParser {
      */
     fun parseString(ac: String): Boolean {
         if (ac.isBlank() || ac.startsWith("#")) return true
-        LOGGER.info(ac)
+        LOGGER.debug(ac)
         val sp = Splitter.on(" ").trimResults()
         return parse(Lists.newArrayList(sp.split(ac)))
     }
@@ -99,7 +100,7 @@ class CommandParser {
             if (run != null) {
                 try {
                     logger.debug("$cmdName started.")
-                    run.run(args, logger)
+                    run.run(args, logger, context)
                     return true
                 } catch (e: IndexOutOfBoundsException) {
                     logger.error("Bad arg input.")

@@ -37,8 +37,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-object HttpServer : Server {
-    val LOGGER: Logger = LoggerFactory.getLogger("Basin.HTTP")
+class HttpServer : Server {
     var serverName = "Basin.HTTP"
     var port = 8000
     val cfg: Configuration = Configuration.defaultConfiguration()
@@ -201,5 +200,9 @@ object HttpServer : Server {
                 }
             }
         }
+    }
+
+    companion object {
+        val LOGGER: Logger = LoggerFactory.getLogger("Basin.HTTP")
     }
 }

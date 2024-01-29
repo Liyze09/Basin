@@ -18,10 +18,9 @@
 
 package net.liyze.basin.core
 
+import net.liyze.basin.Article
 import net.liyze.basin.common.printException
-import net.liyze.basin.core.remote.RemoteServer
 import net.liyze.basin.core.scan.*
-import net.liyze.basin.http.HttpServer
 import org.jetbrains.annotations.Contract
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -32,14 +31,16 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.system.exitProcess
 
-
+@JvmField
+val articles: MutableMap<String, Article> = HashMap(mapOf("default" to Article("default")))
 @JvmField
 val LOGGER: Logger = LoggerFactory.getLogger("Basin")
 
 @JvmField
 val commands = HashMap<String, Command>()
 val bootClasses: MutableList<BasinBoot> = ArrayList()
-val CONSOLE_COMMAND_PARSER = CommandParser()
+var CONSOLE_COMMAND_PARSER =
+    CommandParser(articles[Config.defaultArticle] ?: throw RuntimeException("Didn't find default Article"))
 
 @JvmField
 val publicVars: MutableMap<String, String> = ConcurrentHashMap()
@@ -91,14 +92,6 @@ fun start() {
         loadEnv()
         envMap.forEach { (key: String, value: Any) -> publicVars[key] = value }
         if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
-        if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
-            try {
-                RemoteServer(cfg.accessToken, cfg.remotePort, CommandParser()).start()
-                LOGGER.info("Remote server started.")
-            } catch (e: Exception) {
-                LOGGER.printException(e)
-            }
-        }
     } catch (e: Exception) {
         LOGGER.printException(e)
     }
@@ -108,7 +101,7 @@ fun start() {
             FullGCCommand(),
             ListCommand(),
             PublicCommand(),
-            RemoteCommand(),
+            SwitchCommand(),
             RestartCommand(),
             RpcServerCommand(),
             ServerCommand(),
@@ -196,10 +189,6 @@ fun restart() {
             it.beforeStop()
         })
         CommandParser.cs.forEach(Consumer { c: CommandParser -> c.vars.clear() })
-        RemoteServer.servers.forEach(Consumer { obj: Server -> obj.stop() })
-        RemoteServer.servers.clear()
-        HttpServer.stop()
-        HttpServer.start()
         commands.clear()
         publicVars.clear()
         loadEnv()
@@ -207,13 +196,6 @@ fun restart() {
             it.afterStart()
         })
         if (cfg.startCommand.isNotBlank()) CONSOLE_COMMAND_PARSER.parseString(cfg.startCommand)
-        if (cfg.enableRemote && cfg.accessToken.isNotBlank()) {
-            try {
-                RemoteServer(cfg.accessToken, cfg.remotePort, CommandParser()).start()
-            } catch (e: Exception) {
-                LOGGER.printException(e)
-            }
-        }
         LOGGER.info("Restarted!")
     }.start()
 }

@@ -16,13 +16,14 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.restart
 import org.slf4j.Logger
 
 
 class RestartCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
         restart()
     }
 

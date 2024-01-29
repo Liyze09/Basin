@@ -17,7 +17,7 @@
 
 package net.liyze.basin.common
 
-import net.liyze.basin.rpc.RpcService.FURY
+import net.liyze.basin.rpc.RpcService.Companion.FURY
 import org.slf4j.LoggerFactory
 import sun.misc.Unsafe
 

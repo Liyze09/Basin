@@ -16,14 +16,14 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
-import net.liyze.basin.rpc.RpcService
 import org.slf4j.Logger
 
 class RpcServerCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
-        if (args.isNotEmpty()) RpcService.stop()
-        else RpcService.start()
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
+        if (args.isNotEmpty()) context.rpcServer.stop()
+        else context.rpcServer.start()
     }
 
     override fun getName(): String {

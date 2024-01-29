@@ -16,6 +16,7 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.commands
 import net.liyze.basin.core.envMap
@@ -30,7 +31,7 @@ import java.io.StringWriter
  */
 
 class ListCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
         val writer = StringWriter()
         val print = PrintWriter(writer)
         print.println()

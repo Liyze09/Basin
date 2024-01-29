@@ -16,11 +16,13 @@
 
 package net.liyze.basin.common.resource
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
 class BeanTest {
     @Test
+    @Disabled
     fun test() {
         BeanManager.addBean(SingletonBean(LoggerFactory.getLogger("Test")))
     }

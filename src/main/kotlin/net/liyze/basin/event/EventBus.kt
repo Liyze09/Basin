@@ -16,6 +16,7 @@
 
 package net.liyze.basin.event
 
+import net.liyze.basin.Article
 import net.liyze.basin.event.exception.ConnectFailedException
 import net.liyze.basin.event.exception.NoSuchObserverException
 import net.liyze.basin.http.HttpServer
@@ -27,12 +28,13 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-object EventBus {
+class EventBus(val context: Article) {
     private val LOGGER: Logger = LoggerFactory.getLogger(EventBus::class.java)
     private val remotes: MutableList<String> = CopyOnWriteArrayList()
     fun getRemotes() = remotes
     var enableAgent = false
-    private val buffer = ArrayBlockingQueue<EventAndMessage>(EventLoop.maxBufferSize)
+    val eventLoop = context.eventLoop
+    private val buffer = ArrayBlockingQueue<EventAndMessage>(eventLoop.maxBufferSize)
     val agentResult: MutableMap<Any, Agent> = ConcurrentHashMap()
 
     data class Agent(var callTime: Long, var avgTime: Long)
@@ -42,12 +44,12 @@ object EventBus {
     }
 
     init {
-        RpcService.subscribe("_hello") {
+        context.rpcServer.subscribe("_hello") {
             if (it is Hello) return@subscribe 1
             LOGGER.warn("Illegal '_hello' request!")
             return@subscribe 255
         }
-        RpcService.subscribe("_emit") {
+        context.rpcServer.subscribe("_emit") {
             if (it is EventAndMessage) {
                 Thread.ofVirtual().start { remoteEmit(it) }
                 return@subscribe 1
@@ -63,8 +65,6 @@ object EventBus {
             }
         }
     }
-
-    val eventLoop = EventLoop
     val httpServer = HttpServer
     val rpcServer = RpcService
     private val map: MutableMap<Any, Observer> = HashMap()

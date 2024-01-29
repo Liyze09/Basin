@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-package net.liyze.basin.event
+package net.liyze.basin
 
-import net.liyze.basin.BasinFramework
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
+import net.liyze.basin.core.CommandParser
+import net.liyze.basin.event.EventBus
+import net.liyze.basin.event.EventLoop
+import net.liyze.basin.http.HttpServer
+import net.liyze.basin.rpc.RpcService
 
-class EventsTest {
-    @Disabled
-    @Test
-    fun test() {
-        val eventBus = BasinFramework.getDefaultArticle().eventBus
-        val event = Any()
-        eventBus.enableAgent = true
-        eventBus.asyncSubscribe(event) {
-            Thread.sleep(20)
-            println("get")
-        }
-        repeat(1000) {
-            eventBus.emit(event, Any())
-            println("emit")
-        }
-        Thread.sleep(500)
-        println(eventBus.agentResult)
+class Article(val name: String) {
+    val httpServer = HttpServer()
+    val rpcServer = RpcService()
+    val eventLoop = EventLoop(this)
+    val eventBus = EventBus(this)
+    val commandParser = CommandParser(this)
+    fun start() {
+        rpcServer.start()
+        httpServer.start()
     }
 }
+

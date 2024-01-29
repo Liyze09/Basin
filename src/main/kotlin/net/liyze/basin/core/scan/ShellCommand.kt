@@ -16,6 +16,7 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.LOGGER
 import net.liyze.basin.core.cfg
@@ -24,7 +25,7 @@ import java.io.IOException
 
 
 class ShellCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
         if (!cfg.enableShellCommand) {
             logger.warn("Shell execution is disabled!")
             return

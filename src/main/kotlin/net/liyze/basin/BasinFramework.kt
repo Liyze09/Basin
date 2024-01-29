@@ -17,34 +17,26 @@ package net.liyze.basin
 
 import net.liyze.basin.common.createInstance
 import net.liyze.basin.core.Config
+import net.liyze.basin.core.articles
 import net.liyze.basin.core.start
-import net.liyze.basin.event.EventBus
 import net.liyze.basin.graal.Polyglot
-import net.liyze.basin.http.HttpServer
-import net.liyze.basin.rpc.RpcService
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 object BasinFramework {
-    @JvmField
-    val httpServer = HttpServer
-
-    @JvmField
-    val rpcServer = RpcService
-
-    @JvmField
-    val eventBus = EventBus
-
     @JvmField
     val config = Config
 
     @JvmStatic
     fun startBasin() {
         start()
-        RpcService.start()
-        HttpServer.start()
     }
 
+    @JvmStatic
+    fun getDefaultArticle() = articles[config.defaultArticle] ?: throw RuntimeException("Didn't find default Article")
+
+    @JvmStatic
+    fun getNewArticle(name: String) = Article(name)
     @JvmStatic
     private var polyglot: Polyglot? = null
 

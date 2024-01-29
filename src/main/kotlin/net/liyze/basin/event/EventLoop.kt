@@ -16,13 +16,14 @@
 
 package net.liyze.basin.event
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Config
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
-object EventLoop {
+class EventLoop(context: Article) {
     internal val schedule = Executors.newScheduledThreadPool(2)
     private val events: MutableList<EventAndCondition> = CopyOnWriteArrayList()
     private val removed: MutableList<Int> = ArrayList()
@@ -34,7 +35,7 @@ object EventLoop {
         schedule.scheduleAtFixedRate({
             for ((index, it) in events.withIndex()) {
                 if (it.condition.test()) {
-                    EventBus.emit(it.event, it.condition)
+                    context.eventBus.emit(it.event, it.condition)
                     if (it.isOnce) {
                         removed.add(index)
                     }

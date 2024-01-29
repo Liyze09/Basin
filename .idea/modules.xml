@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Basin.iml" filepath="$PROJECT_DIR$/.idea/modules/Basin.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Basin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Basin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Basin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Basin.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/io.github.liyze09.Basin.iml" filepath="$PROJECT_DIR$/.idea/modules/io.github.liyze09.Basin.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/io.github.liyze09.Basin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/io.github.liyze09.Basin.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/io.github.liyze09.Basin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/io.github.liyze09.Basin.test.iml" />

@@ -16,15 +16,15 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
-import net.liyze.basin.http.HttpServer
 import org.slf4j.Logger
 
 
 class ServerCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
-        if (args.isNotEmpty()) HttpServer.stop()
-        else HttpServer.start()
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
+        if (args.isNotEmpty()) context.httpServer.stop()
+        else context.httpServer.start()
     }
 
     override fun getName(): String {

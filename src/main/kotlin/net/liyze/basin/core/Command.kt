@@ -16,6 +16,7 @@
 
 package net.liyze.basin.core
 
+import net.liyze.basin.Article
 import org.slf4j.Logger
 
 /**
@@ -27,7 +28,7 @@ interface Command {
      *
      * @author Liyze09
      */
-    fun run(args: List<String?>, logger: Logger)
+    fun run(args: List<String?>, logger: Logger, context: Article)
 
     /**
      * The Name of the command

@@ -16,6 +16,7 @@
 
 package net.liyze.basin.core.scan
 
+import net.liyze.basin.Article
 import net.liyze.basin.core.Command
 import net.liyze.basin.core.shutdown
 import org.slf4j.Logger
@@ -27,7 +28,7 @@ import org.slf4j.Logger
  */
 
 class StopCommand : Command {
-    override fun run(args: List<String?>, logger: Logger) {
+    override fun run(args: List<String?>, logger: Logger, context: Article) {
         shutdown()
     }
 
